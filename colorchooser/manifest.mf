@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: net.java.dev.colorchooser
+OpenIDE-Module-Localizing-Bundle: net/java/dev/colorchooser/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

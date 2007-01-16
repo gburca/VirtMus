@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:odm="http://product.corel.com/CGS/11/cddns/" xml:space="preserve" width="799px" height="385px" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd"
+     viewBox="0 0 800 384">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#202326;stroke-width:0}
+    .str1 {stroke:#2B2828;stroke-width:0}
+    .str2 {stroke:#2B2828;stroke-width:0}
+    .fil10 {fill:none}
+    .fil9 {fill:#2B2828}
+    .fil1 {fill:#97C5D5}
+    .fil5 {fill:#9FAACA}
+    .fil4 {fill:#A8D1B1}
+    .fil7 {fill:#A97CA9}
+    .fil6 {fill:#E8A8A5}
+    .fil3 {fill:#EDC07D}
+    .fil8 {fill:#F1EFBE}
+    .fil0 {fill:#F5F6F7}
+    .fil2 {fill:#FFFFFF}
+    .fnt4 {font-weight:normal;font-size:8;font-family:Arial}
+    .fnt1 {font-weight:normal;font-size:9;font-family:Arial}
+    .fnt2 {font-weight:normal;font-size:12;font-family:Arial}
+    .fnt3 {font-weight:normal;font-size:13;font-family:Arial}
+    .fnt0 {font-weight:normal;font-size:18;font-family:Arial}
+   ]]>
+  </style>
+ </defs>
+ <g id="Layer 1">
+  <path class="fil0 str0" d="M34 16l729 0c13,0 23,9 23,22l0 192c0,12 -10,23 -23,23l-729 0c-14,0 -25,-11 -25,-23l0 -192c0,-13 11,-22 25,-22z"/>
+  <path class="fil1 str0" d="M47 96l20 0c1,0 3,1 3,3l0 17c0,2 -2,3 -3,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-2 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M77 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-2 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M106 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -2,-1 -2,-3l0 -17c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M136 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-2 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M166 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M196 96l19 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-19 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M225 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M255 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M285 96l19 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-19 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M314 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M344 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M374 96l20 0c1,0 2,1 2,3l0 17c0,2 -1,3 -2,3l-20 0c-1,0 -3,-1 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M403 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -2,-1 -2,-3l0 -17c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M433 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -2,-1 -2,-3l0 -17c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M463 96l20 0c2,0 3,1 3,3l0 17c0,2 -1,3 -3,3l-20 0c-1,0 -2,-1 -2,-3l0 -17c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M95 121l19 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-19 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M124 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M154 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M184 121l19 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-19 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M213 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M243 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M273 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M302 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M332 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M362 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M392 121l19 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-19 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M421 121l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M103 147l19 0c1,0 3,1 3,2l0 19c0,1 -2,2 -3,2l-19 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil1 str0" d="M132 147l20 0c1,0 3,1 3,2l0 19c0,1 -2,2 -3,2l-20 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil1 str0" d="M162 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil1 str0" d="M192 147l19 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-19 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil1 str0" d="M221 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil1 str0" d="M251 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M281 147l19 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-19 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M310 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M340 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M370 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M399 147l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M113 172l21 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-21 0c-1,0 -2,-1 -2,-3l0 -17c0,-1 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M143 172l21 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-21 0c-1,0 -2,-1 -2,-3l0 -17c0,-1 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M173 172l21 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-21 0c-1,0 -2,-1 -2,-3l0 -17c0,-1 1,-3 2,-3z"/>
+  <path class="fil1 str0" d="M233 172l20 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-1 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M263 172l20 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-1 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M293 172l19 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-19 0c-2,0 -3,-1 -3,-3l0 -17c0,-1 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M322 172l20 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-1 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M352 172l20 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -17c0,-1 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M382 172l19 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-19 0c-2,0 -3,-1 -3,-3l0 -17c0,-1 1,-3 3,-3z"/>
+  <path class="fil2 str0" d="M47 55l20 0c1,0 3,1 3,3l0 18c0,1 -2,3 -3,3l-20 0c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M106 55l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <path class="fil3 str0" d="M136 55l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M166 55l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil3 str0" d="M196 55l19 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-19 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil3 str0" d="M240 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M270 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M299 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-1,0 -2,-1 -2,-3l0 -18c0,-1 1,-3 2,-3z"/>
+  <path class="fil3 str0" d="M329 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M373 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M402 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M432 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil3 str0" d="M462 54l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil2 str0" d="M521 96l20 0c1,0 2,1 2,2l0 18c0,1 -1,2 -2,2l-20 0c-2,0 -3,-1 -3,-2l0 -18c0,-1 1,-2 3,-2z"/>
+  <path class="fil2 str0" d="M551 96l20 0c1,0 2,1 2,2l0 18c0,1 -1,2 -2,2l-20 0c-2,0 -3,-1 -3,-2l0 -18c0,-1 1,-2 3,-2z"/>
+  <path class="fil2 str0" d="M581 96l19 0c1,0 2,1 2,2l0 18c0,1 -1,2 -2,2l-19 0c-2,0 -3,-1 -3,-2l0 -18c0,-1 1,-2 3,-2z"/>
+  <path class="fil2 str0" d="M519 54l20 0c2,0 3,2 3,3l0 18c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -18c0,-1 2,-3 3,-3z"/>
+  <path class="fil2 str0" d="M549 54l20 0c2,0 3,2 3,3l0 18c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -18c0,-1 2,-3 3,-3z"/>
+  <path class="fil2 str0" d="M579 54l19 0c2,0 3,2 3,3l0 18c0,2 -1,3 -3,3l-19 0c-1,0 -3,-1 -3,-3l0 -18c0,-1 2,-3 3,-3z"/>
+  <path class="fil2 str0" d="M521 120l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil2 str0" d="M551 120l20 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil2 str0" d="M581 120l19 0c1,0 2,2 2,3l0 18c0,2 -1,3 -2,3l-19 0c-2,0 -3,-1 -3,-3l0 -18c0,-1 1,-3 3,-3z"/>
+  <path class="fil4 str0" d="M521 197l20 0c1,0 2,1 2,2l0 19c0,1 -1,2 -2,2l-20 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil4 str0" d="M551 197l20 0c1,0 2,1 2,2l0 19c0,1 -1,2 -2,2l-20 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil4 str0" d="M581 197l19 0c1,0 2,1 2,2l0 19c0,1 -1,2 -2,2l-19 0c-2,0 -3,-1 -3,-2l0 -19c0,-1 1,-2 3,-2z"/>
+  <path class="fil4 str0" d="M551 172l20 0c1,0 2,1 2,3l0 17c0,1 -1,3 -2,3l-20 0c-2,0 -3,-2 -3,-3l0 -17c0,-2 1,-3 3,-3z"/>
+  <path class="fil5 str0" d="M638 96l20 0c2,0 3,1 3,2l0 18c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -18c0,-1 2,-2 3,-2z"/>
+  <path class="fil5 str0" d="M668 96l19 0c2,0 3,1 3,2l0 18c0,1 -1,2 -3,2l-19 0c-1,0 -3,-1 -3,-2l0 -18c0,-1 2,-2 3,-2z"/>
+  <path class="fil5 str0" d="M697 96l20 0c2,0 3,1 3,2l0 18c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -18c0,-1 2,-2 3,-2z"/>
+  <path class="fil5 str0" d="M638 120l20 0c2,0 3,2 3,3l0 18c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -18c0,-1 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M668 120l19 0c2,0 3,2 3,3l0 18c0,2 -1,3 -3,3l-19 0c-1,0 -3,-1 -3,-3l0 -18c0,-1 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M697 120l20 0c2,0 3,2 3,3l0 18c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -18c0,-1 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M638 146l20 0c2,0 3,1 3,3l0 18c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M668 146l19 0c2,0 3,1 3,3l0 18c0,2 -1,3 -3,3l-19 0c-1,0 -3,-1 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M697 146l20 0c2,0 3,1 3,3l0 18c0,2 -1,3 -3,3l-20 0c-1,0 -3,-1 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M638 172l20 0c2,0 3,1 3,3l0 17c0,1 -1,3 -3,3l-20 0c-1,0 -3,-2 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M668 172l19 0c2,0 3,1 3,3l0 17c0,1 -1,3 -3,3l-19 0c-1,0 -3,-2 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M697 172l20 0c2,0 3,1 3,3l0 17c0,1 -1,3 -3,3l-20 0c-1,0 -3,-2 -3,-3l0 -17c0,-2 2,-3 3,-3z"/>
+  <path class="fil5 str0" d="M697 197l20 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2z"/>
+  <path class="fil5 str0" d="M727 96l20 0c2,0 3,1 3,2l0 18c0,1 -1,2 -3,2l-20 0c-1,0 -3,-1 -3,-2l0 -18c0,-1 2,-2 3,-2z"/>
+  <path class="fil1 str0" d="M162 197l-11 0c-2,0 -3,1 -3,3l0 18c0,2 1,3 3,3l11 0 168 0 18 0c0,0 1,-1 1,-3l0 -18c0,-2 -1,-3 -1,-3l-18 0 -168 0z"/>
+  <path class="fil6 str0" d="M391 197l19 0c1,0 2,1 2,3l0 18c0,2 -1,3 -2,3l-19 0c-2,0 -3,-1 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil7 str0" d="M420 197l20 0c1,0 2,1 2,3l0 18c0,2 -1,3 -2,3l-20 0c-2,0 -3,-1 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil5 str0" d="M750 123c0,-1 -1,-3 -3,-3l-20 0c-1,0 -3,2 -3,3l0 44c0,2 2,3 3,3l20 0c2,0 3,-1 3,-3l0 -44z"/>
+  <path class="fil8 str0" d="M750 175c0,-2 -1,-3 -3,-3l-20 0c-1,0 -3,1 -3,3l0 43c0,1 2,2 3,2l20 0c2,0 3,-1 3,-2l0 -43z"/>
+  <path class="fil1 str0" d="M202 172l21 0c1,0 2,2 2,3l0 17c0,2 -1,3 -2,3l-21 0c0,0 -1,-1 -1,-3l0 -17c0,-1 1,-3 1,-3z"/>
+  <path class="fil1 str0" d="M47 145c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3l38 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-38 0z"/>
+  <path class="fil1 str0" d="M47 170c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2l45 0c2,0 4,1 4,2l0 19c0,1 -2,2 -4,2l-45 0z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 -210.373 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">Q</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -182.661 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">W</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -150 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">E</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -121.298 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">R</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -90.6165 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">T</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -60.9247 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">Y</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -31.2329 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">U</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 1.42831 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">I</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 27.1613 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">O</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 57.8426 -10.3173)">
+   <text x="400" y="192" class="fil9 fnt0">P</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -202.456 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">A</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -171.774 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">S</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -143.072 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">D</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -112.39 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">F</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -83.6883 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">G</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -53.9965 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">H</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -22.3252 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">J</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 5.38717 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">K</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 36.0689 15.3789)">
+   <text x="400" y="192" class="fil9 fnt0">L</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -190.579 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">Z</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -160.887 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">X</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -131.195 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">C</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -101.504 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">V</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -71.8117 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">B</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -42.1195 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">N</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -13.4176 40.0868)">
+   <text x="400" y="192" class="fil9 fnt0">M</text>
+  </g>
+  <path class="fil10 str1" d="M561 188l0 -10"/>
+  <path class="fil9" d="M559 180l2 -3 2 3 -4 0 2 -2 -2 2z"/>
+  <path class="fil10 str1" d="M561 203l0 11"/>
+  <path class="fil9" d="M563 212l-2 4 -2 -4 4 0 -2 2 2 -2z"/>
+  <path class="fil10 str1" d="M585 208l10 0"/>
+  <path class="fil9" d="M593 207l4 1 -4 2 0 -3 2 1 -2 -1z"/>
+  <path class="fil10 str1" d="M536 208l-11 0"/>
+  <path class="fil9" d="M527 210l-3 -2 3 -1 0 3 -2 -2 2 2z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 331.007 -42.9317)">
+   <text x="400" y="192" class="fil9 fnt1">Num</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 331.007 -35.0252)">
+   <text x="400" y="192" class="fil9 fnt1">Lock</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 327.049 -19.2122)">
+   <text x="400" y="192" class="fil9 fnt2">7</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 327.049 5.49565)">
+   <text x="400" y="192" class="fil9 fnt2">4</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 327.049 31.1919)">
+   <text x="400" y="192" class="fil9 fnt2">1</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 357.73 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">/</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 357.73 -19.2122)">
+   <text x="400" y="192" class="fil9 fnt2">8</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 357.73 5.49565)">
+   <text x="400" y="192" class="fil9 fnt2">5</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 357.73 31.1919)">
+   <text x="400" y="192" class="fil9 fnt2">2</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 386.432 -44.9081)">
+   <text x="400" y="194" class="fil9 fnt2">*</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 386.432 -19.2122)">
+   <text x="400" y="192" class="fil9 fnt2">9</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 386.432 5.49565)">
+   <text x="400" y="192" class="fil9 fnt2">6</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 386.432 31.1919)">
+   <text x="400" y="192" class="fil9 fnt2">3</text>
+  </g>
+  <path class="fil5 str0" d="M638 220c-1,0 -3,-1 -3,-2l0 -19c0,-1 2,-2 3,-2l49 0c2,0 3,1 3,2l0 19c0,1 -1,2 -3,2l-49 0z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 327.049 56.8878)">
+   <text x="400" y="192" class="fil9 fnt2">0</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 416.124 -45.8965)">
+   <text x="400" y="192" class="fil9 fnt2">-</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 417.114 -0.434028)">
+   <text x="400" y="194" class="fil9 fnt2">+</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 239.952 -83.4525)">
+   <text x="400" y="192" class="fil9 fnt1">Scroll</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 239.952 -75.546)">
+   <text x="400" y="192" class="fil9 fnt1">Lock</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 209.271 -88.3941)">
+   <text x="400" y="192" class="fil9 fnt1">Print</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 209.271 -80.4877)">
+   <text x="400" y="192" class="fil9 fnt1">Scrn</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 209.271 -72.5812)">
+   <text x="400" y="192" class="fil9 fnt1">SysRq</text>
+  </g>
+  <path class="fil10 str1" d="M516 70l26 0"/>
+  <g transform="matrix(0.774557 0 0 0.77345 268.654 -87.4057)">
+   <text x="400" y="192" class="fil9 fnt1">Pause</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 269.644 -73.5692)">
+   <text x="400" y="192" class="fil9 fnt1">Break</text>
+  </g>
+  <path class="fil10 str1" d="M576 69l25 0"/>
+  <g transform="matrix(0.774557 0 0 0.77345 -198.497 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F1</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -169.794 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F2</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -140.103 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F3</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -110.411 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F4</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -65.8731 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F5</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -36.1812 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F6</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -6.48941 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F7</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 23.2024 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F8</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 66.7503 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F9</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 93.4728 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F10</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 124.154 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F11</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 152.856 -78.5109)">
+   <text x="400" y="192" class="fil9 fnt3">F12</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -258.87 -79.4993)">
+   <text x="400" y="192" class="fil9 fnt1">Esc</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 240.942 -38.9784)">
+   <text x="400" y="192" class="fil9 fnt1">Home</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 244.901 -13.2822)">
+   <text x="400" y="192" class="fil9 fnt1">End</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 271.624 -17.2354)">
+   <text x="400" y="192" class="fil9 fnt1">Page</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 271.624 -9.32892)">
+   <text x="400" y="192" class="fil9 fnt1">Down</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 272.613 -43.9201)">
+   <text x="400" y="192" class="fil9 fnt1">Page</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 272.613 -36.0132)">
+   <text x="400" y="192" class="fil9 fnt1">Up</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 212.24 -38.9784)">
+   <text x="400" y="192" class="fil9 fnt1">Insert</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 211.25 -13.2822)">
+   <text x="400" y="192" class="fil9 fnt1">Delete</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 419.093 49.9697)">
+   <text x="400" y="192" class="fil9 fnt1">Enter</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -233.137 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">1</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -204.435 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">2</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -174.743 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">3</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -145.051 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">4</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -114.37 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">5</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -84.6778 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">6</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -54.986 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">7</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -26.2841 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">8</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 3.40774 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">9</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 34.0895 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">0</text>
+  </g>
+  <path class="fil10 str1" d="M479 106l-11 0"/>
+  <path class="fil9" d="M470 108l-4 -2 4 -2 0 4 -2 -2 2 2z"/>
+  <path class="fil1 str0" d="M410 195c-1,0 -2,-1 -2,-3l0 -17c0,-1 1,-3 2,-3l73 0c2,0 3,2 3,3l0 17c0,2 -1,3 -3,3l-73 0z"/>
+  <path class="fil8 str0" d="M446 147l-17 0c-2,0 -3,1 -3,2l0 19c0,1 1,2 3,2l54 0c2,0 3,-1 3,-2l0 -44c0,-2 -1,-3 -3,-3l-31 0c-2,0 -3,1 -3,3l0 20c0,2 0,3 -3,3l0 0z"/>
+  <path class="fil10 str1" d="M467 129l0 11 -10 0"/>
+  <path class="fil9" d="M458 142l-3 -2 3 -2 0 4 -1 -2 1 2z"/>
+  <path class="fil1 str0" d="M450 197l33 0c2,0 3,1 3,3l0 18c0,2 -1,3 -3,3l-33 0c-2,0 -3,-1 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil1 str0" d="M47 195c-1,0 -3,-1 -3,-3 0,-5 0,-11 0,-17 0,-1 2,-3 3,-3 15,0 41,0 57,0 1,0 2,2 2,3 0,6 0,12 0,17 0,2 -1,3 -2,3 -16,0 -42,0 -57,0z"/>
+  <path class="fil1 str0" d="M47 197l30 0c1,0 2,1 2,3l0 18c0,2 -1,3 -2,3l-30 0c-2,0 -3,-1 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil6 str0" d="M87 197l19 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-19 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil1 str0" d="M116 197l25 0c1,0 2,1 2,3l0 18c0,1 -1,3 -2,3l-25 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 150.877 63.8059)">
+   <text x="400" y="192" class="fil9 fnt1">Ctrl</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -252.932 63.8059)">
+   <text x="400" y="192" class="fil9 fnt1">Ctrl</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -185.63 62.8175)">
+   <text x="400" y="192" class="fil9 fnt1">Alt</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 3.40774 -45.8965)">
+   <text x="400" y="194" class="fil9 fnt2">(</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 34.0895 -45.8965)">
+   <text x="400" y="194" class="fil9 fnt2">)</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -25.2942 -45.8965)">
+   <text x="400" y="194" class="fil9 fnt2">*</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -55.9759 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">&amp;</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -84.6778 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">^</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -115.36 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">%</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -145.051 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">$</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -174.743 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">#</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -205.425 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">@</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -233.137 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">!</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -242.045 38.11)">
+   <text x="400" y="192" class="fil9 fnt1">Shift</text>
+  </g>
+  <path class="fil10 str2" d="M54 177l-4 4 2 0 0 8 5 0 0 -8 2 0 -5 -4z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 130.092 38.11)">
+   <text x="400" y="192" class="fil9 fnt1">Shift</text>
+  </g>
+  <path class="fil10 str2" d="M417 177l-4 4 2 0 0 8 4 0 0 -8 2 0 -4 -4z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 -262.829 -30.0835)">
+   <text x="400" y="192" class="fil9 fnt2">`</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -263.819 -44.9081)">
+   <text x="400" y="192" class="fil9 fnt2">~</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -262.829 -18.2238)">
+   <text x="400" y="192" class="fil9 fnt1">Tab</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -247.983 8.46086)">
+   <text x="400" y="192" class="fil9 fnt1">Caps</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -247.983 16.3673)">
+   <text x="400" y="192" class="fil9 fnt1">Lock</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 62.7914 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">-</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 62.7914 -45.8965)">
+   <text x="400" y="192" class="fil9 fnt2">_</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 92.4829 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">=</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 92.4829 -45.8965)">
+   <text x="400" y="192" class="fil9 fnt2">+</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 123.165 -31.0719)">
+   <text x="400" y="192" class="fil9 fnt2">\</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 123.165 -45.8965)">
+   <text x="400" y="194" class="fil9 fnt2">|</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 82.5861 -6.36408)">
+   <text x="400" y="192" class="fil9 fnt2">[</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 81.5962 -19.2122)">
+   <text x="400" y="192" class="fil9 fnt2">{</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 111.288 -6.36408)">
+   <text x="400" y="192" class="fil9 fnt2">]</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 111.288 -19.2122)">
+   <text x="400" y="192" class="fil9 fnt2">}</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 59.8224 18.3438)">
+   <text x="400" y="192" class="fil9 fnt2">;</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 59.8224 5.49565)">
+   <text x="400" y="192" class="fil9 fnt2">:</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 89.5139 19.3322)">
+   <text x="400" y="192" class="fil9 fnt2">&apos;</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 88.524 6.48405)">
+   <text x="400" y="192" class="fil9 fnt2">&quot;</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 70.7091 45.0281)">
+   <text x="400" y="192" class="fil9 fnt2">/</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 70.7091 32.1803)">
+   <text x="400" y="192" class="fil9 fnt2">?</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 42.0072 45.0281)">
+   <text x="400" y="192" class="fil9 fnt2">.</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 41.0173 32.1803)">
+   <text x="400" y="192" class="fil9 fnt2">&gt;</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 11.3255 45.0281)">
+   <text x="400" y="192" class="fil9 fnt2">,</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 10.3359 32.1803)">
+   <text x="400" y="192" class="fil9 fnt2">&lt;</text>
+  </g>
+  <path class="fil10 str1" d="M702 158l10 0"/>
+  <path class="fil9" d="M711 156l3 2 -3 2 0 -4 1 2 -1 -2z"/>
+  <path class="fil10 str1" d="M678 137l0 -10"/>
+  <path class="fil9" d="M676 129l2 -4 2 4 -4 0 2 -2 -2 2z"/>
+  <path class="fil10 str1" d="M653 158l-10 0"/>
+  <path class="fil9" d="M645 160l-4 -2 4 -2 0 4 -2 -2 2 2z"/>
+  <path class="fil10 str1" d="M678 178l0 10"/>
+  <path class="fil9" d="M680 187l-2 3 -2 -3 4 0 -2 1 2 -1z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 327.049 43.0513)">
+   <text x="400" y="192" class="fil9 fnt1">End</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 327.049 -6.36408)">
+   <text x="400" y="192" class="fil9 fnt1">Home</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 386.432 -6.36408)">
+   <text x="400" y="192" class="fil9 fnt1">PgUp</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 387.422 43.0513)">
+   <text x="400" y="192" class="fil9 fnt1">PgDn</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 386.432 68.7475)">
+   <text x="400" y="192" class="fil9 fnt1">Del</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 387.422 55.8994)">
+   <text x="400" y="192" class="fil9 fnt1">.</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 328.038 68.7475)">
+   <text x="400" y="192" class="fil9 fnt1">Ins</text>
+  </g>
+  <path class="fil9" d="M70 129l0 -3 1 0 0 3 -1 0zm1 -2l2 -1 0 1 9 0 0 1 -9 0 0 1 -2 -2z"/>
+  <path class="fil9" d="M82 134l0 4 -1 0 0 -4 1 0zm-1 2l-2 2 0 -2 -9 0 0 0 9 0 0 -2 2 2z"/>
+  <path class="fil1 str0" d="M85 281l20 0c1,0 2,1 2,3l0 18c0,1 -1,3 -2,3l-20 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil6 str0" d="M85 312l20 0c1,0 2,1 2,3l0 18c0,1 -1,3 -2,3l-20 0c-1,0 -3,-2 -3,-3l0 -18c0,-2 2,-3 3,-3z"/>
+  <path class="fil7 str0" d="M85 343l20 0c1,0 2,1 2,2l0 18c0,1 -1,2 -2,2l-20 0c-1,0 -3,-1 -3,-2l0 -18c0,-1 2,-2 3,-2z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 -196.517 149.789)">
+   <text x="400" y="192" class="fil9 fnt0">Typewriter keys</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -196.517 180.427)">
+   <text x="400" y="192" class="fil9 fnt0">Windows keys</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -196.517 211.065)">
+   <text x="400" y="192" class="fil9 fnt0">Application key</text>
+  </g>
+  <path class="fil3 str0" d="M248 281l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil5 str0" d="M248 312l20 0c2,0 3,1 3,3l0 18c0,1 -1,3 -3,3l-20 0c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil4 str0" d="M248 343l20 0c2,0 3,1 3,2l0 18c0,1 -1,2 -3,2l-20 0c-2,0 -3,-1 -3,-2l0 -18c0,-1 1,-2 3,-2z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 -33.2123 149.789)">
+   <text x="400" y="192" class="fil9 fnt0">Function keys</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -33.2123 180.427)">
+   <text x="400" y="192" class="fil9 fnt0">Numeric keypad</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 -33.2123 211.065)">
+   <text x="400" y="192" class="fil9 fnt0">Cursor control keys</text>
+  </g>
+  <path class="fil8 str0" d="M411 281l20 0c1,0 3,1 3,3l0 18c0,1 -2,3 -3,3l-20 0c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <path class="fil2 str0" d="M411 312l20 0c1,0 3,1 3,3l0 18c0,1 -2,3 -3,3l-20 0c-2,0 -3,-2 -3,-3l0 -18c0,-2 1,-3 3,-3z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 130.092 149.789)">
+   <text x="400" y="192" class="fil9 fnt0">Enter keys</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 130.092 180.427)">
+   <text x="400" y="192" class="fil9 fnt0">Other</text>
+  </g>
+  <path class="fil9" d="M642 71l7 0 0 -3 -7 0 0 3z"/>
+  <path class="fil10 str1" d="M642 71l7 0 0 -3 -7 0 0 3z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 340.905 -80.4877)">
+   <text x="400" y="192" class="fil9 fnt4">Num</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 340.905 -73.5692)">
+   <text x="400" y="192" class="fil9 fnt4">Lock</text>
+  </g>
+  <path class="fil9" d="M683 71l7 0 0 -3 -7 0 0 3z"/>
+  <path class="fil10 str1" d="M683 71l7 0 0 -3 -7 0 0 3z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 382.473 -80.4877)">
+   <text x="400" y="192" class="fil9 fnt4">Caps</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 382.473 -73.5692)">
+   <text x="400" y="192" class="fil9 fnt4">Lock</text>
+  </g>
+  <path class="fil9" d="M724 71l7 0 0 -3 -7 0 0 3z"/>
+  <path class="fil10 str1" d="M724 71l7 0 0 -3 -7 0 0 3z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 423.052 -80.4877)">
+   <text x="400" y="192" class="fil9 fnt4">Scroll</text>
+  </g>
+  <g transform="matrix(0.774557 0 0 0.77345 423.052 -73.5692)">
+   <text x="400" y="192" class="fil9 fnt4">Lock</text>
+  </g>
+  <path class="fil1 str0" d="M356 197l24 0c1,0 2,1 2,3l0 18c0,1 -1,3 -2,3l-24 0c-1,0 -2,-2 -2,-3l0 -18c0,-2 1,-3 2,-3z"/>
+  <g transform="matrix(0.774557 0 0 0.77345 49.697 62.8175)">
+   <text x="400" y="192" class="fil9 fnt1">Alt Gr</text>
+  </g>
+ </g>
+</svg>

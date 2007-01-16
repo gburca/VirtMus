@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.ebixio.jai
+OpenIDE-Module-Layer: com/ebixio/jai/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/ebixio/jai/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

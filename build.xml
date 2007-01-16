@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="VirtMus" basedir=".">
+    <description>Builds the module suite VirtMus.</description>
+    <import file="nbproject/build-impl.xml"/>
+    
+    <!-- Need to modify the app.conf file to allow for more memory -->
+    <!-- Need to modify shell scripts to use UNIX (LF) line terminations -->
+    <target name="virtmus-customizations" depends="build-launchers">
+        <!-- echo message="***** modify-default-options"/ -->
+        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf" overwrite="true">
+            <filterchain>
+                <replaceregex pattern="\s*default_options.*" replace="default_options=&quot;-J-Xms24m -J-Xmx512m&quot;"/>
+                <!-- replaceregex pattern="^#\s*jdkhome=.*" replace="jdkhome=&quot;/usr/local/jdk1.6.0&quot;"/ -->
+            </filterchain>
+        </copy>
+        <fixcrlf srcDir="${build.launcher.dir}/etc" includes="${app.name}.conf" eof="remove" eol="unix"/>
+        
+        <!-- Make a local copy of it, and modify its line terminations -->
+        <copy file="${netbeans.dest.dir}/platform7/lib/nbexec" tofile="${build.launcher.dir}/nbexec"/>
+        <fixcrlf srcDir="${build.launcher.dir}" includes="nbexec" eof="remove" eol="unix"/>
+        
+        <fixcrlf srcDir="${build.launcher.dir}/bin" includes="${app.name}" eof="remove" eol="unix"/>
+        
+    </target>
+    
+    <!-- We override the build-zip target just so we can add our dependency from above, then we call the original build-zip -->
+    <target name="build-zip" depends="build,build-launchers,virtmus-customizations"
+            description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
+        <ant antfile="${harness.dir}/suite.xml" target="build-zip"/>
+        
+        <!-- Override the default nbexec file with the one we prepared above -->
+        <zip destfile="dist/${app.name}.zip" update="true">
+            <zipfileset dir="${build.launcher.dir}" filemode="755" prefix="${app.name}/platform7/lib/">
+                <include name="nbexec"/>
+            </zipfileset>
+        </zip>
+    </target>
+    
+</project>

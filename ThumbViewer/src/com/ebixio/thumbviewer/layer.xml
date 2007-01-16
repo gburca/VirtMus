@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="com-ebixio-thumbviewer-ThumbsAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <attr name="File/Edit" boolvalue="true"/>
+        <folder name="Edit_hidden"/>
+        <attr name="Edit/GoTo" boolvalue="true"/>
+        <folder name="GoTo_hidden">
+            <attr name="com-ebixio-thumbviewer-OpenDir.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>
+        </folder>
+        <attr name="GoTo/Window" boolvalue="true"/>
+        <folder name="Window">
+            <!--
+            This is the menu order we want:
+                PlayList
+                Thumbs
+                Annot
+                Separator3
+                
+                Close Window
+                Maximize Window
+                Undock Window
+                Separator4
+                
+                Close All Documents
+                Documents...
+                Separator5
+                
+                Reset Windows
+            -->
+            <attr name="PlayListAction.shadow/ThumbsAction.shadow" boolvalue="true"/>
+            <attr name="ThumbsAction.shadow/AnnotAction.shadow" boolvalue="true"/>
+            <attr name="AnnotAction.shadow/Separator3.instance" boolvalue="true"/>
+            
+            <attr name="Separator3.instance/CloseWindowAction.shadow" boolvalue="true"/>
+            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true"/>
+            <attr name="MaximizeWindowAction.shadow/UndockWindowAction.instance" boolvalue="true"/>
+            <attr name="UndockWindowAction.instance/Separator4.instance" boolvalue="true"/>
+            
+            <attr name="Separator4.instance/CloseAllDocumentsAction.shadow" boolvalue="true"/>
+            <attr name="CloseAllDocumentsAction.shadow/DocumentsAction.shadow" boolvalue="true"/>
+            <attr name="DocumentsAction.shadow/Separator5.instance" boolvalue="true"/>
+            <attr name="Separator5.instance/ResetWindowsAction.shadow" boolvalue="true"/>
+            
+            <file name="ThumbsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-thumbviewer-ThumbsAction.instance"/>
+            </file>
+            
+            <file name="CloneDocumentAction.shadow_hidden"/>
+            <file name="CloseAllButThisAction.shadow_hidden"/>
+            <file name="ProgressListAction.shadow_hidden"/>
+            <file name="SwitchToRecentDocumentAction.shadow_hidden"/>
+            <file name="ViewFavoritesTabAction.shadow_hidden"/>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="ThumbsTopComponent.settings" url="ThumbsTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="thumbs">
+                <file name="ThumbsTopComponent.wstcref" url="ThumbsTopComponentWstcref.xml"/>
+            </folder>
+            <file name="thumbs.wsmode" url="thumbsWsmode.xml"/>
+        </folder>
+    </folder>
+</filesystem>

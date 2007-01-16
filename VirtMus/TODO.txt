@@ -1,0 +1,41 @@
+- Inherit actions from NewAction, CutAction, CopyAction...
+
+- Rework SaveAllAction() to match openide/loaders/src/org/openide/actions/SaveAllAction.java
+  or use the openide/SaveAllAction.java itself.
+
+- For YES/NO dialogs, consider using: http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/DialogDescriptor.html
+    See: http://wiki.netbeans.org/wiki/view/DevFaqNbIdeosyncracies
+
+- Make use of the Navigator API for the PlayList top component... ?
+    see: http://www.netbeans.org/download/dev/javadoc/org-netbeans-spi-navigator/overview-summary.html
+
+USER NOTES
+==========
+- PNG 32-bit is slow to load, but indexed 8-bit is also slow when it comes to drawing on the LiveScreen.
+
+DEVELOPMENT NOTES
+=================
+- The Window menu order is maintained in ThumbViewer/layer.xml
+- The list of hidden menu items is also maintained in ThumbViewer/layer.xml
+
+
+FIXED - NOT VERIFIED
+====================
+- There seems to be some processing build up as pages are cloned and moved around on the Thumbs TopComponent
+
+
+DONE
+====
+- Enforce song.xml and playlist.xml file extensions
+
+- BUG: When a song is added to a playlist, the SavePlayListAction.enable function
+    is not called to enable the "save" menu. Do we need to do something in
+    SongOpenAction?
+
+- See if we need to save anything by trapping exit using the upper-right windows close button
+- Might need to copy the code from ExitAction to LifecycleManager
+    see: http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/LifecycleManager.html#exit()
+    - Created a VirtMusLifecycleManager inner class in MainApp.java and registered it in the global lookup
+      by creating a file in META-INF/services.
+    - Another option:
+      http://wiki.netbeans.org/wiki/view/DevFaqMainwindowClosingAction

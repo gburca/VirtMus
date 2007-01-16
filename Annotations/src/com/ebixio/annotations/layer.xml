@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="com-ebixio-annotations-AnnotAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="AnnotAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-annotations-AnnotAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="AnnotTopComponent.settings" url="AnnotTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="editor">
+                <file name="AnnotTopComponent.wstcref" url="AnnotTopComponentWstcref.xml"/>
+            </folder>
+            <file name="editor.wsmode" url="editorWsmode.xml"/>
+        </folder>
+    </folder>
+</filesystem>

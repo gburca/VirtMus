@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mode version="2.3">
+    <name unique="editor" />
+  <kind type="editor" />
+  <state type="joined" />
+  <constraints>
+    <path orientation="horizontal" number="3" weight="0.5813953488372093"/>
+  </constraints>
+  <bounds x="0" y="0" width="0" height="0" />
+  <frame state="0"/>
+    <active-tc  id="AnnotTopComponent" />
+    <empty-behavior permanent="true"/>
+</mode>

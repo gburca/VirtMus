@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.codehaus.xstream
+OpenIDE-Module-Localizing-Bundle: org/codehaus/xstream/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
