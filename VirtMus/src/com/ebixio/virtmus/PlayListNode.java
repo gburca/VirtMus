@@ -54,7 +54,7 @@ public class PlayListNode extends AbstractNode {
         this.playList = playList;
         setName(playList.getName());
         displayFormat = new MessageFormat("{0}");
-        setIconBaseWithExtension("com/ebixio/virtmus/PlayListNode.png");
+        setIconBaseWithExtension("com/ebixio/virtmus/resources/PlayListNode.png");
     }
     
     public Action[] getActions(boolean context) {

@@ -39,17 +39,19 @@ public class Songs extends Children.Keys<Song> implements ChangeListener {
     public Songs(PlayList playList) {
         this.playList = playList;
         playList.addChangeListener(WeakListeners.change(this, playList));
-        //playList.addChangeListener(this);
     }
 
     protected void addNotify() {
         MainApp.log("Songs::addNotify");
+        setKeys(getKeys());
+    }
+    
+    private Vector<Song> getKeys() {
         Vector<Song> songKeys = new Vector<Song>();
         for (int i = 0; i < playList.songs.size(); i++) {
             songKeys.add(playList.songs.get(i));
         }
-
-        setKeys(songKeys);
+        return songKeys;
     }
     
     protected Node[] createNodes(Song key) {
@@ -61,7 +63,12 @@ public class Songs extends Children.Keys<Song> implements ChangeListener {
     }
 
     public void stateChanged(ChangeEvent e) {
+        // See comments in PlayLists::stateChanged
         addNotify();
+        Vector<Song> allKeys = getKeys();
+        for (Song s: allKeys) {
+            refreshKey(s);
+        }
     }
     
 }

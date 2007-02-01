@@ -31,6 +31,8 @@ public class PlayListFilter extends FileFilter {
     public boolean accept(File f) {
         if (f.isFile() && f.toString().endsWith(".playlist.xml")) {
             return true;
+        } else if (f.isDirectory()) {
+            return true;
         } else {
             return false;
         }

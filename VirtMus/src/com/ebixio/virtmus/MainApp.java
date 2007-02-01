@@ -41,15 +41,13 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import java.util.logging.*;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * @author gburca
  */
-public class MainApp implements ExplorerManager.Provider, LookupListener, ChangeListener {
+public class MainApp implements ExplorerManager.Provider, ChangeListener {
     
     private static MainApp instance;
     public Vector<PlayList> playLists = new Vector<PlayList>();
@@ -58,6 +56,10 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
     private static DateTime lastTime = new DateTime();
     private transient Set<ChangeListener> plListeners = new HashSet<ChangeListener>();
     public transient SaveAllAction saveAllAction = null;
+    
+    // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
+    public static final String VERSION = "0.52";
+    private static final boolean RELEASED = true;   // Used to disable logging
     
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
@@ -133,14 +135,9 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
     public static final String OptPageScrollAmount  = "PageScrollPercentage";
     public static final String OptPageScrollDir     = "ScrollDirection";
 
-    private Lookup.Result lookupResult;
-    
     /** Creates a new instance of MainApp */
     private MainApp() {
         log("MainApp::MainApp start");
-//        Lookup.Template<Song> tpl = new Lookup.Template<Song>(Song.class);
-//        lookupResult = Utilities.actionsGlobalContext().lookup(tpl);
-//        lookupResult.addLookupListener(this);
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
@@ -155,8 +152,13 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
                     if (MainApp.findInstance().isDirty()) {
                         int returnVal = JOptionPane.showConfirmDialog(null,
                                 "You have unsaved changes. Save all changes before loading new song directory?",
-                                "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_OPTION);
-                        if (returnVal == JOptionPane.YES_OPTION) saveAll();
+                                "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
+                        switch (returnVal) {
+                            case JOptionPane.YES_OPTION:    saveAll();   break;
+                            case JOptionPane.CANCEL_OPTION: return;
+                            case JOptionPane.NO_OPTION:
+                            default: break;
+                        }
                     }
                     playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
                 } else if (evt.getKey().equals(OptPlayListDir)) {
@@ -178,8 +180,13 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
         if (isDirty()) {
             int returnVal = JOptionPane.showConfirmDialog(null,
                     "You have unsaved changes. Save all changes before loading new playlists?",
-                    "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_OPTION);
-            if (returnVal == JOptionPane.YES_OPTION) saveAll();
+                    "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
+            switch (returnVal) {
+                case JOptionPane.YES_OPTION:    saveAll();   break;
+                case JOptionPane.CANCEL_OPTION: return;
+                case JOptionPane.NO_OPTION:
+                default: break;
+            }
         }
         playLists.clear();
         
@@ -247,6 +254,7 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
         log(msg, lev, false);
     }
     public static void log(String msg, Level lev, boolean printStackDump) {
+        if (RELEASED) return;
         logger.log(lev, getElapsedTime() + " - " + msg);
         if (printStackDump) {
             logger.log(lev, getStackTrace() + "\n");
@@ -276,15 +284,6 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
         return res.toString();
     }
 
-    public void resultChanged(LookupEvent lookupEvent) {
-//        log("MainApp::resultChanged");
-//        Lookup.Result r = (Lookup.Result) lookupEvent.getSource();
-//        Collection c = r.allInstances();
-//        if (!c.isEmpty()) {
-//            loadedSong = (Song) c.iterator().next();
-//        }
-    }
-    
     public boolean addPlayList() {
         PlayList pl = PlayList.open();
         if (pl != null) {
@@ -303,9 +302,8 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
     }
     public void notifyPLListeners() {
         ChangeEvent ev = new ChangeEvent(this);
-        Iterator it = plListeners.iterator();
-        while (it.hasNext())
-            ((ChangeListener) it.next()).stateChanged(ev);
+        ChangeListener[] cls = (ChangeListener[]) plListeners.toArray(new ChangeListener[0]);
+        for (ChangeListener cl: cls) cl.stateChanged(ev);
     }
 
     
@@ -330,9 +328,9 @@ public class MainApp implements ExplorerManager.Provider, LookupListener, Change
         public void exit() {
             if (MainApp.findInstance().isDirty()) {
                 int returnVal = JOptionPane.showConfirmDialog(null,
-                        "You have unsaved changes. Save before exiting?",
-                        "Changes exist.", JOptionPane.YES_NO_OPTION);
-                if (returnVal == JOptionPane.YES_OPTION) saveAll();
+                        "You have unsaved changes. Return to the application to save the changes?",
+                        "Unsaved changes exist.", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (returnVal == JOptionPane.YES_OPTION) return; //saveAll();
             }
 
             // Now we defer to the default org.netbeans.core.NbTopManager$NbLifecycleManager

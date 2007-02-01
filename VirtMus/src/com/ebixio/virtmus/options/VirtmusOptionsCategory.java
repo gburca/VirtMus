@@ -16,33 +16,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package com.ebixio.virtmus.dnd;
+package com.ebixio.virtmus.options;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.SimpleBeanInfo;
-import org.openide.loaders.UniFileLoader;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.spi.options.OptionsCategory;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class SongFileDataLoaderBeanInfo extends SimpleBeanInfo {
+public final class VirtmusOptionsCategory extends OptionsCategory {
     
-    public BeanInfo[] getAdditionalBeanInfo() {
-        try {
-            return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
-        } catch (IntrospectionException e) {
-            throw new AssertionError(e);
-        }
+    public Icon getIcon() {
+        return new ImageIcon(Utilities.loadImage("com/ebixio/virtmus/resources/OptionsGeneral.png"));
     }
     
-    public Image getIcon(int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("com/ebixio/virtmus/dnd/audio-x-generic.png");
-        } else {
-            return null;
-        }
-        
+    public String getCategoryName() {
+        return NbBundle.getMessage(VirtmusOptionsCategory.class, "OptionsCategory_Name_VirtMusOpt");
+    }
+    
+    public String getTitle() {
+        return NbBundle.getMessage(VirtmusOptionsCategory.class, "OptionsCategory_Title_VirtMusOpt");
+    }
+    
+    public OptionsPanelController create() {
+        return new VirtmusOptionsPanelController();
     }
     
 }

@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
@@ -96,6 +97,14 @@ public class Song implements Comparable<Song> {
         final JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fc.setMultiSelectionEnabled(true);
+        
+        //String songDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "");
+        //File sD = new File(songDir);
+        File sD = this.sourceFile.getParentFile();
+        if (sD != null && sD.exists()) {
+            fc.setCurrentDirectory(sD);
+        }
+
         int returnVal = fc.showOpenDialog(mainWindow);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File files[] = fc.getSelectedFiles();
@@ -255,6 +264,10 @@ public class Song implements Comparable<Song> {
     }
     
     static Song deserialize(File f) {
+        if (f == null || !f.getName().endsWith(".song.xml")) return null;
+
+        Song s;
+        
         String canonicalPath = "";
         try {
             canonicalPath = f.getCanonicalPath();
@@ -267,11 +280,7 @@ public class Song implements Comparable<Song> {
         XStream xs = new XStream();
         Annotations.configureAliases(xs, Song.class);
         Annotations.configureAliases(xs, MusicPage.class);
-
-        Song s;
         
-        if (f == null || !f.getName().endsWith(".song.xml")) return null;
-
         try {
             s = (Song) xs.fromXML(new InputStreamReader(new FileInputStream(f), "UTF-8"));
         } catch (FileNotFoundException ex) {
@@ -285,14 +294,31 @@ public class Song implements Comparable<Song> {
             return null;
         }
         
-        s.sourceFile = f;
+        s.sourceFile = new File(canonicalPath);
         for (MusicPage mp: s.pageOrder) mp.song = s;
+        findPages(s);
         
         Song.instantiated.put(canonicalPath, s);
 
         return s;
     }
 
+    /** We store absolute path names in the song file. If the song has moved the paths
+     * for the page files might no longer be valid. This function attempts to fix that.
+     * It expects s.sourceFile to already be in canonical form.
+     */
+    static void findPages(Song s) {
+        for (MusicPage mp: s.pageOrder)  {
+           File f = mp.getSourceFile();
+           if (f != null && !f.exists()) {
+               File newFile = Utils.findFileRelative(s.getSourceFile(), f);
+               if (newFile != null) {
+                   mp.setSourceFile(newFile);
+                   s.isDirty = true;
+               }
+           }
+        }
+    }
 
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
         propListeners.add(pcl);

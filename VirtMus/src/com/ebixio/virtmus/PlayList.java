@@ -43,7 +43,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
-import java.util.Comparator;
 
 /**
  *
@@ -93,8 +92,10 @@ public class PlayList {
         }
 
         for (File f: dir.listFiles()) {
-            Song s = Song.deserialize(f);
-            if (s != null) songs.add(s);
+            if (f.isFile() && f.canRead() && f.getName().endsWith(".song.xml")) {
+                Song s = Song.deserialize(f);
+                if (s != null) songs.add(s);
+            }
         }
         if (this.type != Type.Normal) sortSongsByName();
         notifyListeners();
@@ -203,12 +204,12 @@ public class PlayList {
     }
     
     static PlayList deserialize(File f) {
+        if (f == null || !f.getName().endsWith(".playlist.xml")) return null;
+
         XStream xs = new XStream();
         Annotations.configureAliases(xs, PlayList.class);
 
         PlayList pl;
-        
-        if (f == null || !f.getName().endsWith(".playlist.xml")) return null;
         
         try {
             pl = (PlayList) xs.fromXML(new InputStreamReader(new FileInputStream(f), "UTF-8"));
@@ -223,6 +224,9 @@ public class PlayList {
         }
         
         for (File sf: pl.songFiles) {
+            if (!sf.exists()) {
+                sf = Utils.findFileRelative(f, sf);
+            }
             Song s = Song.deserialize(sf);
             if (s != null) pl.songs.add(s);
         }
@@ -278,11 +282,13 @@ public class PlayList {
         listeners.remove(listener);
     }
     public void notifyListeners() {
-        MainApp.log("PlayList::notifyListeners thread:" + Thread.currentThread().getName());
+        //MainApp.log("PlayList::notifyListeners thread: " + Thread.currentThread().getName());
+        //MainApp.log("PlayList::notifyListeners: " + this.toString() + " " + getName());
         ChangeEvent ev = new ChangeEvent(this);
-        Iterator<ChangeListener> it = listeners.iterator();
-        while (it.hasNext())
-            it.next().stateChanged(ev);
+        ChangeListener[] cls = (ChangeListener[]) listeners.toArray(new ChangeListener[0]);
+        for (ChangeListener cl: cls) {
+            cl.stateChanged(ev);
+        }
     }
 
 }

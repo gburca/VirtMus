@@ -60,7 +60,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         this.song = song;
         setName(song.getName());
         displayFormat = new MessageFormat("{0}");
-        setIconBaseWithExtension("com/ebixio/virtmus/SongNode.png");
+        setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
         song.addPropertyChangeListener(WeakListeners.propertyChange(this, song));
     }

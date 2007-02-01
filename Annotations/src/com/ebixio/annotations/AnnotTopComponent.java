@@ -25,6 +25,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
@@ -39,9 +41,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.dev.colorchooser.ColorChooser;
 import org.openide.ErrorManager;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -52,7 +54,7 @@ import org.openide.windows.WindowManager;
  * Top component which displays something.
  */
 public final class AnnotTopComponent extends TopComponent
-        implements LookupListener, ActionListener, ChangeListener, ComponentListener {
+        implements ActionListener, ChangeListener, ComponentListener {
        
     private static AnnotTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -64,6 +66,14 @@ public final class AnnotTopComponent extends TopComponent
     private PlanarImage source = null;
     private File currentlyShowing = new File("");
 
+    transient private final PropertyChangeListener eListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                //Node[] selectedNodes = (Node[]) evt.getNewValue();
+                updateSelection();
+            }
+        }
+    };
    
     private AnnotTopComponent() {
         initComponents();
@@ -243,22 +253,20 @@ public final class AnnotTopComponent extends TopComponent
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
-    public void componentOpened() {
-        Lookup.Template<MusicPage> mp = new Lookup.Template<MusicPage>(MusicPage.class);
-        lookupResult = Utilities.actionsGlobalContext().lookup(mp);
-        lookupResult.addLookupListener(this);
-        //MainApp.log("AnnotTopComponent::componentOpened");
+    public ExplorerManager getExplorerManager() {
+        return MainApp.findInstance().getExplorerManager();
     }
-    
-    public void componentClosed() {
-        // TODO add custom code on component closing
-        lookupResult.removeLookupListener(this);
-        lookupResult = null;
-        MainApp.log("AnnotTopComponent::componentClosed");
+    public void addNotify() {
+        getExplorerManager().addPropertyChangeListener(eListener);
+        super.addNotify();
+    }
+    public void removeNotify() {
+        super.removeNotify();
+        getExplorerManager().removePropertyChangeListener(eListener);
     }
     
     /**
-     * This function gets called every time the results change.
+     * This function gets called every time the selected nodes change.
      * The results change to "nothing" when the focus moves away from the TopComponent
      * that contains the nodes. It gets changed to the selected node when focus returns
      * to the TopComponent, etc...
@@ -266,18 +274,17 @@ public final class AnnotTopComponent extends TopComponent
      * Since setImage is very time-consuming for large images, we want to do it only if
      * it is different from the image being currently displayed.
      */
-    public void resultChanged(LookupEvent lookupEvent) {
-        MainApp.log("AnnotTopComponent::resultChanged");
-        Lookup.Result r = (Lookup.Result) lookupEvent.getSource();
-        Collection c = r.allInstances();
-        
-        if (!c.isEmpty()) {
-            // c is a collection of items we registered for in componentOpened
-            MusicPage mp = (MusicPage) c.iterator().next();
-            if ( !currentlyShowing.equals(mp.getSourceFile()) ) {
-                currentlyShowing = mp.getSourceFile();
-                //this.setImage(currentlyShowing);
-                this.showPage(mp);
+    private void updateSelection() {
+        Node[] nodes = getExplorerManager().getSelectedNodes();
+        if (nodes.length > 0) {
+            Lookup l = nodes[0].getLookup();
+            Collection pages = l.lookupResult(MusicPage.class).allInstances();
+            if (!pages.isEmpty()) {
+                MusicPage mp = (MusicPage) pages.iterator().next();
+                if (!currentlyShowing.equals(mp.getSourceFile())) {
+                    currentlyShowing = mp.getSourceFile();
+                    this.showPage(mp);
+                }
             }
         }
     }

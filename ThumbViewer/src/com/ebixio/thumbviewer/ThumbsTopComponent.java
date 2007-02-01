@@ -23,7 +23,6 @@ package com.ebixio.thumbviewer;
 import com.ebixio.virtmus.DraggableThumbnail;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
-import com.ebixio.virtmus.PlayLists;
 import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.Thumbnail;
 import java.awt.Component;
@@ -34,7 +33,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyVetoException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
@@ -45,23 +45,17 @@ import net.java.swingfx.jdraggable.DragPolicy;
 import net.java.swingfx.jdraggable.DraggableManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
-import org.openide.nodes.Node;
-//import com.ebixio.*;
 
 /**
  * Top component which displays something.
  */
-final class ThumbsTopComponent extends TopComponent implements LookupListener, MouseListener {
+final class ThumbsTopComponent extends TopComponent implements MouseListener {
     
     private static ThumbsTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -72,8 +66,15 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
     private Song loadedSong = null;
     private DraggableManager draggableManager;
     private int hgap = 25, vgap = 25;
-    private Lookup.Result sLookupResult = null, mpLookupResult = null;
-    private final InstanceContent content = new InstanceContent();
+
+    transient private final PropertyChangeListener eListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                //Node[] selectedNodes = (Node[]) evt.getNewValue();
+                updateSelection();
+            }
+        }
+    };
     
     private ChangeListener changeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
@@ -89,15 +90,17 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         
         draggableManager = new ThumbnailDraggableManager(jPanel);
         draggableManager.setDragPolicy(DragPolicy.STRICT);
-    
-        layoutThumbs();        
+        
+        // 1 wheel scroll = 3 clicks on the scoll bar arrow
+        jScrollPane.getVerticalScrollBar().setUnitIncrement((MusicPage.thumbH + vgap) / 3);
+        layoutThumbs();
     }
   
     private void layoutThumbs() {
         jPanel.setLayout(new ModifiedFlowLayout(FlowLayout.CENTER, hgap, vgap));
         jPanel.validate(); // Forces the component to re-layout subcomponents.
     }
-        
+
    
     /** This method is called from within the constructor to
      * initialize the form.
@@ -116,8 +119,11 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
             }
         });
 
+        jScrollPane.setBackground(new java.awt.Color(255, 255, 255));
         jScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        jPanel.setBackground(new java.awt.Color(255, 255, 255));
 
         org.jdesktop.layout.GroupLayout jPanelLayout = new org.jdesktop.layout.GroupLayout(jPanel);
         jPanel.setLayout(jPanelLayout);
@@ -127,7 +133,7 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         );
         jPanelLayout.setVerticalGroup(
             jPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 278, Short.MAX_VALUE)
+            .add(0, 531, Short.MAX_VALUE)
         );
 
         jScrollPane.setViewportView(jPanel);
@@ -136,11 +142,11 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -189,30 +195,43 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
-    public void componentOpened() {
-        // TODO: Should this be Song.class instead of PlayList.class ?
-        Lookup.Template<Song> song = new Lookup.Template<Song>(Song.class);
-        sLookupResult = Utilities.actionsGlobalContext().lookup(song);
-        sLookupResult.addLookupListener(this);
-
-        Lookup.Template<MusicPage> page = new Lookup.Template<MusicPage>(MusicPage.class);
-        mpLookupResult = Utilities.actionsGlobalContext().lookup(page);
-        mpLookupResult.addLookupListener(this);
-        //MainApp.log("ThumbsTopComponent::componentOpened");
-        
-        /* For some reason the resultChanged method does not get called until we
-         * click on this component to activate it first (or call super.componentActivated)
-         * as done here. That's the only reason for the function call below. */
-        //super.componentActivated();
-        //super.requestActive();
+    public ExplorerManager getExplorerManager() {
+        return MainApp.findInstance().getExplorerManager();
     }
     
-    public void componentClosed() {
-        sLookupResult.removeLookupListener(this);
-        sLookupResult = null;
-        mpLookupResult.removeLookupListener(this);
-        mpLookupResult = null;
-        MainApp.log("ThumbsTopComponent::componentClosed");
+    public void addNotify() {
+        getExplorerManager().addPropertyChangeListener(eListener);
+        super.addNotify();
+    }
+    public void removeNotify() {
+        super.removeNotify();
+        getExplorerManager().removePropertyChangeListener(eListener);
+    }
+    
+    /** This function gets called every time the ExplorerManager selection changes */
+    private void updateSelection() {
+        Node[] nodes = getExplorerManager().getSelectedNodes();
+        if (nodes.length > 0) {
+            Lookup l = nodes[0].getLookup();
+
+            Collection songs = l.lookupResult(Song.class).allInstances();
+            if (!songs.isEmpty()) {
+                Song s = (Song) songs.iterator().next();
+                if (loadedSong != s) this.loadSong(s);
+            }
+            
+            Collection pages = l.lookupResult(MusicPage.class).allInstances();
+            if (!pages.isEmpty()) {
+                MusicPage mp = (MusicPage) pages.iterator().next();
+                for (MusicPage m: loadedSong.pageOrder) {
+                    if (m == mp) {
+                        m.getThumbnail().setSelected(true);
+                    } else {
+                        m.getThumbnail().setSelected(false);
+                    }
+                }                
+            }
+        }        
     }
     
     /** replaces this in object stream */
@@ -283,6 +302,7 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         for (MusicPage p: loadedSong.pageOrder) {
             DraggableThumbnail t = p.getThumbnail();
             t.addMouseListener(this);
+            t.setSelected(false);
             jPanel.add(t);
         }
 
@@ -370,29 +390,6 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         layoutThumbs();
         //ExplorerManager manager = com.ebixio.virtmus.MainApp.findInstance().getExplorerManager();
         //manager.setRootContext(new AbstractNode(new PlayLists()));
-    }
-
-    public void resultChanged(LookupEvent lookupEvent) {
-        MainApp.log("ThumbsTopComponent::resultChanged");
-        Lookup.Result r = (Lookup.Result) lookupEvent.getSource();
-        Collection c = r.allInstances();
-        if (!c.isEmpty()) {
-            Object o = c.iterator().next();
-            
-            if (o.getClass() == Song.class) {
-                Song s = (Song) o;
-                if (loadedSong != s) this.loadSong(s);
-            } else if (o.getClass() == MusicPage.class && loadedSong != null) {
-                MusicPage mp = (MusicPage) o;
-                for (MusicPage m: loadedSong.pageOrder) {
-                    if (m == mp) {
-                        m.getThumbnail().setSelected(true);
-                    } else {
-                        m.getThumbnail().setSelected(false);
-                    }
-                }
-            }
-        }
     }
     
     // <editor-fold defaultstate="collapsed" desc=" ModifiedFlowLayout ">

@@ -21,6 +21,7 @@
 package com.ebixio.virtmus;
 
 import java.util.Vector;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
@@ -38,7 +39,7 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * Creates a new instance of PlayLists
      */
     public PlayLists(MainApp ma) {
-        MainApp.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
+//        MainApp.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
         //ma.addAllPlayLists(NbPreferences.forModule(MainApp.class));
         ma.addPLChangeListener(WeakListeners.change(this, ma));
         //ma.addPLChangeListener(this);
@@ -54,12 +55,16 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * See the "Recognizing a File Type" tutorial
      */
     protected void addNotify() {
-        MainApp.log("PlayLists::addNotify " + Thread.currentThread().getName());
+//        MainApp.log("PlayLists::addNotify " + Thread.currentThread().getName());
+        setKeys(getKeys());
+    }
+    
+    private Vector<Integer> getKeys() {
         Vector<Integer> plKeys = new Vector<Integer>();
         for (int i = 0; i < MainApp.findInstance().playLists.size(); i++) {
             plKeys.add(i);
         }
-        setKeys(plKeys);
+        return plKeys;
     }
 
     /**
@@ -67,7 +72,10 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * addNotify above.
      */
     protected Node[] createNodes(Integer key) {
-        MainApp.log("PlayLists::createNodes " + Thread.currentThread().getName());
+//        MainApp.log("PlayLists::createNodes " + Thread.currentThread().getName());
+//        if(!SwingUtilities.isEventDispatchThread()){
+//           throw new AssertionError("NOT on EDT");
+//        }
         PlayListNode pln = new PlayListNode(
                 MainApp.findInstance().playLists.get(key)
         );
@@ -75,8 +83,17 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
     }
 
     public void stateChanged(ChangeEvent e) {
-        MainApp.log("PlayLists::stateChanged");
+        MainApp.log("PlayLists::stateChanged: " + this.toString());
+        /* When setKeys is called from addNotify above, the class tries to be smart
+           and only calls createNodes for the newly added keys. If the content of a
+           node has changed, but the key remained the same, we need to call refreshKey(key)
+           for the change to be refreshed.
+         */
         addNotify();
+        Vector<Integer> allKeys = getKeys();
+        for (Integer i: allKeys) {
+            refreshKey(i);
+        }
     }
     
 }

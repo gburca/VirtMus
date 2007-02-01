@@ -36,6 +36,9 @@
             <zipfileset dir="${build.launcher.dir}" filemode="755" prefix="${app.name}/platform7/lib/">
                 <include name="nbexec"/>
             </zipfileset>
+            <zipfileset dir="Docs" prefix="${app.name}/Docs">
+                <exclude name="**/src/**"/>
+            </zipfileset>
         </zip>
     </target>
     

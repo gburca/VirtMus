@@ -38,7 +38,7 @@ final class PlayListTopComponent extends TopComponent
     
     private static PlayListTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "com/ebixio/virtmus/PlayListTopComponent.png";
+    static final String ICON_PATH = "com/ebixio/virtmus/resources/PlayListTopComponent.png";
     
     private static final String PREFERRED_ID = "PlayListTopComponent";
     
@@ -48,7 +48,6 @@ final class PlayListTopComponent extends TopComponent
         setToolTipText(NbBundle.getMessage(PlayListTopComponent.class, "HINT_PlayListTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
         
-        //this.manager = new ExplorerManager();
         ExplorerManager manager = MainApp.findInstance().getExplorerManager();
         ActionMap map = this.getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
@@ -364,14 +363,6 @@ final class PlayListTopComponent extends TopComponent
     
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
-    }
-    
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
-    
-    public void componentClosed() {
-        // TODO add custom code on component closing
     }
     
     protected void componentActivated() {
