@@ -19,20 +19,10 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.*;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.annotations.Annotations;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.Collection;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
 
 public final class SongSaveAction extends NodeAction {
@@ -51,7 +41,7 @@ public final class SongSaveAction extends NodeAction {
         if (songs == 1) {
             StatusDisplayer.getDefault().setStatusText("Saved song to " + s.getSourceFile().toString());
         } else {
-            StatusDisplayer.getDefault().setStatusText("Saved song to " + songs + " song(s)");
+            StatusDisplayer.getDefault().setStatusText("Saved a total of " + songs + " song(s)");
         }
         
         setEnabled(false);

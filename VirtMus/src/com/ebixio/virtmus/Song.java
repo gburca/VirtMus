@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import java.util.regex.PatternSyntaxException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
@@ -85,6 +84,9 @@ public class Song implements Comparable<Song> {
     }
     
     public boolean isDirty() {
+        for (MusicPage mp: pageOrder) {
+            if (mp.isDirty) return true;
+        }
         return isDirty;
     }
     public void setDirty(boolean isDirty) {
@@ -260,6 +262,9 @@ public class Song implements Comparable<Song> {
         }
 
         setDirty(false);
+        for (MusicPage mp: pageOrder) {
+            mp.isDirty = false;
+        }
         return true;
     }
     
