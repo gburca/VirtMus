@@ -50,8 +50,6 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.lang.Boolean;
-import java.lang.Void;
 import java.util.logging.Level;
 import javax.media.jai.*;
 import javax.swing.*;
@@ -115,7 +113,7 @@ public class ImageDisplay extends JComponent {
         if ( source == null ) return;
 
         //MainApp.log("ImageDisplay", Level.INFO, true);
-        MainApp.log("ImageDisplay");
+        MainApp.log("ImageDisplay", Level.FINEST);
         try {
             componentWidth  = source.getWidth();
             componentHeight = source.getHeight();
@@ -123,7 +121,7 @@ public class ImageDisplay extends JComponent {
             // Invalid image file
             return;
         }
-        MainApp.log("ImageDisplay::initialize Init 2");
+        MainApp.log("ImageDisplay::initialize Init 2", Level.FINEST);
 
         setPreferredSize(new Dimension(componentWidth, componentHeight));
 
@@ -171,13 +169,13 @@ public class ImageDisplay extends JComponent {
         componentHeight = 64;
         setPreferredSize(new Dimension(componentWidth, componentHeight));
         setOrigin(0, 0);
-        setBrightnessEnabled(true);
+        setBrightnessEnabled(false);
     }
 
     /** 
      * Constructs an ImageDisplay to display a PlanarImage.
      *
-     * @param source a PlanarImage to be displayed.
+     * @param im a PlanarImage to be displayed.
      */
     public ImageDisplay(PlanarImage im) {
         super();
@@ -191,7 +189,7 @@ public class ImageDisplay extends JComponent {
         }
 
         setOrigin(0, 0);
-        setBrightnessEnabled(true);
+        setBrightnessEnabled(false);
     }
 
     /**
@@ -221,13 +219,14 @@ public class ImageDisplay extends JComponent {
      * The initialize() call could take a long time (1s) to load the image. We don't
      * want to block the UI thread for that long, so we execute initialize() in a
      * separate thread and update the UI (repaint) after that's done.
+     * @param im The new image to load.
      */
     public void set(PlanarImage im) {
         source = im;
         
         if (imgLoader != null && !imgLoader.isDone()) {
-            MainApp.log("ImageDisplay::set cancel thread");
-            imgLoader.cancel(true);
+            //MainApp.log("ImageDisplay::set cancel thread");
+             imgLoader.cancel(true);
         }
         
         imgLoader = new SwingWorker<Boolean, Void>() {
@@ -274,6 +273,7 @@ public class ImageDisplay extends JComponent {
     }
 
     /** Records a new size.  Called by the AWT. */
+    @Override
     public void setBounds(int x, int y, int width, int height) {
         Insets insets = getInsets();
         int w;
@@ -301,6 +301,7 @@ public class ImageDisplay extends JComponent {
         super.setBounds(x+shift_x, y+shift_y, componentWidth, componentHeight);
     }
 
+    @Override
     public void setLocation(int x, int y) {
         shift_x = x;
         shift_y = y;
@@ -368,6 +369,7 @@ public class ImageDisplay extends JComponent {
      * unused portion of image tiles as well as the general
      * background.  At this point the image must be byte data.
      */
+    @Override
     public synchronized void paintComponent(Graphics g) {
 
         Graphics2D g2D = null;
@@ -436,7 +438,7 @@ public class ImageDisplay extends JComponent {
                 if ( tile != null ) {
                     DataBuffer dataBuffer = tile.getDataBuffer();
 
-                    WritableRaster wr = tile.createWritableRaster(sampleModel,
+                    WritableRaster wr = Raster.createWritableRaster(sampleModel,
                                                                   dataBuffer,
                                                                   null);
 

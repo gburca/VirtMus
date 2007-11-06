@@ -20,13 +20,13 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.virtmus.SongNode;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
+import java.util.logging.Level;
 
 /**
  *
@@ -41,8 +41,9 @@ public class Songs extends Children.Keys<Song> implements ChangeListener {
         playList.addChangeListener(WeakListeners.change(this, playList));
     }
 
+    @Override
     protected void addNotify() {
-        MainApp.log("Songs::addNotify");
+        MainApp.log("Songs::addNotify", Level.FINEST);
         setKeys(getKeys());
     }
     

@@ -20,20 +20,25 @@
 
 package com.ebixio.virtmus;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.image.MemoryImageSource;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.CodeSource;
+import java.util.Collection;
 import java.util.Vector;
 import java.util.regex.PatternSyntaxException;
 
@@ -42,6 +47,7 @@ import java.util.regex.PatternSyntaxException;
  * @author gburca
  */
 public class Utils {
+    private static Cursor invisibleCursor = null;
     
     /** Creates a new instance of Utils */
     public Utils() {
@@ -80,8 +86,17 @@ public class Utils {
     }
     // </editor-fold>
     
+    public static Cursor getInvisibleCursor() {
+        if (invisibleCursor == null) {
+            int[] pixels = new int[16 * 16];
+            Image mouseImage = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
+            invisibleCursor = Toolkit.getDefaultToolkit().createCustomCursor(mouseImage, new Point(0,0), "invisibleCursor");
+        }
+        return invisibleCursor;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc=" Sizing and scaling ">    
-    static double scaleProportional(Rectangle container, Rectangle item) {
+    public static double scaleProportional(Rectangle container, Rectangle item) {
         double scaleX = (double)container.width / (double)item.width;
         double scaleY = (double)container.height / (double)item.height;
         return Math.min(scaleX, scaleY);
@@ -189,18 +204,22 @@ public class Utils {
         return null;
     }
     
-    /** Attempts to launch an external browser to handle a URL. */
+    /** Attempts to launch an external browser to handle a URL.
+     * @param url The URL to launch the default browser with.
+     * @return <b>true</b> on success
+     */
     public static boolean openURL(String url) {
         String osName = System.getProperty("os.name");
         try {
             if (osName.startsWith("Mac OS")) {
                 Class fileMgr = Class.forName("com.apple.eio.FileManager");
+                @SuppressWarnings("unchecked")
                 Method openURL = fileMgr.getDeclaredMethod("openURL",
                         new Class[] {String.class});
                 openURL.invoke(null, new Object[] {url});
-            } else if (osName.startsWith("Windows"))
+            } else if (osName.startsWith("Windows")) {
                 Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-            else { //assume Unix or Linux
+            } else { //assume Unix or Linux
                 String[] browsers = {
                     "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
                 String browser = null;
@@ -214,7 +233,6 @@ public class Utils {
                     Runtime.getRuntime().exec(new String[] {browser, url});
             }
         } catch (Exception e) {
-            //JOptionPane.showMessageDialog(null, errMsg + ":\n" + e.getLocalizedMessage());
             return false;
         }
         
@@ -276,6 +294,36 @@ public class Utils {
         }
         
         return appPath;
+    }
+
+    public static File[] listFilesAsArray(File directory, FilenameFilter filter, boolean recurse) {
+        Collection<File> files = listFiles(directory, filter, recurse);
+        File[] arr = new File[files.size()];
+        return files.toArray(arr);
+    }
+
+    public static Collection<File> listFiles(File directory, FilenameFilter filter, boolean recurse) {
+        // List of files / directories
+        Vector<File> files = new Vector<File>();
+        // Get files / directories in the directory
+        File[] entries = directory.listFiles();
+
+        // Go over entries
+        for (File entry : entries) {
+            // If there is no filter or the filter accepts the
+            // file / directory, add it to the list
+            if (filter == null || filter.accept(directory, entry.getName())) {
+                files.add(entry);
+            }
+
+            // If the file is a directory and the recurse flag
+            // is set, recurse into the directory
+            if (recurse && entry.isDirectory()) {
+                files.addAll(listFiles(entry, filter, recurse));
+            }
+        }
+
+        return files;
     }
     
 }

@@ -31,7 +31,7 @@ public final class SongSaveAction extends NodeAction {
         int songs = 0;
         Song s = null;
         for (Node n: activatedNodes) {
-            s = (Song) n.getLookup().lookup(Song.class);
+            s = n.getLookup().lookup(Song.class);
             if (s != null && s.isDirty()) {
                 s.save();
                 songs++;
@@ -67,6 +67,7 @@ public final class SongSaveAction extends NodeAction {
         return NbBundle.getMessage(SongSaveAction.class, "CTL_SongSaveAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/document-save.png";
     }
@@ -75,6 +76,7 @@ public final class SongSaveAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -82,7 +84,7 @@ public final class SongSaveAction extends NodeAction {
 
     protected boolean enable(Node[] node) {
         for (Node n: node) {
-            Song s = (Song) n.getLookup().lookup(Song.class);
+            Song s = n.getLookup().lookup(Song.class);
             if (s != null && s.isDirty()) return true;
         }
         

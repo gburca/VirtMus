@@ -47,10 +47,14 @@ public class MusicPageNode extends AbstractNode {
         displayFormat = new MessageFormat("{0}");
     }
     
+    @Override
     public boolean canCut()     { return true; }
+    @Override
     public boolean canDestroy() { return true; }
+    @Override
     public boolean canRename()  { return true; }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get( SongSaveAction.class ),

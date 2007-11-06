@@ -18,7 +18,6 @@
 
 package com.ebixio.annotations;
 
-import com.ebixio.annotations.AnnotTopComponent;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;

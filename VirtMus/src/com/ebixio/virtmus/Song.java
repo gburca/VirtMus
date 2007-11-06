@@ -124,10 +124,10 @@ public class Song implements Comparable<Song> {
         } else if (f.isDirectory()) {
             File[] images = f.listFiles();
             for (int i = 0; i < images.length; i++) {
-                pageOrder.add(new MusicPage(this, images[i]));
+                pageOrder.add(new MusicPageSVG(this, images[i]));
             }
         } else if (f.isFile()) {
-            pageOrder.add(new MusicPage(this, f));
+            pageOrder.add(new MusicPageSVG(this, f));
         }
         setDirty(true);
         notifyListeners();
@@ -241,7 +241,12 @@ public class Song implements Comparable<Song> {
     public boolean serialize(File toFile) {
         XStream xstream = new XStream();
         Annotations.configureAliases(xstream, Song.class);
-        Annotations.configureAliases(xstream, MusicPage.class);
+        Annotations.configureAliases(xstream, MusicPageSVG.class);
+        
+        // Give each page a chance to do house cleaning before being saved.
+        for (MusicPage mp: pageOrder) {
+            mp.prepareToSave();
+        }
 
         try {
             xstream.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
@@ -253,6 +258,7 @@ public class Song implements Comparable<Song> {
             return false;
         }
         
+        // If this was saved using saveAs, add this file to the list of instantiated songs
         try {
             if (! Song.instantiated.containsKey(toFile.getCanonicalPath())) {
                 Song.instantiated.put(toFile.getCanonicalPath(), this);
@@ -265,6 +271,7 @@ public class Song implements Comparable<Song> {
         for (MusicPage mp: pageOrder) {
             mp.isDirty = false;
         }
+
         return true;
     }
     
@@ -284,7 +291,7 @@ public class Song implements Comparable<Song> {
         
         XStream xs = new XStream();
         Annotations.configureAliases(xs, Song.class);
-        Annotations.configureAliases(xs, MusicPage.class);
+        Annotations.configureAliases(xs, MusicPageSVG.class);
         
         try {
             s = (Song) xs.fromXML(new InputStreamReader(new FileInputStream(f), "UTF-8"));
@@ -300,7 +307,7 @@ public class Song implements Comparable<Song> {
         }
         
         s.sourceFile = new File(canonicalPath);
-        for (MusicPage mp: s.pageOrder) mp.song = s;
+        for (MusicPage mp: s.pageOrder) mp.deserialize(s);
         findPages(s);
         
         Song.instantiated.put(canonicalPath, s);
@@ -333,7 +340,7 @@ public class Song implements Comparable<Song> {
     }
     private void fire(String propertyName, Object old, Object nue) {
         // Passing 0 below on purpose, so you only synchronize for one atomic call
-        PropertyChangeListener[] pcls = (PropertyChangeListener[]) propListeners.toArray(new PropertyChangeListener[0]);
+        PropertyChangeListener[] pcls = propListeners.toArray(new PropertyChangeListener[0]);
         for (int i = 0; i < pcls.length; i++) {
             pcls[i].propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
         }
@@ -346,7 +353,7 @@ public class Song implements Comparable<Song> {
         pageListeners.remove(listener);
     }
     public void notifyListeners() {
-        ChangeListener[] cls = (ChangeListener[]) pageListeners.toArray(new ChangeListener[0]);
+        ChangeListener[] cls = pageListeners.toArray(new ChangeListener[0]);
         for (int i = 0; i < cls.length; i++) cls[i].stateChanged(new ChangeEvent(this));
     }
 

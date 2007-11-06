@@ -21,12 +21,10 @@
 package com.ebixio.virtmus;
 
 import java.util.Vector;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 
 /**
@@ -54,6 +52,7 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * TODO: Where do we get the list of playlists from?
      * See the "Recognizing a File Type" tutorial
      */
+    @Override
     protected void addNotify() {
 //        MainApp.log("PlayLists::addNotify " + Thread.currentThread().getName());
         setKeys(getKeys());

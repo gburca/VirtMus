@@ -21,31 +21,23 @@
 package com.ebixio.virtmus;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.MemoryImageSource;
-import java.awt.image.RenderedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Hashtable;
-import java.util.Properties;
 import java.util.Vector;
-import javax.swing.ImageIcon;
+import net.java.swingfx.waitwithstyle.PerformanceInfiniteProgressPanel;
+import org.jdesktop.animation.timing.Animator;
+import org.jdesktop.animation.timing.TimingTargetAdapter;
+import org.jdesktop.animation.timing.interpolation.SplineInterpolator;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -53,16 +45,18 @@ import org.openide.util.NbPreferences;
  * @author  gburca
  */
 public class LiveWindow extends javax.swing.JFrame {
-    Rectangle displaySize = new Rectangle(Utils.getScreenSize());
-//    Rectangle displaySize = new Rectangle(1200, 800);
 
-    
+    Rectangle displaySize = new Rectangle(Utils.getScreenSize());
+    //Rectangle displaySize = new Rectangle(1200, 800);
+    PerformanceInfiniteProgressPanel glasspane = new PerformanceInfiniteProgressPanel();
+
     /** Creates new form LiveWindow */
     public LiveWindow() {
         initComponents();
         this.setSize(displaySize.width, displaySize.height);
+        this.setGlassPane(glasspane);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -116,61 +110,80 @@ public class LiveWindow extends javax.swing.JFrame {
         if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
             this.dispose();
         } else {
-            ((LivePanel)panel).keyPressed(evt);
+            ((LivePanel) panel).keyPressed(evt);
         }
     }//GEN-LAST:event_formKeyPressed
-    
+
     public void setLiveSong(Song song) {
-        ((LivePanel)panel).setSong(song);
+        ((LivePanel) panel).setSong(song);
     }
+
     public void setLiveSong(Song song, MusicPage startingPage) {
-        ((LivePanel)panel).setSong(song, startingPage);
+        ((LivePanel) panel).setSong(song, startingPage);
     }
+
     public void setPlayList(PlayList playList) {
-        ((LivePanel)panel).setPlayList(playList);
+        ((LivePanel) panel).setPlayList(playList);
     }
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new LiveWindow().setVisible(true);
             }
         });
     }
 
-   
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel panel;
     // End of variables declaration//GEN-END:variables
-    
-    
-    public class LivePanel extends javax.swing.JPanel implements ActionListener {
+// End of variables declaration
+
+    public class LivePanel extends javax.swing.JPanel implements MusicPage.JobRequester {
+
         private Song song = null;
-        
+
+        /** Which page is the first one on the screen */
         private int page = 0;
-        private float pageShift = 0.0F;     // How far the page is advanced from the top-left
-        private float pageIncrement;        // By how much to advance the page at a time (in %)
+        /** How far the pages are advanced from the top-left of the first page.
+         * A value of 1.3 means 70% of the second page is showing on screen. */
+        private float pageShift = 0.0F;
+        /** By how much to advance the page at a time (in %). This value comes from
+         * the user preference dialog box. */
+        private float pageIncrement;
         private boolean pageShiftNeeded;
         private AffineTransform xform = MainApp.screenRot.getTransform(displaySize.getSize());
         private boolean fullyPainted = false;
-        
+
+        /** Maximum number of "previous" pages to keep cached. For example, if the user is
+         playing page 8, a value of "3" means we want to keep cached pages 5,6,7 so that
+         if the user presses "PgUp" we can display them quickly. */
         final int maxPrevCache = 3;
+        /** Maximum number of "next" pages to keep cached. For example, if the user is
+         playing page 8, a value of "4" means we want to keep cached pages 9,10,11,12 so that
+         if the user presses "PgDn" we can display them quickly. */
         final int maxNextCache = 4;
+        
         Hashtable<Integer, BufferedImage> pageCache = new Hashtable<Integer, BufferedImage>(3);
         Vector<Integer> toBeRendered = new Vector<Integer>(3);
         boolean waitingForImage = false;
-        
-        // Transparent mouse cursor
-        int[] pixels = new int[16 * 16];
-        Image mouseImage = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
-        Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(mouseImage, new Point(0,0), "invisibleCursor");
-        
+
+        final int separatorSize = 3;
+        final Color separatorColor = Color.RED;
+        final Color pageShiftColor = Color.BLUE;
+
+        Animator anim = null;
+
         public LivePanel() {
-            super();
-            
+
             addMouseListener(new MouseAdapter() {
+
+                @Override
                 public void mousePressed(MouseEvent e) {
                     if (e.getButton() == MouseEvent.BUTTON1) {
                         showNextSection();
@@ -179,22 +192,22 @@ public class LiveWindow extends javax.swing.JFrame {
                     }
                 }
             });
-            
-            pageIncrement = Float.parseFloat( NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100") ) / 100;
+
+            pageIncrement = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100")) / 100;
             if (pageIncrement == 0) {
                 pageShiftNeeded = false;
             } else {
                 pageShiftNeeded = true;
             }
 
-            this.setCursor(transparentCursor);
+            this.setCursor(Utils.getInvisibleCursor());
             showPage(page);
         }
-        
+
         public void keyPressed(java.awt.event.KeyEvent evt) {
-            switch(evt.getKeyCode()) {
+            switch (evt.getKeyCode()) {
                 case KeyEvent.VK_F5:
-                    // TODO: This does not work. A new window is created instead...
+            // TODO: This does not work. A new window is created instead...
                 case KeyEvent.VK_1:
                     showFirstPage();
                     break;
@@ -210,127 +223,161 @@ public class LiveWindow extends javax.swing.JFrame {
                     break;
             }
         }
-        
+
         public void showNextPage() {
+            if (song == null || song.pageOrder == null) {
+                return;
+            }
             if (page < song.pageOrder.size() - 1) {
-                page++;
-                pageShift = page;
-                showPage(page);
+                startShift(pageShift, page + 1);
             }
         }
+
         public void showPrevPage() {
+            if (song == null || song.pageOrder == null) {
+                return;
+            }
             if (page > 0) {
-                page--;
-                pageShift = page;
-                showPage(page);
+                startShift(pageShift, page - 1);
+            } else if (page == 0 && pageShift > 0) {
+                // If there's no "previous page" at least go to the top of the current page
+                startShift(pageShift, page);
             }
         }
+
         public void showFirstPage() {
+            if (song == null || song.pageOrder == null) {
+                return;
+            }
             page = 0;
             pageShift = 0;
             showPage(page);
         }
-        
+
         public void showNextSection() {
+            if (song == null || song.pageOrder == null) {
+                return;
+            }
             if (!pageShiftNeeded) {
                 showNextPage();
             } else {
-                pageShift += pageIncrement;
-                // Don't allow the user to scroll beyond the last page
-                if (pageShift > (song.pageOrder.size() - 1)) {
-                    pageShift = (song.pageOrder.size() - 1);
+                float newShift = pageShift + pageIncrement;
+                if (newShift > (song.pageOrder.size() - 1)) {
+                    newShift = song.pageOrder.size() - 1;
                 }
-                page = (int)Math.floor(pageShift);
-                showPage(page);
+                startShift(pageShift, newShift);
             }
         }
+
         public void showPrevSection() {
+            if (song == null || song.pageOrder == null) {
+                return;
+            }
             if (!pageShiftNeeded) {
                 showPrevPage();
             } else {
-                pageShift -= pageIncrement;
-                if (pageShift < 0) { pageShift = 0; }
-                page = (int)Math.floor(pageShift);
-                showPage(page);
+                float newShift = pageShift - pageIncrement;
+                if (newShift < 0) {
+                    newShift = 0;
+                }
+                startShift(pageShift, newShift);
             }
         }
-        
+
+        @Override
         public void paint(Graphics gOld) {
-            Graphics2D g = (Graphics2D)gOld;
-            
+            Graphics2D g = (Graphics2D) gOld;
+
             if (pageShiftNeeded) {
                 if (MainApp.scrollDir == MainApp.ScrollDir.Vertical) {
                     paintShiftedVertical(g);
                 } else {
                     paintShiftedHorizontal(g);
                 }
-                return;
             } else {
                 paintRegular(g);
             }
         }
-        
+
         public void paintRegular(Graphics2D g) {
             BufferedImage img = pageCache.get(page);
             AffineTransform origXform = g.getTransform();
             g.setTransform(xform);
             Dimension d = MainApp.screenRot.getSize(displaySize.getSize());
-            
+
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, d.width, d.height);
 
             if (img == null) {
+                // Image is not yet ready to be displayed. Tell the user we're working on it...
+                glasspane.setVisible(true);
                 g.setColor(Color.WHITE);
-                g.drawString("Loading...", d.width/2, d.height/2);
+                String msg = NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow");
+                int msgW = g.getFontMetrics().stringWidth(msg);
+                g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
             } else {
                 Point p = Utils.centerItem(new Rectangle(d), new Rectangle(img.getWidth(), img.getHeight()));
                 g.drawImage(img, p.x, p.y, img.getWidth(), img.getHeight(), this);
+                glasspane.setVisible(false);
             }
-            
-            g.setTransform(origXform);            
+
+            g.setTransform(origXform);
         }
-        
+
+        /** This function paints page 2 below page 1 and so on. It is typically used when the
+        display is in portrait mode. */
         public void paintShiftedVertical(Graphics2D g) {
             int heightPainted = 0;
             BufferedImage img1 = pageCache.get(page);
             AffineTransform origXform = g.getTransform();
             g.setTransform(xform);
-            
+
             Dimension d = MainApp.screenRot.getSize(displaySize.getSize());
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, d.width, d.height);
 
             if (img1 != null) {
-                
+                glasspane.setVisible(false);
                 float page1Shift = pageShift - page;
 
                 int img1y = Math.round(img1.getHeight() * page1Shift);
                 g.drawImage(img1, 0, -img1y, img1.getWidth(), img1.getHeight(), Color.BLACK, this);
                 heightPainted += img1.getHeight() - img1y;
-                
+                g.setColor(separatorColor);
+                g.fillRect(0, heightPainted - separatorSize, d.width, separatorSize);
+
                 BufferedImage img2 = pageCache.get(page + 1);
                 if (img2 != null) {
                     int img2y = img1.getHeight() - img1y;
                     g.drawImage(img2, 0, img2y, img2.getWidth(), img2.getHeight(), this);
                     heightPainted += img2.getHeight();
-                    
+                    g.fillRect(0, heightPainted - separatorSize, d.width, separatorSize);
+
                     BufferedImage img3 = pageCache.get(page + 2);
                     if (img3 != null) {
                         int img3y = img1.getHeight() - img1y + img2.getHeight();
                         g.drawImage(img3, 0, img3y, img3.getWidth(), img3.getHeight(), this);
                         heightPainted += img3.getHeight();
+                        g.fillRect(0, heightPainted - separatorSize, d.width, separatorSize);
                     }
                 }
+                // This shows where the next page shift will take us
+                g.setColor(pageShiftColor);
+                g.fillRect(0, (int) (img1.getHeight() * pageIncrement), 15, 3);
+                g.fillRect(d.width - 15, (int) (img1.getHeight() * pageIncrement), 15, 3);
             } else {
+                glasspane.setVisible(true);
                 g.setColor(Color.WHITE);
-                g.drawString("Loading...", d.width/2, d.height/2);
+                String msg = NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow");
+                int msgW = g.getFontMetrics().stringWidth(msg);
+                g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
             }
-            
+
             fullyPainted = heightPainted > d.height ? true : false;
-            
+
             g.setTransform(origXform);
         }
-        
+
         public void paintShiftedHorizontal(Graphics2D g) {
             int widthPainted = 0;
             BufferedImage img1 = pageCache.get(page);
@@ -342,48 +389,69 @@ public class LiveWindow extends javax.swing.JFrame {
             g.fillRect(0, 0, d.width, d.height);
 
             if (img1 != null) {
+                glasspane.setVisible(false);
+
                 float page1Shift = pageShift - page;
-                
+
                 int img1x = Math.round(img1.getWidth() * page1Shift);
                 g.drawImage(img1, -img1x, 0, img1.getWidth(), img1.getHeight(), Color.BLACK, this);
                 widthPainted += img1.getWidth() - img1x;
-                
+                g.setColor(separatorColor);
+                g.fillRect(widthPainted - separatorSize, 0, separatorSize, d.height);
+
                 BufferedImage img2 = pageCache.get(page + 1);
                 if (img2 != null) {
                     int img2x = img1.getWidth() - img1x;
                     g.drawImage(img2, img2x, 0, img2.getWidth(), img2.getHeight(), this);
                     widthPainted += img2.getWidth();
-                    
+                    g.fillRect(widthPainted - separatorSize, 0, separatorSize, d.height);
+
                     BufferedImage img3 = pageCache.get(page + 2);
                     if (img3 != null) {
                         int img3x = img1.getWidth() - img1x + img2.getWidth();
                         g.drawImage(img3, img3x, 0, img3.getWidth(), img3.getHeight(), this);
                         widthPainted += img3.getWidth();
+                        g.fillRect(widthPainted - separatorSize, 0, separatorSize, d.height);
                     }
                 }
+                // This shows where the next page shift will take us
+                g.setColor(pageShiftColor);
+                g.fillRect((int) (img1.getWidth() * pageIncrement), 0, 3, 15);
+                g.fillRect((int) (img1.getWidth() * pageIncrement), d.height - 15, 3, 15);
             } else {
+                glasspane.setVisible(true);
                 g.setColor(Color.WHITE);
-                g.drawString("Loading...", d.width/2, d.height/2);
+                String msg = NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow");
+                int msgW = g.getFontMetrics().stringWidth(msg);
+                g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
             }
-            
+
             fullyPainted = widthPainted > d.width ? true : false;
             g.setTransform(origXform);
         }
-        
+
         private void cleanCache() {
             cleanCache(page);
         }
+
+        /**
+         * We can't keep too many images in the cache or we'll run out of memory.
+         * Given the currentPage being displayed, we discard any page images that
+         * are beyond maxPrevCache or maxNextCache.
+         */
         private void cleanCache(int currentPage) {
             int lastPage = 0;
-            
+
             for (int i = 0; i < currentPage - maxPrevCache; i++) {
                 if (pageCache.containsKey(i)) {
                     pageCache.remove(i);
                     MainApp.log("LiveWindow: removed page " + i);
                 }
             }
-            for (int i: pageCache.keySet()) {
-                if (i > lastPage) lastPage = i;
+            for (int i : pageCache.keySet()) {
+                if (i > lastPage) {
+                    lastPage = i;
+                }
             }
             for (int i = currentPage + maxNextCache + 1; i < lastPage; i++) {
                 if (pageCache.containsKey(i)) {
@@ -392,83 +460,93 @@ public class LiveWindow extends javax.swing.JFrame {
                 }
             }
         }
-        
+
+        /**
+         * Requests rendering of page-maxPrevCache through page+maxNextCache pages.
+         */
         private void repopulateCache(int page) {
-            if (song == null) return;
+            if (song == null) {
+                return;
+            }
             int range = Math.max(maxPrevCache, maxNextCache);
             toBeRendered.clear();
-            
-            if (!pageCache.containsKey(page)) toBeRendered.add(page);
-            
+
+            if (!pageCache.containsKey(page)) {
+                toBeRendered.add(page);
+            }
+
             // Render closest pages first, then next removed, etc...
             for (int i = 1; i <= range; i++) {
                 if (i <= maxNextCache && !pageCache.containsKey(page + i)) {
-                    if (page + i < song.pageOrder.size()) toBeRendered.add(page + i);
+                    if (page + i < song.pageOrder.size()) {
+                        toBeRendered.add(page + i);
+                    }
                 }
                 if (i <= maxPrevCache && !pageCache.containsKey(page - i)) {
-                    if (page - i >= 0) toBeRendered.add(page - i);
+                    if (page - i >= 0) {
+                        toBeRendered.add(page - i);
+                    }
                 }
             }
-            
+
             renderNext();
         }
-        
-        public void actionPerformed(ActionEvent e) {
+
+        /**
+         * A callback that is used by the image renderer (MusicPage) to notify us
+         * that the requested page has been rendered.
+         * @param mp The page that has been rendered (which is also the page performing the rendering)
+         * @param jr The job request that was used to request the rendering.
+         */
+        public void renderingComplete(MusicPage mp, MusicPage.JobRequest jr) {
             waitingForImage = false;
-            if (song == null) return;
-            
-            BufferedImage img = ((MusicPage)e.getSource()).getRenderedImage(this);
-            ByteArrayInputStream is = new ByteArrayInputStream(e.getActionCommand().getBytes());
-            if (is.available() > 0) {
-                Properties props = new Properties();
-                try {
-                    props.loadFromXML(is);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                int pg = Integer.parseInt( props.getProperty("page", "-1") );
-                if (pg >= 0 && 
-                    Integer.parseInt(props.getProperty("requesterID", "0")) == this.hashCode()) {
-                    pageCache.put(pg, img);
-                    if (pg == page || !fullyPainted) {
-                        repaint();
-                    }
+            if (song == null) {
+                return;
+            }
+            if (jr.pageNr >= 0 && jr.requester == this) {
+                BufferedImage img = mp.getRenderedImage(this);
+                pageCache.put(jr.pageNr, img);
+                if (jr.pageNr == page || !fullyPainted) {
+                    repaint();
                 }
             }
             cleanCache();
             renderNext();
         }
-        
+
         private void renderNext() {
-            if (song == null || waitingForImage) return;
+            if (song == null || waitingForImage) {
+                return;
+            }
             if (toBeRendered.size() > 0) {
                 int newPage = toBeRendered.remove(0);
-                if (newPage < 0 || newPage >= song.pageOrder.size()) return;
-                Properties props = new Properties();
-                props.setProperty("requesterID", Integer.toString(this.hashCode()));
-                props.setProperty("page", Integer.toString(newPage));
-                props.setProperty("rotation", MainApp.Rotation.Clockwise_0.toString());
-                props.setProperty("fillSize", Boolean.toString(false));
-                
-                song.pageOrder.get(newPage).requestRendering(this, Math.abs(page - newPage),
-                        MainApp.screenRot.getSize(displaySize.getSize()), props);
+                if (newPage < 0 || newPage >= song.pageOrder.size()) {
+                    return;
+                }
+                MusicPage.JobRequest request = new MusicPage.JobRequest(this, newPage, Math.abs(page - newPage), MainApp.screenRot.getSize(displaySize.getSize()));
+
+                song.pageOrder.get(newPage).requestRendering(request);
                 this.waitingForImage = true;
-            }            
+            }
         }
 
         private void showPage(int page) {
             cleanCache(page);
             repopulateCache(page);
             this.repaint();
-        }        
-        
+        }
+
         private void setSong(Song song) {
-            if (song.pageOrder.size() == 0) return;
+            if (song.pageOrder.size() == 0) {
+                return;
+            }
             setSong(song, song.pageOrder.firstElement());
         }
+
         private void setSong(Song song, MusicPage startingPage) {
             this.song = song;
             page = song.pageOrder.indexOf(startingPage);
+            pageShift = page;
             this.pageCache.clear();
             this.toBeRendered.clear();
             MusicPage.cancelRendering(this);
@@ -478,11 +556,36 @@ public class LiveWindow extends javax.swing.JFrame {
 
         private void setPlayList(PlayList playList) {
             Song s = new Song();
-            for (Song plSong: playList.songs) {
-                for (MusicPage mp: plSong.pageOrder) s.pageOrder.add(mp);
+            for (Song plSong : playList.songs) {
+                for (MusicPage mp : plSong.pageOrder) {
+                    s.pageOrder.add(mp);
+                }
             }
             setSong(s);
         }
 
+        public void startShift(final double from, final double to) {
+            final SplineInterpolator si = new SplineInterpolator(0.0f, 0.8f, 1.0f, 0.8f);
+            if (anim != null && anim.isRunning()) {
+                anim.stop();
+            }
+            anim = new Animator(500, new TimingTargetAdapter() {
+
+                @Override
+                public void timingEvent(float fraction) {
+                    pageShift = (float) from + (float) (to - from) * si.interpolate(fraction);
+                    page = (int) Math.floor((double)pageShift);
+                    showPage(page);
+                }
+
+                @Override
+                public void end() {
+                    pageShift = (float) (from + (to - from));
+                    page = (int) Math.floor((double)pageShift);
+                    showPage(page);
+                }
+            });
+            anim.start();
+        }
     }
 }

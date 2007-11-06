@@ -24,6 +24,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import javax.swing.event.*;
+import org.openide.util.actions.SystemAction;
 
 public final class SaveAllAction extends NodeAction {
 
@@ -34,6 +35,7 @@ public final class SaveAllAction extends NodeAction {
     
     protected void performAction(Node[] node) {
         MainApp.findInstance().saveAll();
+        SystemAction.get(SaveAllAction.class).setEnabled(false);
     }
     
     public void updateEnable() {
@@ -46,6 +48,7 @@ public final class SaveAllAction extends NodeAction {
         return MainApp.findInstance().isDirty();
     }
 
+    @Override
     protected boolean surviveFocusChange() {
         return true;
     }
@@ -54,6 +57,7 @@ public final class SaveAllAction extends NodeAction {
         return NbBundle.getMessage(SaveAllAction.class, "CTL_SaveAllAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SaveAllAction.gif";
     }
@@ -62,6 +66,7 @@ public final class SaveAllAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

@@ -48,6 +48,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.actions</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.6.0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -60,6 +68,14 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <specification-version>6.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
                         <specification-version>6.7</specification-version>
                     </run-dependency>
                 </dependency>
@@ -69,6 +85,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.options</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -90,6 +114,7 @@
             </module-dependencies>
             <public-packages>
                 <package>com.ebixio.annotations</package>
+                <package>com.ebixio.annotations.shapes</package>
             </public-packages>
         </data>
     </configuration>

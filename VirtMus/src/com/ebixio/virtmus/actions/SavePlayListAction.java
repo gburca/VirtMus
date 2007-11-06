@@ -40,6 +40,7 @@ public final class SavePlayListAction extends NodeAction {
         return NbBundle.getMessage(SavePlayListAction.class, "CTL_SavePlayListAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SavePlayListAction.png";
     }
@@ -48,13 +49,14 @@ public final class SavePlayListAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
     protected boolean enable(Node[] node) {
         for (Node n: node) {
-            PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
+            PlayList pl = n.getLookup().lookup(PlayList.class);
             if (pl != null && pl.isDirty()) return true;
         }
 

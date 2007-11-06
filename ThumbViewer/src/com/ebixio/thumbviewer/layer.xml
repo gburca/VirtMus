@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <attr name="Menu\Window\PlayListAction.shadow\position" intvalue="100"/>
+    <attr name="Menu\Window\AnnotAction.shadow\position" intvalue="300"/>
+    <attr name="Menu\Window\ViewRuntimeTabAction.shadow\position" intvalue="400"/>
+    <attr name="Menu\Window\Output\position" intvalue="500"/>
+    <attr name="Menu\Window\Separator3.instance\position" intvalue="600"/>
+    <attr name="Menu\Window\CloseWindowAction.shadow\position" intvalue="700"/>
+    <attr name="Menu\Window\MaximizeWindowAction.shadow\position" intvalue="800"/>
+    <attr name="Menu\Window\org-netbeans-core-windows-actions-UndockAction.shadow\position" intvalue="900"/>
+    <attr name="Menu\Window\CloseAllDocumentsAction.shadow\position" intvalue="1100"/>
+    <attr name="Menu\Window\DocumentsAction.shadow\position" intvalue="1200"/>
+    <attr name="Menu\Window\Separator4.instance\position" intvalue="1000"/>
+    <attr name="Menu\Window\Separator5.instance\position" intvalue="1300"/>
+    <attr name="Menu\Window\org-netbeans-core-windows-actions-ResetWindowsAction.instance\position" intvalue="1400"/>
     <folder name="Actions">
         <folder name="Window">
             <file name="com-ebixio-thumbviewer-ThumbsAction.instance"/>
         </folder>
     </folder>
     <folder name="Menu">
-        <attr name="File/Edit" boolvalue="true"/>
         <folder name="Edit_hidden"/>
-        <attr name="Edit/GoTo" boolvalue="true"/>
-        <folder name="GoTo_hidden">
-            <attr name="com-ebixio-thumbviewer-OpenDir.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>
-        </folder>
-        <attr name="GoTo/Window" boolvalue="true"/>
+        <folder name="GoTo_hidden"/>
         <folder name="Window">
             <!--
             This is the menu order we want:
@@ -33,22 +41,12 @@
                 
                 Reset Windows
             -->
-            <attr name="PlayListAction.shadow/ThumbsAction.shadow" boolvalue="true"/>
-            <attr name="ThumbsAction.shadow/AnnotAction.shadow" boolvalue="true"/>
-            <attr name="AnnotAction.shadow/Separator3.instance" boolvalue="true"/>
             
-            <attr name="Separator3.instance/CloseWindowAction.shadow" boolvalue="true"/>
-            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true"/>
-            <attr name="MaximizeWindowAction.shadow/UndockWindowAction.instance" boolvalue="true"/>
-            <attr name="UndockWindowAction.instance/Separator4.instance" boolvalue="true"/>
             
-            <attr name="Separator4.instance/CloseAllDocumentsAction.shadow" boolvalue="true"/>
-            <attr name="CloseAllDocumentsAction.shadow/DocumentsAction.shadow" boolvalue="true"/>
-            <attr name="DocumentsAction.shadow/Separator5.instance" boolvalue="true"/>
-            <attr name="Separator5.instance/ResetWindowsAction.shadow" boolvalue="true"/>
             
             <file name="ThumbsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-thumbviewer-ThumbsAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
             
             <file name="CloneDocumentAction.shadow_hidden"/>
@@ -56,6 +54,7 @@
             <file name="ProgressListAction.shadow_hidden"/>
             <file name="SwitchToRecentDocumentAction.shadow_hidden"/>
             <file name="ViewFavoritesTabAction.shadow_hidden"/>
+            <folder name="Output_hidden"/>
         </folder>
     </folder>
     <folder name="Windows2">

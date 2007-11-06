@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.jdesktop.animation.timing
+OpenIDE-Module-Localizing-Bundle: org/jdesktop/animation/timing/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

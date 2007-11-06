@@ -20,7 +20,6 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.virtmus.Songs;
 import com.ebixio.virtmus.actions.GoLive;
 import com.ebixio.virtmus.actions.RenameItemAction;
 import com.ebixio.virtmus.actions.SavePlayListAction;
@@ -28,13 +27,11 @@ import com.ebixio.virtmus.actions.SongNewAction;
 import com.ebixio.virtmus.actions.SongOpenAction;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.actions.SystemAction;
@@ -57,6 +54,7 @@ public class PlayListNode extends AbstractNode {
         setIconBaseWithExtension("com/ebixio/virtmus/resources/PlayListNode.png");
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(GoLive.class),
@@ -69,16 +67,18 @@ public class PlayListNode extends AbstractNode {
         };
     }
     
+    @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
         PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1);
         if (paste != null) s.add(paste);
     }
     
+    @Override
     public PasteType getDropType(Transferable t, final int action, int index) {
         final Node dropNode = NodeTransfer.node(t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT);
         if (dropNode != null) {
-            final Song song = (Song) dropNode.getLookup().lookup(Song.class);
+            final Song song = dropNode.getLookup().lookup(Song.class);
             
             // Prevent a song for being dropped on the source playlist... ?
             if (song != null && !this.equals(dropNode.getParentNode()) ) {
@@ -88,7 +88,7 @@ public class PlayListNode extends AbstractNode {
                             playList.addSong(song);
                         }
                         if ((action & DnDConstants.ACTION_MOVE) != 0) {
-                            final PlayList source = (PlayList) dropNode.getLookup().lookup(PlayList.class);
+                            final PlayList source = dropNode.getLookup().lookup(PlayList.class);
                             if (source != null && source.type != PlayList.Type.AllSongs) {
                                 source.removeSong(song);
                             }
@@ -101,6 +101,7 @@ public class PlayListNode extends AbstractNode {
         return null;
     }
     
+    @Override
     public boolean canRename() { return true; }
     
     public boolean removeSong(Song s) {

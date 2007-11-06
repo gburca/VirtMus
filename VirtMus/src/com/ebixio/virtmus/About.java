@@ -43,6 +43,7 @@ public class About extends javax.swing.JPanel {
         this.setPreferredSize(new Dimension(w, h));
     }
     
+    @Override
     public void paint(Graphics g) {
         g.drawImage(splash, 0, 0, null);
         g.setColor(Color.WHITE);

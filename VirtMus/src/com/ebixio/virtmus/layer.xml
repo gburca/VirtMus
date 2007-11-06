@@ -1,230 +1,308 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+
     <folder name="Actions">
+        <!-- The folder name determines the heading under which the actions show up in Tools->Options->Keymap -->
         <folder name="Help">
             <file name="com-ebixio-virtmus-actions-AboutAction.instance"/>
             <file name="com-ebixio-virtmus-actions-HelpAction.instance"/>
         </folder>
-        <folder name="System">
-            <file name="com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-GoLive.instance"/>
-            <file name="com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
+        <folder name="PlayList">
             <file name="com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-RenameItemAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-SongNewAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
             <file name="com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-SaveAllAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-SongRemoveAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-SongSaveAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-ExitAction.instance"/>
             <file name="com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
+        </folder>
+        <folder name="Song">
+            <file name="com-ebixio-virtmus-actions-SongNewAction.instance"/>
             <file name="com-ebixio-virtmus-actions-SongOpenAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-SongSaveAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-SongRemoveAction.instance"/>
+        </folder>
+        <folder name="MusicPage">
+            <file name="com-ebixio-virtmus-actions-ExportSVG.instance"/>
+            <file name="com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
+        </folder>
+        <file name="System_hidden"/>
+        <folder name="View">
+            <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
+        </folder>
+        <folder name="VirtMus">
+            <file name="com-ebixio-virtmus-actions-GoLive.instance"/>
+            <file name="com-ebixio-virtmus-actions-RenameItemAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-SaveAllAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-ExitAction.instance"/>
         </folder>
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
         </folder>
+        
+        <folder name="Edit_hidden"/>
+        <folder name="File_hidden"/>
+        
     </folder>
     <folder name="Menu">
         <folder name="File">
-            <file name="ExitAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-ExitAction.instance"/>
-            </file>
+            <attr name="position" intvalue="100"/>
             <file name="SaveAllAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
             </file>
             <file name="JSeparator.instance">
+                <attr name="position" intvalue="200"/>
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            <attr name="SaveAllAction.shadow/JSeparator.instance" boolvalue="true"/>
-            <attr name="JSeparator.instance/ExitAction.shadow" boolvalue="true"/>
-        </folder>
+            <file name="ExitAction.shadow">
+                <attr name="position" intvalue="300"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-ExitAction.instance"/>
+            </file>
+            
+            <file name="org-netbeans-core-actions-SystemExit.instance_hidden"/>
+            <file name="org-openide-actions-SaveAction.instance_hidden"/>
+            <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
+            <file name="org-openide-actions-PageSetupAction.instance_hidden"/>
+            <file name="org-openide-actions-PrintAction.instance_hidden"/>
+            <file name="Separator2.instance_hidden"/>
+            <file name="Separator3.instance_hidden"/>
+            <file name="Separator4.instance_hidden"/>
+            <file name="org-openide-actions-SaveAsAction.shadow_hidden"/>
+        </folder> 
         
-        <attr name="File/PlayList" boolvalue="true"/>
         <folder name="PlayList">
+            <attr name="position" intvalue="250"/>
             <file name="com-ebixio-virtmus-actions-NewPlayListAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
             <file name="com-ebixio-virtmus-actions-OpenPlayListAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SavePlayListAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
         
-        <attr name="PlayList/Song" boolvalue="true"/>
         <folder name="Song">
+            <attr name="position" intvalue="251"/>
             <file name="com-ebixio-virtmus-actions-SongNewAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongNewAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SongOpenAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SongSaveAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongSaveAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SongSaveAsAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SongRemoveAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongRemoveAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongRemoveAction.instance"/>
             </file>
         </folder>
         
-        <attr name="Song/MusicPage" boolvalue="true"/>
         <folder name="MusicPage">
+            <attr name="position" intvalue="252"/>
             <file name="com-ebixio-virtmus-actions-MusicPageAddAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-MusicPageCloneAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-MusicPageRemoveAction.instance">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
+            </file>
+            <file name="com-ebixio-virtmus-actions-separatorBefore.instance">
+                <attr name="position" intvalue="1000"/>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <file name="com-ebixio-virtmus-actions-ExportSVG.shadow">
+                <attr name="position" intvalue="1100"/>
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-ExportSVG.instance"/>
             </file>
         </folder>
         
-        <attr name="MusicPage/Tools" boolvalue="true"/>
         <folder name="Tools">
+            <attr name="position" intvalue="500"/>
             <file name="com-ebixio-virtmus-actions-RenameItemAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-RenameItemAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-RenameItemAction.instance"/>
+                <attr name="position" intvalue="101"/>
             </file>
-            <attr name="com-ebixio-virtmus-actions-RenameItemAction.shadow/com-ebixio-virtmus-actions-separatorAfter.instance" boolvalue="true"/>
             <file name="com-ebixio-virtmus-actions-separatorAfter.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="102"/>
             </file>
-            <attr name="com-ebixio-virtmus-actions-separatorAfter.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance_hidden"/>
         </folder>
         
-        <attr name="Tools/View" boolvalue="true"/>
         <folder name="View">
+            <attr name="position" intvalue="600"/>
             <file name="com-ebixio-virtmus-actions-GoLive.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-GoLive.instance"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-GoLive.instance"/>
             </file>
-            <attr name="com-ebixio-virtmus-actions-GoLive.shadow/Separator1.instance" boolvalue="true"/>
+            <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
         </folder>
         
-        <attr name="View/Window" boolvalue="true"/>
         <folder name="Window">
+            <attr name="position" intvalue="700"/>
             <file name="PlayListAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-PlayListAction.instance"/>
             </file>
         </folder>
         
-        <attr name="Window/Help" boolvalue="true"/>
         <folder name="Help">
+            <attr name="position" intvalue="800"/>
             <file name="com-ebixio-virtmus-actions-HelpAction.shadow">
+                <attr name="position" intvalue="101"/>
                 <attr name="originalFile" stringvalue="Actions/Help/com-ebixio-virtmus-actions-HelpAction.instance"/>
             </file>
-            <attr name="com-ebixio-virtmus-actions-HelpAction.shadow/com-ebixio-virtmus-actions-AboutAction.shadow" boolvalue="true"/>
             <file name="com-ebixio-virtmus-actions-AboutAction.shadow">
+                <attr name="position" intvalue="102"/>
                 <attr name="originalFile" stringvalue="Actions/Help/com-ebixio-virtmus-actions-AboutAction.instance"/>
             </file>
-            <attr name="com-ebixio-virtmus-actions-AboutAction.shadow/master-help.xml" boolvalue="true"/>
         </folder>
         
     </folder>
+    
+    
     <folder name="OptionsDialog">
-        <file name="Advanced.instance_hidden"/>
-        <file name="com-ebixio-virtmus-options-VirtmusOptionsCategory.instance"/>
+        <file name="com-ebixio-virtmus-options-VirtmusOptionsCategory.instance">
+            <attr name="position" intvalue="100"/>
+        </file>
+        <file name="Keymaps.instance">
+            <attr name="position" intvalue="200"/>
+        </file>
+        <file name="General.instance_hidden">
+            <attr name="position" intvalue="300"/>
+        </file>
+        <file name="Advanced.instance_hidden">
+            <attr name="position" intvalue="400"/>
+        </file>
     </folder>
+    
+    
+    
     <folder name="Shortcuts">
         <file name="D-O.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
         </file>
         <file name="D-S-N.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
         </file>
         <file name="D-N.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongNewAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
         </file>
         <file name="D-S.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
         </file>
         <file name="DO-O.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
         </file>
         <file name="F5.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-GoLive.instance"/>
+            <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-GoLive.instance"/>
         </file>
         <file name="O-F4.shadow">
-            <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-ExitAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-ExitAction.instance"/>
         </file>
     </folder>
     <folder name="Toolbars">
-        <folder name="General">
+        <folder name="1General">
+            <attr name="position" intvalue="400"/>
             <file name="GoLive.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-GoLive.instance"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-GoLive.instance"/>
             </file>
             <file name="RenameItemAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-RenameItemAction.instance"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-RenameItemAction.instance"/>
             </file>
             <file name="SaveAllAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
             </file>
-            <attr name="GoLive.shadow/RenameItemAction.shadow" boolvalue="true"/>
-            <attr name="RenameItemAction.shadow/SaveAllAction.shadow" boolvalue="true"/>
         </folder>
         
-        <attr name="General/PlayList" boolvalue="true"/>
-        
-        <folder name="PlayList">            
+        <folder name="2PlayList">
+            <attr name="position" intvalue="200"/>
             <file name="NewPlayListAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
             </file>
             <file name="OpenPlayListAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
             </file>
             <file name="SavePlayListAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
             </file>
-            <attr name="NewPlayListAction.shadow/OpenPlayListAction.shadow" boolvalue="true"/>
-            <attr name="OpenPlayListAction.shadow/SavePlayListAction.shadow" boolvalue="true"/>
         </folder>
 
-        <attr name="PlayList/Song" boolvalue="true"/>
-        <folder name="Song">
+        <folder name="3Song">
+            <attr name="position" intvalue="100"/>
             <file name="NewSongAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongNewAction.instance"/>
+                <attr name="position" intvalue="100"/>                
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
             </file>
-            <attr name="NewSongAction.shadow/SongOpenAction.shadow" boolvalue="true"/>
             <file name="SongOpenAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
             </file>
-            <attr name="SongOpenAction.shadow/SongRemoveAction.shadow" boolvalue="true"/>
             <file name="SongRemoveAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongRemoveAction.instance"/>
+                <attr name="position" intvalue="300"/>                
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongRemoveAction.instance"/>
             </file>
-            <attr name="SongRemoveAction.shadow/SaveAsAction.shadow" boolvalue="true"/>
-            <attr name="SongRemoveAction.shadow/SongSaveAction.shadow" boolvalue="true"/>
             <file name="SongSaveAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongSaveAction.instance"/>
+                <attr name="position" intvalue="400"/>                
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAction.instance"/>
             </file>
-            <attr name="SongSaveAction.shadow/SaveAsAction.shadow" boolvalue="true"/>
             <file name="SaveAsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
+                <attr name="position" intvalue="500"/>                
+                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
             </file>
         </folder>
         
-        <attr name="Song/MusicPage" boolvalue="true"/>
-        <folder name="MusicPage">
+        <folder name="4MusicPage">
+            <attr name="position" intvalue="300"/>
             <file name="AddPagesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
             </file>
-            <attr name="AddPagesAction.shadow/MusicPageCloneAction.shadow" boolvalue="true"/>
             <file name="MusicPageCloneAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
+                <attr name="position" intvalue="200"/>                
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
             </file>
-
-            <attr name="MusicPageCloneAction.shadow/RemovePagesAction.shadow" boolvalue="true"/>
             <file name="RemovePagesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
+                <attr name="position" intvalue="300"/>                
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
+            </file>
+            <file name="com-ebixio-virtmus-actions-ExportSVG.shadow">
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-ExportSVG.instance"/>
+                <attr name="position" intvalue="400"/>
             </file>
         </folder>
+        
+        <folder name="File_hidden">
+            <attr name="position" intvalue="1000"/>
+        </folder>
+        <folder name="Edit_hidden">
+            <attr name="position" intvalue="1100"/>
+        </folder>
+        <folder name="Memory_hidden">
+            <attr name="position" intvalue="1200"/>
+        </folder>
+        <file name="Standard.xml_hidden">
+            <attr name="position" intvalue="1300"/>
+        </file>
         
     </folder>
     <folder name="Windows2">

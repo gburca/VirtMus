@@ -24,9 +24,12 @@ import com.ebixio.virtmus.actions.SaveAllAction;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.prefs.PreferenceChangeEvent;
@@ -58,8 +61,8 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "0.53";
-    private static final boolean RELEASED = true;   // Used to disable logging
+    public static final String VERSION = "1.00";
+    private static final boolean RELEASED = false;   // Used to disable logging
     
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
@@ -73,7 +76,17 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
                 default:
                     return 0;
             }
-        }        
+        }
+        int degrees() {
+            switch(this) {
+                case Clockwise_90: return 90;
+                case Clockwise_180: return 180;
+                case Clockwise_270: return 270;
+                case Clockwise_0:
+                default:
+                    return 0;
+            }
+        }
         AffineTransform getTransform(Dimension d) {
             switch (this) {
                 case Clockwise_90:
@@ -134,9 +147,12 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public static final String OptScreenRot         = "LiveScreenOrientation";
     public static final String OptPageScrollAmount  = "PageScrollPercentage";
     public static final String OptPageScrollDir     = "ScrollDirection";
+    public static final String OptUseOpenGL         = "UseOpenGL";    
+    public static final String OptSvgEditor         = "SvgEditor";
 
     /** Creates a new instance of MainApp */
     private MainApp() {
+        //initLogger();
         log("MainApp::MainApp start");
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
@@ -173,6 +189,33 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         log("MainApp::MainApp finished");
     }
     
+    public static void initLogger() {
+        String[] loggers = {"org.netbeans.modules.options.OptionsDisplayerImpl",
+                            "org.netbeans.core.windows.services.NbPresenter"};
+        
+        try {
+            boolean append = false;
+            FileHandler fHandler = new FileHandler("VirtMus.log", append);
+            fHandler.setFormatter(new SimpleFormatter());
+            Handler mHandler = new MemoryHandler(fHandler, 1000, Level.SEVERE);
+
+            Logger log = Logger.getLogger("org.netbeans");
+            log.addHandler(mHandler);
+            log.setLevel(Level.ALL);
+            
+//            Enumeration<String> lgrs = LogManager.getLogManager().getLoggerNames();
+//            //for (String lgr: loggers) {
+//            while (lgrs.hasMoreElements()) {
+//                String lgr = lgrs.nextElement();
+//                Logger log = Logger.getLogger(lgr);
+//                log.addHandler(mHandler);
+//                log.setLevel(Level.ALL);
+//            }
+        } catch (Exception ex) {
+            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+        }
+    }
+    
     void addAllPlayLists(Preferences pref) {
         log("MainApp::addAllPlayLists thread: " + Thread.currentThread().getName());
         PlayList pl;
@@ -201,11 +244,16 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
 
         File dir = new File(pref.get(OptPlayListDir, ""));
         if (dir.exists() && dir.canRead() && dir.isDirectory()) {
-            for (File f: dir.listFiles()) {
-                if (f.getName().endsWith(".playlist.xml")) {
-                    pl = PlayList.deserialize(f);
-                    if (pl != null) playLists.add(pl);
+
+            FilenameFilter filter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".playlist.xml");
                 }
+            };
+
+            for (File f: Utils.listFiles(dir, filter, true)) {
+                pl = PlayList.deserialize(f);
+                if (pl != null) playLists.add(pl);
             }
         }
         
@@ -302,7 +350,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     }
     public void notifyPLListeners() {
         ChangeEvent ev = new ChangeEvent(this);
-        ChangeListener[] cls = (ChangeListener[]) plListeners.toArray(new ChangeListener[0]);
+        ChangeListener[] cls = plListeners.toArray(new javax.swing.event.ChangeListener[0]);
         for (ChangeListener cl: cls) cl.stateChanged(ev);
     }
 

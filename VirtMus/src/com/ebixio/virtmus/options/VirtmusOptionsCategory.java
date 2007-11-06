@@ -27,8 +27,9 @@ import org.openide.util.Utilities;
 
 public final class VirtmusOptionsCategory extends OptionsCategory {
     
+    @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("com/ebixio/virtmus/resources/OptionsGeneral.png"));
+        return new ImageIcon(Utilities.loadImage("com/ebixio/virtmus/resources/VirtMus32x32.png"));
     }
     
     public String getCategoryName() {

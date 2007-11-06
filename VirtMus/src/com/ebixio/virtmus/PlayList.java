@@ -29,11 +29,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.JFileChooser;
@@ -91,8 +91,14 @@ public class PlayList {
             return;
         }
 
-        for (File f: dir.listFiles()) {
-            if (f.isFile() && f.canRead() && f.getName().endsWith(".song.xml")) {
+        FilenameFilter filter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return (name != null) ? name.endsWith(".song.xml") : false;
+            }
+        };
+        
+        for (File f: Utils.listFiles(dir, filter, true)) {
+            if (f.canRead()) {
                 Song s = Song.deserialize(f);
                 if (s != null) songs.add(s);
             }
@@ -100,7 +106,8 @@ public class PlayList {
         if (this.type != Type.Normal) sortSongsByName();
         notifyListeners();
     }
-    
+
+
     public void sortSongsByName() {
 //        class Comparer implements Comparator {
 //                public int compare(Object song1, Object song2)
@@ -285,7 +292,7 @@ public class PlayList {
         //MainApp.log("PlayList::notifyListeners thread: " + Thread.currentThread().getName());
         //MainApp.log("PlayList::notifyListeners: " + this.toString() + " " + getName());
         ChangeEvent ev = new ChangeEvent(this);
-        ChangeListener[] cls = (ChangeListener[]) listeners.toArray(new ChangeListener[0]);
+        ChangeListener[] cls = listeners.toArray(new javax.swing.event.ChangeListener[0]);
         for (ChangeListener cl: cls) {
             cl.stateChanged(ev);
         }

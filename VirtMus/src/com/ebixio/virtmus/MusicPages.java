@@ -20,7 +20,6 @@
 
 package com.ebixio.virtmus;
 
-import java.io.File;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -41,6 +40,7 @@ public class MusicPages extends Children.Keys<MusicPage> implements ChangeListen
         song.addChangeListener(WeakListeners.change(this, song));
     }
     
+    @Override
     protected void addNotify() {
         Vector<MusicPage> pageKeys = new Vector<MusicPage>();
         int i = 0;

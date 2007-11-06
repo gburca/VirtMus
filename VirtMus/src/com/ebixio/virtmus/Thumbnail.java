@@ -22,8 +22,6 @@ package com.ebixio.virtmus;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -119,9 +117,11 @@ public class Thumbnail extends javax.swing.JPanel {
         return this.imgFile;
     }
 
+    @Override
     public void setName(String name) {
         label.setText(name);
     }
+    @Override
     public String getName() {
         return label.getText();
     }
@@ -151,9 +151,10 @@ public class Thumbnail extends javax.swing.JPanel {
         this.page = page;
     }
 
-    private class Thumb extends javax.swing.JPanel implements ActionListener {
+    private class Thumb extends javax.swing.JPanel implements MusicPage.JobRequester {
         boolean imgRequested = false, imgReturned = false;
         
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             
@@ -166,7 +167,9 @@ public class Thumbnail extends javax.swing.JPanel {
                             paintMsg(g, "Loading...");
                         }
                     } else {
-                        page.requestRendering(this, 10, this.getSize(), null);
+                        MusicPage.JobRequest req = new MusicPage.JobRequest(this, 0, 10, this.getSize());
+                        req.fillSize = true;
+                        page.requestRendering(req);
                         imgRequested = true;
                         paintMsg(g, "Loading...");                        
                     }
@@ -186,10 +189,10 @@ public class Thumbnail extends javax.swing.JPanel {
             g.drawString(msg, getWidth()/2 - msgW/2, getHeight()/2);
         }
 
-        public void actionPerformed(ActionEvent e) {
-            img = ((MusicPage)e.getSource()).getRenderedImage(this);
+        public void renderingComplete(MusicPage mp, MusicPage.JobRequest request) {
+            img = mp.getRenderedImage(this);
             imgReturned = true;
-            if (img != null && this.isShowing()) this.repaint();
+            if (img != null && this.isShowing()) this.repaint();            
         }
     }
 }

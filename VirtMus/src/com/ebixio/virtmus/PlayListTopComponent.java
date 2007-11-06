@@ -66,7 +66,7 @@ final class PlayListTopComponent extends TopComponent
         // OR
         //manager.setRootContext(new RootNode(new CategoryChildren()));
         manager.getRootContext().setDisplayName("Playlists");
-        this.beanTreeView1.setRootVisible(false);
+        this.beanTreeView1.setRootVisible(false);       
     }
         
 //    // <editor-fold defaultstate="collapsed" desc=" RootNode ">
@@ -361,25 +361,30 @@ final class PlayListTopComponent extends TopComponent
         return getDefault();
     }
     
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
+    @Override
     protected void componentActivated() {
         ExplorerManager manager = MainApp.findInstance().getExplorerManager();
         ExplorerUtils.activateActions(manager, true);
     }
     
+    @Override
     protected void componentDeactivated() {
         ExplorerManager manager = MainApp.findInstance().getExplorerManager();
         ExplorerUtils.activateActions(manager, false);
     }
     
     /** replaces this in object stream */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
     
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }

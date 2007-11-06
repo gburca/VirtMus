@@ -70,16 +70,19 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
 //        return song;
 //    }
     
+    @Override
     public boolean canDestroy() {
         return true;
     }
     
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
-        Sheet.Set set = sheet.createPropertiesSet();
-        Song s = (Song) getLookup().lookup(Song.class);
+        Sheet.Set set = Sheet.createPropertiesSet();
+        Song s = getLookup().lookup(Song.class);
         
         try {
+            @SuppressWarnings("unchecked")
             Property nameProp = new PropertySupport.Reflection(s, String.class, "name");
             nameProp.setName("name");
             set.put(nameProp);
@@ -89,6 +92,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         return sheet;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get( NewAction.class ),
@@ -102,6 +106,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         };
     }
     
+    @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
         //MainApp.log("SongNode::createPasteTypes " + t.toString());
@@ -111,6 +116,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
 
     /* Need to tell NB how to "paste" the node being "dragged" on top of this node
      */
+    @Override
     public PasteType getDropType(Transferable t, final int action, int index) {
         if (index != -1) {
             MainApp.log("SongNode::getDropType " + Integer.toString(index) + " " + Integer.toString(action));
@@ -118,7 +124,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         // dropNode is the node about to be dropped on this SongNode
         final Node dropNode = NodeTransfer.node(t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT);
         if (dropNode != null) {
-            final MusicPage mp = (MusicPage) dropNode.getLookup().lookup( MusicPage.class );
+            final MusicPage mp = dropNode.getLookup().lookup( MusicPage.class );
             // We only accept a MusicPage to be dropped on this SongNode
             if (mp != null) {
                 
@@ -151,7 +157,9 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         return song;
     }
 
+    @Override
     public boolean canCut()     { return true; }
+    @Override
     public boolean canRename()  { return true; }
 
 //    public Transferable clipboardCut() throws IOException {

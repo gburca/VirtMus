@@ -91,8 +91,8 @@ public final class Panner extends JComponent
 
     /** The slider box properties. */
     private JLabel slider = null;
-    private boolean sliderOpaque;
-    private Color sliderBorderColor;
+    private boolean sliderOpaque = false;
+    private Color sliderBorderColor = Color.WHITE;
 
     /** The x,y center of the slider box */
     private int sliderX;
@@ -105,15 +105,7 @@ public final class Panner extends JComponent
     /** scale from panner to scroll object */
     private float scale;
 
-    /** Range of slider mapped values */
-    private float pannerMinH;
-    private float pannerMaxH;
-    private float pannerMinV;
-    private float pannerMaxV;
-
-    /** Slider current values */
-    private float hValue;
-    private float vValue;
+    private Point mouseDragStart = new Point(0,0);
 
     /** The object to control */
     private JComponent scrollObject = null;
@@ -134,14 +126,14 @@ public final class Panner extends JComponent
         PlanarImage temp = null;
         
         if ( image != null ) {
-            Rectangle rect = item.getBounds();
+            Rectangle itemRect = item.getBounds();
             
             float scale_x;
             float scale_y;
             float imageWidth  = (float) image.getWidth();
             float imageHeight = (float) image.getHeight();
             
-            if ( imageWidth >= (float)rect.height ) {
+            if ( imageWidth >= (float)itemRect.height ) {
                 scale_x = (float) maxSize / imageWidth;
                 scale_y = scale_x;
                 pannerWidth  = maxSize;
@@ -208,8 +200,8 @@ public final class Panner extends JComponent
             tileGridXOffset = pannerImage.getTileGridXOffset();
             tileGridYOffset = pannerImage.getTileGridYOffset();
             
-            int tw = (int) ((float)rect.width * scale_x);
-            int th = (int) ((float)rect.height * scale_y);
+            int tw = (int) ((float)itemRect.width * scale_x);
+            int th = (int) ((float)itemRect.height * scale_y);
             createSliderBox(tw, th);
         } else {
             createSliderBox(32, 32);
@@ -237,9 +229,9 @@ public final class Panner extends JComponent
     /** 
      * Constructs a Panner to display a scaled PlanarImage.
      *
-     * @param Swing object to be controlled.
+     * @param item Swing object to be controlled.
      * @param image a PlanarImage to be displayed.
-     * @param Max width or height for scaled image.
+     * @param maxSize Max width or height for scaled image.
      */
     public Panner(JComponent item, PlanarImage image, int maxSize) {
         super();
@@ -283,14 +275,6 @@ public final class Panner extends JComponent
     }
 
     /** Changes the pannerImage image to a new PlanarImage. */
-/*
-    public synchronized void set(PlanarImage im, int maxSize, int vWidth, int vHeight) {
-
-        initialize(im, maxSize, vWidth, vHeight);
-
-    }
-*/
-    
     public synchronized void set(JComponent item, PlanarImage image, int maxSize) {
         if (item == null) {
             return;
@@ -326,6 +310,7 @@ public final class Panner extends JComponent
 
     /** Provides panning (moves slider box center location) */
     public final void setSliderLocation(int x, int y) {
+        mouseDragStart.move(sliderWidth/2, sliderHeight/2);
         moveit(x, y);
     }
 
@@ -339,6 +324,7 @@ public final class Panner extends JComponent
     }
 
     public void setSliderBorderColor(Color color) {
+        sliderBorderColor = color;
         slider.setBorder(
                          new CompoundBorder(
                                LineBorder.createBlackLineBorder(),
@@ -346,27 +332,33 @@ public final class Panner extends JComponent
                         );
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return new Dimension(pannerWidth, pannerHeight);
     }
 
+    @Override
     public Dimension getPreferredSize() {
         return getMinimumSize();
     }
     
+    @Override
     public Dimension getMaximumSize() {
         return getMinimumSize();
     }
 
+    @Override
     public final int getWidth() {
         return pannerWidth;
     }
 
+    @Override
     public final int getHeight() {
         return pannerHeight;
     }
 
     /** force a fixed size.  Called by the AWT. */
+    @Override
     public void setBounds(int x, int y, int width, int height) {
         if ( pannerImage != null ) {
             pannerWidth  = pannerImage.getWidth();
@@ -387,9 +379,9 @@ public final class Panner extends JComponent
             slider.setBorder(
                          new CompoundBorder(
                                LineBorder.createBlackLineBorder(),
-                               new LineBorder(Color.white, 1))
+                               new LineBorder(sliderBorderColor, 1))
                          );
-            slider.setOpaque(false);
+            slider.setOpaque(sliderOpaque);
             add(slider);
             
             // add event handlers
@@ -407,20 +399,23 @@ public final class Panner extends JComponent
 
     // moves the slider box
     class MouseClickHandler extends MouseAdapter {
+        @Override
         public void mousePressed(MouseEvent e) {
             int mods = e.getModifiers();
             Point p  = e.getPoint();
 
             if ( (mods & InputEvent.BUTTON1_MASK) != 0 ) {
-                moveit(p.x, p.y);
+                mouseDragStart = p;
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
     }
 
     class MouseMotionHandler extends MouseMotionAdapter {
+        @Override
         public void mouseDragged(MouseEvent e) {
             Point p  = e.getPoint();
             int mods = e.getModifiers();
@@ -432,31 +427,38 @@ public final class Panner extends JComponent
     }
 
     private final void moveit(int px, int py) {
-        Insets inset = super.getInsets();
+        //Insets inset = super.getInsets();
 
         int pw = sliderWidth / 2;
         int ph = sliderHeight / 2;
         int x = px - pw;
         int y = py - ph;
-
-        if ( px < inset.left ) x = -pw + inset.left;
-        if ( py < inset.top  ) y = -ph + inset.top;
-        if ( px >= (pannerWidth  - inset.right ) ) x = pannerWidth  - pw - inset.right;
-        if ( py >= (pannerHeight - inset.bottom) ) y = pannerHeight - ph - inset.bottom;
-
+        
+        Point sliderLoc = slider.getLocation();
+        sliderLoc.x += px - mouseDragStart.x;
+        sliderLoc.y += py - mouseDragStart.y;
+        
+        // Do not allow the slider to go outside the panner
+        sliderLoc.x = Math.max(sliderLoc.x, 0);
+        sliderLoc.y = Math.max(sliderLoc.y, 0);
+        sliderLoc.x = Math.min(sliderLoc.x, pannerWidth - sliderWidth * 4/5);
+        sliderLoc.y = Math.min(sliderLoc.y, pannerHeight - sliderHeight * 4/5);
+        
+        // slider origin
+        slider.setLocation(sliderLoc);
+        
+        mouseDragStart.move(px, py);
+        
         // slider center
         sliderX = px;
         sliderY = py;
-
-        // slider origin
-        slider.setLocation(x, y);
 
         if ( scrollObject != null ) {
             int sx;
             int sy;
 
-            sx = (int)((float)x*scale + .5F);
-            sy = (int)((float)y*scale + .5F);
+            sx = (int)((float)sliderLoc.x*scale + .5F);
+            sy = (int)((float)sliderLoc.y*scale + .5F);
 
             if ( scrollObject instanceof ImageDisplay ) {
                 ((ImageDisplay)scrollObject).setOrigin(-sx, -sy);

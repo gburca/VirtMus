@@ -22,7 +22,6 @@ import com.ebixio.virtmus.About;
 import java.awt.Dialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -40,6 +39,7 @@ public final class AboutAction extends CallableSystemAction {
         return NbBundle.getMessage(AboutAction.class, "CTL_AboutAction");
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
@@ -50,6 +50,7 @@ public final class AboutAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

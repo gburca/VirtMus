@@ -22,19 +22,63 @@ import com.ebixio.virtmus.*;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.NbPreferences;
 import org.openide.util.actions.CookieAction;
 
 public final class GoLive extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
+        LiveWindowJOGL lw = null;
+        MainApp.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
+        Boolean openGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false"));
+        
+        if (openGL) {
+            try {
+                lw = doLiveWindowJOGL(activatedNodes);
+            } catch (UnsatisfiedLinkError e) {
+                e.printStackTrace();
+                MainApp.log(e.toString());
+                
+                if (lw != null) { lw.dispose(); }
+                doLiveWindow(activatedNodes);
+            }
+        } else {
+            doLiveWindow(activatedNodes);
+        }
+
+    }
+    
+    protected LiveWindowJOGL doLiveWindowJOGL(Node[] activatedNodes) {
+        MusicPage mp = (MusicPage) activatedNodes[0].getLookup().lookup(MusicPage.class);
+        Song s = (Song) activatedNodes[0].getLookup().lookup(Song.class);
+        PlayList pl = (PlayList) activatedNodes[0].getLookup().lookup(PlayList.class);
+        LiveWindowJOGL lw = null;
+
+        //LiveWindowJOGL.main(null);    // Only when created form a thread other than EDT
+        lw = new LiveWindowJOGL();
+        lw.setVisible(true);
+        
+        if (s != null && mp != null) {
+            lw.setSong(s, mp);
+        } else if (s != null) {
+            lw.setSong(s);
+        } else if (pl != null && pl.songs.size() > 0) {
+            lw.setPlayList(pl);
+        } else if (lw != null) {
+            lw.dispose();
+            return null;
+        }
+        
+        return lw;
+    }
+    
+    protected void doLiveWindow(Node[] activatedNodes) {
         MusicPage mp = (MusicPage) activatedNodes[0].getLookup().lookup(MusicPage.class);
         Song s = (Song) activatedNodes[0].getLookup().lookup(Song.class);
         PlayList pl = (PlayList) activatedNodes[0].getLookup().lookup(PlayList.class);
 
+        // LiveWindow.main(null);   // If created from a thread other than EDT
         LiveWindow lw = new LiveWindow();
-        //lw.main(null);
-        // OR
         lw.setVisible(true);
         
         if (s != null && mp != null) {

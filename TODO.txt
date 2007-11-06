@@ -1,0 +1,201 @@
+- Create a new button called "Refresh" to reload the songs/playlists
+
+- When creating the "All Songs" playlist, add songs from the other playlists to it as well.
+
+- When new song (or playlist) is created, expand the parent playlist and select the node
+  of the newly created song. Use org.openide.explorer.view.TreeView.expandNode()
+
+- Inherit actions from NewAction, CutAction, CopyAction...
+
+- Rework SaveAllAction() to match openide/loaders/src/org/openide/actions/SaveAllAction.java
+  or use the openide/SaveAllAction.java itself.
+
+- For YES/NO dialogs, consider using: http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/DialogDescriptor.html
+    See: http://wiki.netbeans.org/wiki/view/DevFaqNbIdeosyncracies
+
+- Make use of the Navigator API for the PlayList top component... ?
+    see: http://www.netbeans.org/download/dev/javadoc/org-netbeans-spi-navigator/overview-summary.html
+
+- Make song/playlist files portable accross architectures. Currently the File objects are
+  being serialized in a platform specific way by XStream (or so it seems) until the file is
+  deserialized and re-saved. Even then, Utils::findFileRelative uses the runtime platform
+  file separator to split the file components by. It should somehow figure out where the
+  file came from and use the source platform's file separator (or try all of them).
+
+MacOS
+=====
+- Exit from sys menu does not work. Must exit from File menu.
+
+USER NOTES
+==========
+- PNG 32-bit is slow to load, but indexed 8-bit is also slow when it comes to drawing on the LiveScreen.
+
+DEVELOPMENT NOTES
+=================
+- The Window menu order is maintained in ThumbViewer/layer.xml
+- The list of hidden menu items is also maintained in ThumbViewer/layer.xml
+- SwingFX is used:
+    - Draggable is needed for the Thumbs
+    - InfiniteProgressPanel is used for the LiveWindow
+
+FIXED - NOT VERIFIED
+====================
+- There seems to be some processing build up as pages are cloned and moved around on the Thumbs TopComponent
+
+
+DONE
+====
+- Enforce song.xml and playlist.xml file extensions
+
+- BUG: When a song is added to a playlist, the SavePlayListAction.enable function
+    is not called to enable the "save" menu. Do we need to do something in
+    SongOpenAction?
+
+- See if we need to save anything by trapping exit using the upper-right windows close button
+- Might need to copy the code from ExitAction to LifecycleManager
+    see: http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/LifecycleManager.html#exit()
+    - Created a VirtMusLifecycleManager inner class in MainApp.java and registered it in the global lookup
+      by creating a file in META-INF/services.
+    - Another option:
+      http://wiki.netbeans.org/wiki/view/DevFaqMainwindowClosingAction
+
+Exceptions
+==========
+2007.10.31 - The NetBeans platform has a bug in the Option panel handling. See:
+	http://www.netbeans.org/issues/show_bug.cgi?id=118812
+
+Using version 1.8 of the KeymapModel.java file (using the trunk-nightly build
+from 2007.10.31) causes the exception reported in the issue above to be
+replaced with the exception below:
+	/cvs/core/options/keymap/src/org/netbeans/modules/options/keymap/KeymapModel.java,v
+
+java.util.ConcurrentModificationException
+	at java.util.AbstractList$Itr.checkForComodification(AbstractList.java:372)
+	at java.util.AbstractList$Itr.next(AbstractList.java:343)
+	at org.netbeans.modules.options.keymap.KeymapModel.getActionCategories(KeymapModel.java:88)
+	at org.netbeans.modules.options.keymap.KeymapModel.initActions(KeymapModel.java:396)
+	at org.netbeans.modules.options.keymap.KeymapModel.access$000(KeymapModel.java:66)
+[catch] at org.netbeans.modules.options.keymap.KeymapModel$1.run(KeymapModel.java:387)
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:597)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:273)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:183)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:173)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:168)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:160)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:121)
+
+
+2007.10.30 - Batik was causing the following exception. Problem was solved in
+the latest daily-release so I switched from version 1.7beta1 to the version
+released on 2007.10.27. Problem went away.
+
+java.lang.NullPointerException
+	at org.apache.batik.ext.awt.image.GraphicsUtil.getDestination(Unknown Source)
+	at org.apache.batik.ext.awt.image.GraphicsUtil.getDestinationColorModel(Unknown Source)
+	at org.apache.batik.ext.awt.image.GraphicsUtil.drawImage(Unknown Source)
+	at org.apache.batik.ext.awt.image.GraphicsUtil.drawImage(Unknown Source)
+	at org.apache.batik.gvt.AbstractGraphicsNode.paint(Unknown Source)
+	at org.apache.batik.gvt.ShapeNode.paint(Unknown Source)
+	at org.apache.batik.gvt.CompositeGraphicsNode.primitivePaint(Unknown Source)
+	at org.apache.batik.gvt.AbstractGraphicsNode.paint(Unknown Source)
+	at org.apache.batik.gvt.CompositeGraphicsNode.primitivePaint(Unknown Source)
+	at org.apache.batik.gvt.AbstractGraphicsNode.paint(Unknown Source)
+	at org.apache.batik.gvt.CompositeGraphicsNode.primitivePaint(Unknown Source)
+	at org.apache.batik.gvt.CanvasGraphicsNode.primitivePaint(Unknown Source)
+	at org.apache.batik.gvt.AbstractGraphicsNode.paint(Unknown Source)
+	at org.apache.batik.gvt.CompositeGraphicsNode.primitivePaint(Unknown Source)
+	at org.apache.batik.gvt.AbstractGraphicsNode.paint(Unknown Source)
+	at com.ebixio.virtmus.MusicPageAnnotations.paint(MusicPageAnnotations.java:70)
+	at com.ebixio.virtmus.MusicPage.saveAnnotations(MusicPage.java:112)
+	at com.ebixio.virtmus.MusicPage.prepareToSave(MusicPage.java:177)
+	at com.ebixio.virtmus.Song.serialize(Song.java:248)
+	at com.ebixio.virtmus.Song.serialize(Song.java:239)
+	at com.ebixio.virtmus.Song.save(Song.java:185)
+	at com.ebixio.virtmus.actions.SongSaveAction.performAction(SongSaveAction.java:36)
+	at org.openide.util.actions.NodeAction$DelegateAction$1.run(NodeAction.java:559)
+	at org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(ActionsBridge.java:55)
+	at org.openide.util.actions.NodeAction$DelegateAction.actionPerformed(NodeAction.java:555)
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:1995)
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2318)
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:387)
+	at javax.swing.DefaultButtonModel.setPressed(DefaultButtonModel.java:242)
+	at javax.swing.AbstractButton.doClick(AbstractButton.java:357)
+	at javax.swing.plaf.basic.BasicMenuItemUI.doClick(BasicMenuItemUI.java:1216)
+	at javax.swing.plaf.basic.BasicMenuItemUI$Handler.mouseReleased(BasicMenuItemUI.java:1257)
+	at java.awt.Component.processMouseEvent(Component.java:6038)
+	at javax.swing.JComponent.processMouseEvent(JComponent.java:3265)
+	at java.awt.Component.processEvent(Component.java:5803)
+	at java.awt.Container.processEvent(Container.java:2058)
+	at java.awt.Component.dispatchEventImpl(Component.java:4410)
+	at java.awt.Container.dispatchEventImpl(Container.java:2116)
+	at java.awt.Component.dispatchEvent(Component.java:4240)
+	at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4322)
+	at java.awt.LightweightDispatcher.processMouseEvent(Container.java:3986)
+	at java.awt.LightweightDispatcher.dispatchEvent(Container.java:3916)
+	at java.awt.Container.dispatchEventImpl(Container.java:2102)
+	at java.awt.Window.dispatchEventImpl(Window.java:2429)
+	at java.awt.Component.dispatchEvent(Component.java:4240)
+[catch] at java.awt.EventQueue.dispatchEvent(EventQueue.java:599)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:273)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:183)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:173)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:168)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:160)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:121)
+
+
+org.openide.util.lookup.AbstractLookup$ISE: You are trying to modify lookup from lookup query!
+	at org.openide.util.lookup.DelegatingStorage.checkForTreeModification(DelegatingStorage.java:56)
+	at org.openide.util.lookup.AbstractLookup.enterStorage(AbstractLookup.java:112)
+	at org.openide.util.lookup.AbstractLookup.lookup(AbstractLookup.java:406)
+	at org.openide.util.lookup.ProxyLookup$R.initResults(ProxyLookup.java:305)
+	at org.openide.util.lookup.ProxyLookup$R.myBeforeLookup(ProxyLookup.java:556)
+	at org.openide.util.lookup.ProxyLookup$R.beforeLookup(ProxyLookup.java:573)
+	at org.openide.util.lookup.ProxyLookup$R.myBeforeLookup(ProxyLookup.java:562)
+	at org.openide.util.lookup.ProxyLookup$R.computeResult(ProxyLookup.java:427)
+	at org.openide.util.lookup.ProxyLookup$R.allInstances(ProxyLookup.java:400)
+	at org.openide.loaders.Environment.findForOne(Environment.java:107)
+	at org.openide.loaders.XMLDataObject$InfoParser.updateLookup(XMLDataObject.java:1243)
+	at org.openide.loaders.XMLDataObject$InfoParser.waitFinished(XMLDataObject.java:1214)
+	at org.openide.loaders.XMLDataObject$InfoParser.waitFinished(XMLDataObject.java:1067)
+	at org.openide.loaders.XMLDataObject.getCookie(XMLDataObject.java:266)
+	at org.openide.loaders.FolderLookup$ICItem.init(FolderLookup.java:434)
+	at org.openide.loaders.FolderLookup$ICItem.getInstance(FolderLookup.java:510)
+	at org.openide.util.lookup.AbstractLookup$R.allInstances(AbstractLookup.java:897)
+	at org.openide.util.lookup.ProxyLookup$R.computeResult(ProxyLookup.java:457)
+	at org.openide.util.lookup.ProxyLookup$R.allInstances(ProxyLookup.java:400)
+	at org.openide.util.lookup.ProxyLookup$R.computeResult(ProxyLookup.java:457)
+	at org.openide.util.lookup.ProxyLookup$R.allInstances(ProxyLookup.java:400)
+	at org.openide.filesystems.MIMESupport$CachedFileObject.getResolvers(MIMESupport.java:184)
+	at org.openide.filesystems.MIMESupport$CachedFileObject.isAnyResolver(MIMESupport.java:204)
+	at org.openide.filesystems.MIMESupport.findMIMEType(MIMESupport.java:75)
+	at org.openide.filesystems.FileUtil.getMIMETypeOrDefault(FileUtil.java:966)
+	at org.openide.filesystems.FileObject.getMIMEType(FileObject.java:463)
+	at org.openide.filesystems.MultiFileObject.getMIMEType(MultiFileObject.java:533)
+	at org.openide.filesystems.MultiFileObject.getMIMEType(MultiFileObject.java:533)
+	at org.openide.loaders.XMLDataObject$Loader.findPrimaryFile(XMLDataObject.java:1462)
+	at org.openide.loaders.MultiFileLoader.findPrimaryFileImpl(MultiFileLoader.java:331)
+	at org.openide.loaders.MultiFileLoader.handleFindDataObject(MultiFileLoader.java:74)
+	at org.openide.loaders.DataObjectPool.handleFindDataObject(DataObjectPool.java:122)
+	at org.openide.loaders.DataLoader.findDataObject(DataLoader.java:358)
+	at org.openide.loaders.DataLoaderPool.findDataObject(DataLoaderPool.java:393)
+	at org.openide.loaders.DataLoaderPool.findDataObject(DataLoaderPool.java:353)
+	at org.openide.loaders.DataObject.find(DataObject.java:463)
+	at org.openide.loaders.FolderLookup$ICItem.init(FolderLookup.java:427)
+	at org.openide.loaders.FolderLookup$ICItem.instanceOf(FolderLookup.java:481)
+	at org.openide.util.lookup.InheritanceTree.searchInterface(InheritanceTree.java:875)
+	at org.openide.util.lookup.InheritanceTree.lookup(InheritanceTree.java:216)
+	at org.openide.util.lookup.InheritanceTree.registerReferenceToResult(InheritanceTree.java:985)
+	at org.openide.util.lookup.DelegatingStorage.registerReferenceToResult(DelegatingStorage.java:156)
+	at org.openide.util.lookup.AbstractLookup.lookup(AbstractLookup.java:411)
+	at org.openide.util.lookup.ProxyLookup$R.initResults(ProxyLookup.java:305)
+	at org.openide.util.lookup.ProxyLookup$R.myBeforeLookup(ProxyLookup.java:556)
+	at org.openide.util.lookup.ProxyLookup$R.beforeLookup(ProxyLookup.java:573)
+	at org.openide.util.lookup.ProxyLookup$R.myBeforeLookup(ProxyLookup.java:562)
+	at org.openide.util.lookup.ProxyLookup$R.computeResult(ProxyLookup.java:427)
+	at org.openide.util.lookup.ProxyLookup$R.allInstances(ProxyLookup.java:400)
+	at org.openide.util.Lookup.lookupAll(Lookup.java:215)
+	at org.netbeans.core.startup.Main.start(Main.java:310)
+	at org.netbeans.core.startup.TopThreadGroup.run(TopThreadGroup.java:88)
+[catch] at java.lang.Thread.run(Thread.java:619)

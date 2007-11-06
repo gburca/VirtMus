@@ -28,7 +28,7 @@ import org.openide.util.actions.SystemAction;
 public final class MusicPageAddAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
-        Song s = (Song) activatedNodes[0].getLookup().lookup(Song.class);
+        Song s = activatedNodes[0].getLookup().lookup(Song.class);
         if (s.addPage()) {
             SystemAction.get(SongSaveAction.class).setEnabled(true);
         }
@@ -48,6 +48,7 @@ public final class MusicPageAddAction extends CookieAction {
         };
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/AddPagesAction.gif";
     }
@@ -56,6 +57,7 @@ public final class MusicPageAddAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
