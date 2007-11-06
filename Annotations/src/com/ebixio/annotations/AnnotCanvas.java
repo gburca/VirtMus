@@ -151,9 +151,9 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
         if (e.getButton() == MouseEvent.BUTTON1) {
             Point p = e.getPoint();
 
-            //System.out.println("Origin: " + getOrigin() + " pt: " + p + " abs: " + getAbsolutePoint(p) + " scale: " + scale);
-            
-            musicPage.addAnnotation(new ShapePoint(paint, alpha, Math.round(diam / scale), getAbsolutePoint(e.getPoint())));
+            if (musicPage != null) {
+                musicPage.addAnnotation(new ShapePoint(paint, alpha, Math.round(diam / scale), getAbsolutePoint(p)));
+            }
             repaint();
         }
     }
@@ -168,7 +168,7 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     public void mouseReleased(MouseEvent e) {
         dragState = Drag.STILL;
         if (line != null) {
-            musicPage.addAnnotation(line);
+            if (musicPage != null) musicPage.addAnnotation(line);
             line = null;
             repaint();
         }
@@ -191,7 +191,9 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     public void mouseDragged(MouseEvent e) {
         if (dragState == Drag.DRAGGING) {
             if (line == null) {
-                line = new ShapeLine(paint, alpha, Math.round(diam/scale), getAbsolutePoint(dragStart));
+                if (musicPage != null) {
+                    line = new ShapeLine(paint, alpha, Math.round(diam/scale), getAbsolutePoint(dragStart));
+                }
             } else {
                 line.addEnd(getAbsolutePoint(e.getPoint()));
                 repaint();
