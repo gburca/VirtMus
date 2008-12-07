@@ -30,13 +30,14 @@ import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 import java.util.Vector;
-import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL.*;
@@ -46,8 +47,6 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.swing.WindowConstants;
 import org.jdesktop.animation.timing.*;
-import org.jdesktop.animation.timing.interpolation.*;
-import org.jdesktop.animation.timing.triggers.*;
 
 
 /**
@@ -111,6 +110,19 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         };
         addKeyListener(ka);
         canvas.addKeyListener(ka);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    KeyEvent evt = new KeyEvent(null, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_PAGE_DOWN, KeyEvent.CHAR_UNDEFINED);
+                    formKeyPressed(evt);
+                } else {
+                    KeyEvent evt = new KeyEvent(null, KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_PAGE_UP, KeyEvent.CHAR_UNDEFINED);
+                    formKeyPressed(evt);
+                }
+            }
+        });
 
         initTimers();
 
@@ -213,7 +225,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
     }
 
     /** Signals us that the display mode or device has changed (color depth, etc...).
-     * Also, that thte window has been dragged from one monitor (a "device") to another. */
+     * Also, that the window has been dragged from one monitor (a "device") to another. */
     public void displayChanged(GLAutoDrawable arg0, boolean arg1, boolean arg2) {
         //throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -373,17 +385,23 @@ public class LiveWindowJOGL extends javax.swing.JFrame
             public void timingEvent(float fraction) { setPageShift(pageShiftAmount * fraction); }
             @Override
             public void end() {
-               setPageShift(0);
-               page++;
-//               java.awt.EventQueue.invokeLater(new Runnable() {
-//                   public void run() { showPage(page); }
-//               });
-               showPage(page);
+                setPageShift(pageShiftAmount);
+                page++;
+                setPageShift(0);
+               java.awt.EventQueue.invokeLater(new Runnable() {
+                   public void run() {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                        }
+                       showPage(page);
+                   }
+               });
            }
         });
     }
     public float getPageShift() { return pageShift; }
-    public void setPageShift(float shift) { this.pageShift = shift; }
+    public void setPageShift(float shift) { this.pageShift = shift; MainApp.log("Shift: " + shift);}
     
     // <editor-fold defaultstate="collapsed" desc=" Rendering Cache ">
     private void renderNext() {
@@ -493,13 +511,13 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         cleanCache(page);
         repopulateCache(page);
         //setPageShift(0);
-        this.repaint();
+        //this.repaint();
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Set song/playlist ">
     public void setSong(Song song) {
         if (song == null || song.pageOrder.size() == 0) return;
-        setSong(song, song.pageOrder.firstElement());
+        setSong(song, song.pageOrder.get(0));
     }
     public void setSong(Song song, MusicPage startingPage) {
         this.song = song;
@@ -508,8 +526,12 @@ public class LiveWindowJOGL extends javax.swing.JFrame
     }
     public void setPlayList(PlayList playList) {
         Song s = new Song();
-        for (Song plSong: playList.songs) {
-            for (MusicPage mp: plSong.pageOrder) s.pageOrder.add(mp);
+        synchronized (playList.songs) {
+            for (Song plSong: playList.songs) {
+                synchronized(plSong.pageOrder) {
+                    for (MusicPage mp: plSong.pageOrder) s.pageOrder.add(mp);
+                }
+            }
         }
         setSong(s);
     }

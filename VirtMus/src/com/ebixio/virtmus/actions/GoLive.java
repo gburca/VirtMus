@@ -19,6 +19,10 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.*;
+import java.awt.BufferCapabilities;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -29,7 +33,7 @@ public final class GoLive extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
         LiveWindowJOGL lw = null;
-        MainApp.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
+        //MainApp.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
         Boolean openGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false"));
         
         if (openGL) {
@@ -77,8 +81,16 @@ public final class GoLive extends CookieAction {
         Song s = (Song) activatedNodes[0].getLookup().lookup(Song.class);
         PlayList pl = (PlayList) activatedNodes[0].getLookup().lookup(PlayList.class);
 
-        // LiveWindow.main(null);   // If created from a thread other than EDT
-        LiveWindow lw = new LiveWindow();
+        // Acquiring the current Graphics Device and Graphics Configuration
+        GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice graphDevice = graphEnv.getDefaultScreenDevice();
+        GraphicsConfiguration graphicConf = graphDevice.getDefaultConfiguration();
+
+        //BufferCapabilities bufCap = graphicConf.getBufferCapabilities();
+        //MainApp.log("Graphics buffering: isPageFlipping() = " + bufCap.isPageFlipping());
+        //MainApp.log("Graphics buffering: isFullScreenRequired() = " + bufCap.isFullScreenRequired());
+
+        LiveWindow lw = new LiveWindow(graphicConf);
         lw.setVisible(true);
         
         if (s != null && mp != null) {
@@ -107,6 +119,7 @@ public final class GoLive extends CookieAction {
         };
     }
 
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/GoLiveAction.gif";
     }
@@ -115,6 +128,7 @@ public final class GoLive extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

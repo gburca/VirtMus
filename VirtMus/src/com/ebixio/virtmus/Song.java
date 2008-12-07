@@ -44,6 +44,7 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
@@ -54,7 +55,7 @@ import org.openide.windows.WindowManager;
 @XStreamAlias("song")
 public class Song implements Comparable<Song> {
     @XStreamAlias("pages")
-    public Vector<MusicPage> pageOrder = new Vector<MusicPage>();
+    public List<MusicPage> pageOrder = Collections.synchronizedList(new Vector<MusicPage>());
     public String name = null;
     
     // transients are not initialized when the object is deserialized !!!
@@ -84,13 +85,18 @@ public class Song implements Comparable<Song> {
     }
     
     public boolean isDirty() {
-        for (MusicPage mp: pageOrder) {
-            if (mp.isDirty) return true;
+        synchronized(pageOrder) {
+            for (MusicPage mp: pageOrder) {
+                if (mp.isDirty) return true;
+            }
         }
         return isDirty;
     }
     public void setDirty(boolean isDirty) {
-        this.isDirty = isDirty;
+        if (this.isDirty != isDirty) {
+            this.isDirty = isDirty;
+            notifyListeners();
+        }
         MainApp.findInstance().saveAllAction.updateEnable();
     }
     
@@ -155,9 +161,28 @@ public class Song implements Comparable<Song> {
         notifyListeners();
         return removed;
     }
+    
+    public void reorder(int[] order) {
+        MusicPage[] mp = new MusicPage[order.length];
+        for (int i = 0; i < order.length; i++) {
+            mp[order[i]] = pageOrder.get(i);
+        }
+
+        pageOrder.clear();
+        for (MusicPage s: mp) {
+            pageOrder.add(s);
+        }
+        
+        setDirty(true);
+        notifyListeners();
+    }
 
     public File getSourceFile() {
         return sourceFile;
+    }
+    
+    public String getSourceFileStr() {
+        return sourceFile.getPath();
     }
 
     public void setSourceFile(File sourceFile) {
@@ -165,8 +190,13 @@ public class Song implements Comparable<Song> {
     }
 
     public void setName(String name) {
+        if (name.equals(this.name)) return;
+        
+        String oldName = this.name;
         this.name = name;
+        fire("nameProp", oldName, name);
         setDirty(true);
+        notifyListeners();
     }
     public String getName() {
         if (name != null) {
@@ -293,8 +323,10 @@ public class Song implements Comparable<Song> {
         Annotations.configureAliases(xs, Song.class);
         Annotations.configureAliases(xs, MusicPageSVG.class);
         
+        FileInputStream fis = null;
         try {
-            s = (Song) xs.fromXML(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            fis = new FileInputStream(f);
+            s = (Song) xs.fromXML(new InputStreamReader(fis, "UTF-8"));
         } catch (FileNotFoundException ex) {
             //ex.printStackTrace();
             //ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
@@ -304,10 +336,18 @@ public class Song implements Comparable<Song> {
             MainApp.log("Failed to deserialize " + canonicalPath);
             ErrorManager.getDefault().notify(ex);
             return null;
+        } finally {
+            if (fis != null) try {
+                fis.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         s.sourceFile = new File(canonicalPath);
-        for (MusicPage mp: s.pageOrder) mp.deserialize(s);
+        synchronized (s.pageOrder) {
+            for (MusicPage mp: s.pageOrder) mp.deserialize(s);
+        }
         findPages(s);
         
         Song.instantiated.put(canonicalPath, s);
@@ -332,6 +372,13 @@ public class Song implements Comparable<Song> {
         }
     }
 
+    /**
+     * Clears all deserialized songs so they can be re-loaded
+     */
+    public static void clearInstantiated() {
+        instantiated.clear();
+    }
+    
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
         propListeners.add(pcl);
     }

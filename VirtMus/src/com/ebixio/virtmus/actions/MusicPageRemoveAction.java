@@ -29,11 +29,9 @@ public final class MusicPageRemoveAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
         //DataObject dataObject = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
-        boolean removed = false;
         for (Node n: activatedNodes) {
             MusicPage mp = (MusicPage) n.getLookup().lookup(MusicPage.class);
             if (mp.song.removePage(new MusicPage[] {mp})) {
-                removed = true;
                 SystemAction.get(SongSaveAction.class).setEnabled(true);
             }
         }
@@ -53,6 +51,7 @@ public final class MusicPageRemoveAction extends CookieAction {
         };
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/RemovePagesAction.gif";
     }
@@ -61,6 +60,7 @@ public final class MusicPageRemoveAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

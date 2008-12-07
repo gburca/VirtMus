@@ -25,11 +25,11 @@ import org.openide.actions.RenameAction;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
 public final class RenameItemAction extends RenameAction {
     
+    @Override
     public void performAction(Node[] activatedNodes) {
         Node n = activatedNodes[0];
         String oldName = n.getName();
@@ -54,18 +54,22 @@ public final class RenameItemAction extends RenameAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(RenameItemAction.class, "CTL_RenameItemAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/RenameItemAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

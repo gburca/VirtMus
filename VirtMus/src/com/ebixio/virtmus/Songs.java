@@ -27,12 +27,14 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 import java.util.logging.Level;
+import org.openide.nodes.Index;
 
 /**
  *
  * @author gburca
  */
-public class Songs extends Children.Keys<Song> implements ChangeListener {
+public class Songs extends Children.Keys<Song> implements ChangeListener
+{
     private PlayList playList;
     
     /** Creates a new instance of Songs */
@@ -49,15 +51,17 @@ public class Songs extends Children.Keys<Song> implements ChangeListener {
     
     private Vector<Song> getKeys() {
         Vector<Song> songKeys = new Vector<Song>();
-        for (int i = 0; i < playList.songs.size(); i++) {
-            songKeys.add(playList.songs.get(i));
+        synchronized (playList.songs) {
+            for (int i = 0; i < playList.songs.size(); i++) {
+                songKeys.add(playList.songs.get(i));
+            }
         }
         return songKeys;
     }
     
     protected Node[] createNodes(Song key) {
         if (key != null) {
-            return new Node[] {new SongNode(playList, key)};
+            return new Node[] {new SongNode(playList, key, new MusicPages(key))};
         } else {
             return null;
         }
@@ -69,6 +73,30 @@ public class Songs extends Children.Keys<Song> implements ChangeListener {
         Vector<Song> allKeys = getKeys();
         for (Song s: allKeys) {
             refreshKey(s);
+        }
+    }
+    
+    public Index getIndex() {
+        return new SongIndexer();
+    }
+
+    
+    public class SongIndexer extends Index.Support {
+
+        @Override
+        public Node[] getNodes() {
+            return Songs.this.getNodes();
+        }
+
+        @Override
+        public int getNodesCount() {
+            return getNodes().length;
+        }
+
+        @Override
+        public void reorder(int[] order) {
+            playList.reorder(order);
+            fireChangeEvent(new ChangeEvent(SongIndexer.this));
         }
     }
     

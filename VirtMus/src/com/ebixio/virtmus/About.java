@@ -22,7 +22,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -36,7 +36,7 @@ public class About extends javax.swing.JPanel {
         initComponents();
         
         // splash.gif in /branding/... gets saved as splash_virtmus.gif in the jar
-        splash = Utilities.loadImage("org/netbeans/core/startup/splash_virtmus.gif");
+        splash = ImageUtilities.loadImage("org/netbeans/core/startup/splash_virtmus.gif");
         
         int w = splash.getWidth(null);
         int h = splash.getHeight(null);

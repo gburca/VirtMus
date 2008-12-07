@@ -106,10 +106,8 @@ public class MusicPageSVG extends MusicPage {
         shapes.clear();
         svgDocument = svgDoc;
         
-        updateGraphicsNode();
-        
         if (flagAsDirty) {
-            setIsDirty(true);
+            setDirty(true);
             if (this.changeListener != null) {
                 changeListener.stateChanged(new ChangeEvent(this));
             }
@@ -144,8 +142,8 @@ public class MusicPageSVG extends MusicPage {
 
         Element img = doc.createElement("image");
         img.setAttribute("xlink:href", this.sourceFile.getName());
-        img.setAttribute("width", Integer.toString(this.dimension.width));
-        img.setAttribute("height", Integer.toString(this.dimension.height));
+        img.setAttribute("width", Integer.toString(this.getDimension().width));
+        img.setAttribute("height", Integer.toString(this.getDimension().height));
         img.setAttribute("x", Integer.toString(0));
         img.setAttribute("y", Integer.toString(0));
         img.setAttribute("id", MusicPageSVG.SVG_BACKGROUND_ID);
@@ -166,8 +164,8 @@ public class MusicPageSVG extends MusicPage {
         }
 
         // If we created a new document, it won't have width/height
-        if (!root.hasAttribute("width"))  root.setAttribute("width", Integer.toString(this.dimension.width));
-        if (!root.hasAttribute("height")) root.setAttribute("height", Integer.toString(this.dimension.height));
+        if (!root.hasAttribute("width"))  root.setAttribute("width", Integer.toString(this.getDimension().width));
+        if (!root.hasAttribute("height")) root.setAttribute("height", Integer.toString(this.getDimension().height));
         
         return doc;
     }
@@ -267,12 +265,12 @@ public class MusicPageSVG extends MusicPage {
         shapes.clear();
         svgDocument = null;
         graphicsNode = null;
-        setIsDirty(true);
+        setDirty(true);
     }
     
     public void addAnnotation(VmShape s) {
         shapes.add(s);
-        setIsDirty(true);
+        setDirty(true);
     }
     
     /**
@@ -291,6 +289,10 @@ public class MusicPageSVG extends MusicPage {
      */
     @Override
     public void paintAnnotations(Graphics2D g2d) {
+        if (graphicsNode == null) {
+            updateGraphicsNode();
+        }
+        
         if (graphicsNode != null) {
             graphicsNode.paint(g2d);
         }
@@ -313,8 +315,7 @@ public class MusicPageSVG extends MusicPage {
         
         // The dimensions of the SVG page (should match the size of the
         // music page image the annotations were drawn on).
-        if (dimension != null)
-            svgGraphics2D.setSVGCanvasSize(dimension);
+        svgGraphics2D.setSVGCanvasSize(getDimension());
 
         for (VmShape s: shapes) {
             s.paint(svgGraphics2D);
@@ -433,10 +434,11 @@ public class MusicPageSVG extends MusicPage {
 
         // Build the tree and get the document dimensions
         UserAgentAdapter userAgentAdapter;
-        if (dimension != null && dimension.width > 0 && dimension.height > 0) {
+        Dimension dim = getDimension();
+        if (dim.width > 1 && dim.height > 1) {
             // If the SVG document contains dimensions, which one has precedence,
             // the SVG or the userAgentAdapter?
-            userAgentAdapter = new MyUserAgentAdapter(dimension);
+            userAgentAdapter = new MyUserAgentAdapter(dim);
         } else {
             userAgentAdapter = new UserAgentAdapter();
         }

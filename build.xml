@@ -12,18 +12,22 @@
         <!-- echo message="***** modify-default-options"/ -->
         <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf" overwrite="true">
             <filterchain>
-                <replaceregex pattern="\s*default_options.*" replace="default_options=&quot;-J-Xms24m -J-Xmx512m&quot;"/>
+                <replaceregex pattern="\s*default_options.*" replace="default_options=&quot;-J-Xms24m -J-Xmx512m -J-Dsun.java2d.d3d=false&quot;"/>
                 <!-- replaceregex pattern="^#\s*jdkhome=.*" replace="jdkhome=&quot;/usr/local/jdk1.6.0&quot;"/ -->
             </filterchain>
         </copy>
         <fixcrlf srcDir="${build.launcher.dir}/etc" includes="${app.name}.conf" eof="remove" eol="unix"/>
-        
-        <!-- Make a local copy of it, and modify its line terminations -->
-        <copy file="${netbeans.dest.dir}/platform7/lib/nbexec" tofile="${build.launcher.dir}/nbexec"/>
-        <fixcrlf srcDir="${build.launcher.dir}" includes="nbexec" eof="remove" eol="unix"/>
-        
-        <fixcrlf srcDir="${build.launcher.dir}/bin" includes="${app.name}" eof="remove" eol="unix"/>
-        
+        <!-- Copy our own virtmus.exe which has the virtmus icon in it -->
+        <copy file="Installer/BrandedExe/virtmus.exe" tofile="${build.launcher.dir}/bin/virtmus.exe" overwrite="true"/>
+    </target>
+
+    <target name="create-installer" depends="build-zip">
+        <delete dir="dist/${app.name}"/>
+        <unzip src="dist/${app.name}.zip" dest="dist"/>
+        <exec dir="Installer" executable="C:/Program Files/NSIS/makensisw.exe"
+            osfamily="Windows" failonerror="true" timeout="30000">
+            <arg line="VirtMus.nsi"/>
+        </exec>
     </target>
     
     <!-- We override the build-zip target just so we can add our dependency from above, then we call the original build-zip -->

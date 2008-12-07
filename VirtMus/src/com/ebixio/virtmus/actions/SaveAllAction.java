@@ -19,11 +19,11 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.*;
+import javax.swing.SwingUtilities;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import javax.swing.event.*;
 import org.openide.util.actions.SystemAction;
 
 public final class SaveAllAction extends NodeAction {
@@ -41,7 +41,15 @@ public final class SaveAllAction extends NodeAction {
     public void updateEnable() {
         // TODO: Fix this whole class to use the proper SaveAllAction pattern.
         // setEnabled should only be called from the event thread !!!
-        this.setEnabled(MainApp.findInstance().isDirty());
+        if (SwingUtilities.isEventDispatchThread()) {
+            this.setEnabled(MainApp.findInstance().isDirty());
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    setEnabled(MainApp.findInstance().isDirty());
+                }
+            });
+        }
     }
 
     protected boolean enable(Node[] node) {

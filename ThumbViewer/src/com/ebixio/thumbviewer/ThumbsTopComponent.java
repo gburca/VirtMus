@@ -46,11 +46,11 @@ import net.java.swingfx.jdraggable.DraggableManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -86,7 +86,7 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
         initComponents();
         setName(NbBundle.getMessage(ThumbsTopComponent.class, "CTL_ThumbsTopComponent"));
         setToolTipText(NbBundle.getMessage(ThumbsTopComponent.class, "HINT_ThumbsTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         draggableManager = new ThumbnailDraggableManager(jPanel);
         draggableManager.setDragPolicy(DragPolicy.STRICT);
@@ -191,6 +191,7 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
         return getDefault();
     }
     
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -199,10 +200,12 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
         return MainApp.findInstance().getExplorerManager();
     }
     
+    @Override
     public void addNotify() {
         getExplorerManager().addPropertyChangeListener(eListener);
         super.addNotify();
     }
+    @Override
     public void removeNotify() {
         super.removeNotify();
         getExplorerManager().removePropertyChangeListener(eListener);
@@ -235,10 +238,12 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     }
     
     /** replaces this in object stream */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
     
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }

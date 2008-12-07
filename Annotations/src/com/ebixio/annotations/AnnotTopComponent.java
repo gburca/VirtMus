@@ -39,9 +39,9 @@ import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -75,7 +75,7 @@ public final class AnnotTopComponent extends TopComponent
         initComponents();
         setName(NbBundle.getMessage(AnnotTopComponent.class, "CTL_AnnotTopComponent"));
         setToolTipText(NbBundle.getMessage(AnnotTopComponent.class, "HINT_AnnotTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         //panner.setBackground(Color.red);
         panner.setBorder(new LineBorder(Color.RED, 2));
         panner.setVisible(false);

@@ -53,6 +53,7 @@ import javax.media.jai.KernelJAI;
 import javax.media.jai.RenderedOp;
 import javax.swing.event.ChangeListener;
 import org.apache.batik.ext.awt.RenderingHintsKeyExt;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -74,7 +75,7 @@ public abstract class MusicPage {
     private transient DraggableThumbnail thumbnail;
     public transient Song song;
     public transient boolean isDirty = false;
-    public transient Dimension dimension = null;
+    private transient Dimension dimension = null;
     /** The AnnotTopComponent sets itself as a change listener so that we can 
      * tell it to repaint the annotation canvas when the SVG changes */
     protected transient ChangeListener changeListener = null;
@@ -116,7 +117,9 @@ public abstract class MusicPage {
     }
 
 
-    public void setIsDirty(boolean isDirty) {
+    public void setDirty(boolean isDirty) {
+        if (this.isDirty == isDirty) return;
+        
         this.isDirty = isDirty;
         this.thumbnail = null;
         // If this change is not done by a NodeAction, we need to enable the actions here.
@@ -124,6 +127,9 @@ public abstract class MusicPage {
         SystemAction.get(SongSaveAction.class).setEnabled(true);
     }
     
+    public boolean isDirty() {
+        return this.isDirty;
+    }
     
     /** When reading old files in (that don't have a rotation value) we need to
      * initialize rotation */
@@ -151,14 +157,56 @@ public abstract class MusicPage {
     }
     
     public void setName(String name) {
+        if (name.equals(this.name)) return;
         this.name = name;
         if (this.thumbnail != null) this.thumbnail.setName(name);
-        this.isDirty = true;
+        setDirty(true);
+        //notifyListeners();
     }
     public String getName() {
         if (name != null && name.length() > 0) return name;
         if (sourceFile != null) return this.sourceFile.getName().replaceFirst("\\..*", "");
         return "No name";
+    }
+    
+    void closeStream(FileSeekableStream stream) {
+        if (stream == null) return;
+        try {
+            stream.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public Dimension getDimension() {
+        if (dimension != null) {
+            return dimension;
+        } else {
+            FileSeekableStream stream = null;
+            try {
+                stream = new FileSeekableStream(sourceFile.toString());
+            } catch (IOException e) {
+                MainApp.log("MusicPage file: " + sourceFile.toString());
+                MainApp.log(e.toString());
+                closeStream(stream);
+                return new Dimension(1,1);
+            }
+        
+            // Create an operator to decode the image file
+            RenderedOp srcImg = JAI.create("stream", stream);
+        
+            try {
+                dimension = srcImg.getBounds().getSize();
+                srcImg.dispose();
+            } catch (Exception e) {
+                MainApp.log("Bad file format: " + sourceFile.toString());
+                closeStream(stream);
+                return new Dimension(1,1);
+            }
+            
+            closeStream(stream);
+            return dimension;
+        }
     }
     
     /**
@@ -174,7 +222,17 @@ public abstract class MusicPage {
         RenderedOp srcImg, destImg;
         Rectangle destSize;
 
-        BufferedImage result = new BufferedImage(containerSize.width, containerSize.height, BufferedImage.TYPE_INT_ARGB_PRE);
+        // Acquiring the current Graphics Device and Graphics Configuration
+        GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice graphDevice = graphEnv.getDefaultScreenDevice();
+        GraphicsConfiguration graphicConf = graphDevice.getDefaultConfiguration();
+        System.gc();
+        BufferedImage result = graphicConf.createCompatibleImage(containerSize.width, containerSize.height, Transparency.OPAQUE);
+
+        //BufferedImage result = new BufferedImage(containerSize.width, containerSize.height, BufferedImage.TYPE_INT_ARGB_PRE);
+        // TYPE_4BYTE_ABGR_PRE (instead of TYPE_INT_ARGB_PRE) REQUIRED for OpenGL
+        //BufferedImage result = new BufferedImage(containerSize.width, containerSize.height, BufferedImage.TYPE_4BYTE_ABGR_PRE);
+
         Graphics2D g = result.createGraphics();
         
         /** If a BUFFERED_IMAGE hint is not provided, the batik code issues the following warning:
@@ -230,7 +288,9 @@ public abstract class MusicPage {
         } catch (Exception e) {
             String msg = "Bad file format.";
             int strW = g.getFontMetrics().stringWidth(msg);
-            g.drawString(msg, (int)(destSize.getWidth()/2 - strW/2), (int)(destSize.getHeight()/2));            
+            g.drawString(msg, (int)(destSize.getWidth()/2 - strW/2), (int)(destSize.getHeight()/2));
+            srcImg.dispose();
+            closeStream(stream);
             return result;
         }
         
@@ -300,11 +360,16 @@ public abstract class MusicPage {
         g.setTransform(newXform);
         this.paintAnnotations(g);
         g.setTransform(origXform);
-        
+
+        Dimension dim = srcImg.getBounds().getSize();
+        srcImg.dispose();
+        closeStream(stream);
+        g.dispose();
+
         if (fillSize) {
             return result;
         } else {
-            return result.getSubimage(0, 0, srcImg.getWidth(), srcImg.getHeight());
+            return result.getSubimage(0, 0, dim.width, dim.height);
         }
     }
         

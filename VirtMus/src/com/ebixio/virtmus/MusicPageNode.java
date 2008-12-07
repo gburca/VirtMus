@@ -28,7 +28,8 @@ import java.text.MessageFormat;
 import javax.swing.Action;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
+import org.openide.actions.MoveDownAction;
+import org.openide.actions.MoveUpAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
@@ -39,21 +40,51 @@ import org.openide.util.lookup.Lookups;
  * @author gburca
  */
 public class MusicPageNode extends AbstractNode {
+    private MusicPage page;
     
     /** Creates a new instance of MusicPageNode */
     public MusicPageNode(MusicPage page) {
-        super(Children.LEAF, Lookups.fixed(new Object[]{page.song, page}));
-        setName(page.getName());
+        super(Children.LEAF, Lookups.fixed(new Object[]{page.song, page,
+            (new MusicPages(page.song)).getIndex()
+        }));
+        this.page = page;
+        //setName(page.getName());
         displayFormat = new MessageFormat("{0}");
     }
     
     @Override
-    public boolean canCut()     { return true; }
-    @Override
     public boolean canDestroy() { return true; }
+    
+    // <editor-fold defaultstate="collapsed" desc=" Node name ">
     @Override
     public boolean canRename()  { return true; }
-    
+    @Override
+    public void setName(String nue) {
+        if (nue.equals(page.getName())) return;
+        page.setName(nue);
+    }
+
+    @Override
+    public String getName() {
+        return page.getName();
+    }
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
+    @Override
+    public String getHtmlDisplayName() {
+        String name = getDisplayName();
+        
+        if (page.isDirty()) {
+            name = "<i>" + name + "</i>";
+        }
+        
+        return name;
+    }
+
+    // </editor-fold>
+
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
@@ -61,12 +92,23 @@ public class MusicPageNode extends AbstractNode {
             null,
             SystemAction.get( CopyAction.class ),
             SystemAction.get( CutAction.class ),
-            SystemAction.get( DeleteAction.class ),
+            //SystemAction.get( DeleteAction.class ), // Using MusicPageRemoveAction.class instead
             null,
             SystemAction.get ( MusicPageCloneAction.class ),
             SystemAction.get ( MusicPageRemoveAction.class ),
-            SystemAction.get ( RenameItemAction.class )
+            SystemAction.get ( RenameItemAction.class ),
+            null,
+            SystemAction.get( MoveUpAction.class ),
+            SystemAction.get( MoveDownAction.class )
         };
     }
-    
+
+    // <editor-fold defaultstate="collapsed" desc=" Drag-n-Drop ">
+    @Override
+    public boolean canCut()     { return true; }
+    @Override
+    public boolean canCopy()    { return true; }
+   
+    // </editor-fold>
+
 }

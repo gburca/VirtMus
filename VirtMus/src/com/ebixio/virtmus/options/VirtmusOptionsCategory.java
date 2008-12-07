@@ -22,14 +22,14 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public final class VirtmusOptionsCategory extends OptionsCategory {
     
     @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("com/ebixio/virtmus/resources/VirtMus32x32.png"));
+        return new ImageIcon(ImageUtilities.loadImage("com/ebixio/virtmus/resources/VirtMus32x32.png"));
     }
     
     public String getCategoryName() {

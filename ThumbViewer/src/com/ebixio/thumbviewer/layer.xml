@@ -20,7 +20,6 @@
         </folder>
     </folder>
     <folder name="Menu">
-        <folder name="Edit_hidden"/>
         <folder name="GoTo_hidden"/>
         <folder name="Window">
             <!--

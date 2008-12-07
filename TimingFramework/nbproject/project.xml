@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.jdesktop.animation.timing</code-name-base>
+            <code-name-base>org.jdesktop.animation</code-name-base>
             <suite-component/>
             <module-dependencies/>
             <public-packages>
@@ -12,8 +12,8 @@
                 <package>org.jdesktop.animation.timing.triggers</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/TimingFramework-0.54.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/TimingFramework-0.54.jar</binary-origin>
+                <runtime-relative-path>ext/TimingFramework-1.0.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/TimingFramework-1.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

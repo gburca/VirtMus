@@ -32,8 +32,10 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.actions.CutAction;
+import org.openide.actions.*;
 import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.nodes.AbstractNode;
@@ -50,26 +52,25 @@ import org.openide.util.lookup.Lookups;
  *
  * @author gburca
  */
-public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transferable,*/ PropertyChangeListener {
+public class SongNode extends AbstractNode implements PropertyChangeListener, ChangeListener {
     private Song song;
     
-    /** Creates a new instance of SongNode */
-    public SongNode(PlayList playList, Song song) {
-        //super (new MusicPages(song), Lookups.singleton(song));
-        super(new MusicPages(song), Lookups.fixed(new Object[]{playList, song}));
+    /** Creates a new instance of SongNode
+     * @param playList
+     * @param song 
+     */
+    public SongNode(PlayList playList, Song song, MusicPages children) {
+        super(children, Lookups.fixed(new Object[]{playList, song, children.getIndex()}));
         this.song = song;
-        setName(song.getName());
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
         song.addPropertyChangeListener(WeakListeners.propertyChange(this, song));
+        song.addChangeListener(WeakListeners.change(this, song));
     }
     
 
-//    public Cookie getCookie(Class klass) {
-//        return song;
-//    }
-    
+        
     @Override
     public boolean canDestroy() {
         return true;
@@ -82,13 +83,17 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         Song s = getLookup().lookup(Song.class);
         
         try {
-            @SuppressWarnings("unchecked")
-            Property nameProp = new PropertySupport.Reflection(s, String.class, "name");
-            nameProp.setName("name");
+            Property nameProp = new PropertySupport.Reflection<String>(s, String.class, "name"); // get/setName
+            Property fileProp = new PropertySupport.Reflection<String>(s, String.class, "getSourceFileStr", null); // only getSourceFileStr
+            nameProp.setName("Name");
+            fileProp.setName("Source File");
             set.put(nameProp);
+            set.put(fileProp);
         } catch (NoSuchMethodException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+        
+        sheet.put(set);
         return sheet;
     }
     
@@ -102,14 +107,29 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
             SystemAction.get( RenameItemAction.class ),
             null,
             SystemAction.get( PasteAction.class ),
-            SystemAction.get( CutAction.class )
+            SystemAction.get( CutAction.class ),
+            null,
+            SystemAction.get( ReorderAction.class ),
+            SystemAction.get( MoveUpAction.class ),
+            SystemAction.get( MoveDownAction.class )
         };
     }
+
+    public Song getSong() {
+        return song;
+    }
+
+    // <editor-fold defaultstate="collapsed" desc=" Drag-n-drop ">
     
+    @Override
+    public boolean canCut()     { return true; }
+    @Override
+    public boolean canCopy()    { return true; }
+
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
-        //MainApp.log("SongNode::createPasteTypes " + t.toString());
+        //MainApp.log("SongNode::createPasteTypes " + t.toString() + " s:" + song.getName());
         PasteType paste = getDropType( t, DnDConstants.ACTION_COPY, -1);
         if (paste != null) s.add(paste);
     }
@@ -119,7 +139,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
     @Override
     public PasteType getDropType(Transferable t, final int action, int index) {
         if (index != -1) {
-            MainApp.log("SongNode::getDropType " + Integer.toString(index) + " " + Integer.toString(action));
+            //MainApp.log("SongNode::getDropType " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
         }
         // dropNode is the node about to be dropped on this SongNode
         final Node dropNode = NodeTransfer.node(t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT);
@@ -128,6 +148,7 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
             // We only accept a MusicPage to be dropped on this SongNode
             if (mp != null) {
                 
+                //MainApp.log("SongNode::getDropType2 " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
                 return new PasteType() {
                     public Transferable paste() throws IOException {
                         //song.addPage(new MusicPage(song, mp.getSourceFile()));
@@ -143,49 +164,51 @@ public class SongNode extends /*IndexedNode*/ AbstractNode implements /*Transfer
         }
         return null;
     }
-
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc=" PropertyChangeListener interface ">
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("name".equals(evt.getPropertyName())) {
-            this.fireDisplayNameChange(null, getDisplayName());
+        if ("nameProp".equals(evt.getPropertyName())) {
+            String newName = (String)evt.getNewValue();
+            this.fireDisplayNameChange(null, newName);
         }
     }
     // </editor-fold>
     
-    public Song getSong() {
-        return song;
+    // <editor-fold defaultstate="collapsed" desc=" Node name ">
+    
+    @Override
+    public boolean canRename()  { return true; }
+    @Override
+    public void setName(String nue) {
+        if (nue.equals(song.getName())) return;
+        song.setName(nue);
     }
 
     @Override
-    public boolean canCut()     { return true; }
+    public String getName() {
+        return song.getName();
+    }
     @Override
-    public boolean canRename()  { return true; }
-
-//    public Transferable clipboardCut() throws IOException {
-//        MainApp.log("SongNode::clipboardCut");
-//        return this;
-//    }
-    
-
-    // <editor-fold defaultstate="collapsed" desc=" Transferable interface ">
-//    public DataFlavor[] getTransferDataFlavors() {
-//        MainApp.log("SongNode::clipboardCut");
-//        return new DataFlavor[] { new DataFlavor(this.getClass(), "SongNode") };
-//    }
-//
-//    public boolean isDataFlavorSupported(DataFlavor flavor) {
-//        if (flavor.equals(new DataFlavor(this.getClass(), "SongNode"))) {
-//            MainApp.log("SongNode::isDataFlavorSupported true");
-//            return true;
-//        }
-//        MainApp.log("SongNode::isDataFlavorSupported flase " + flavor.toString());
-//        return false;
-//    }
-//
-//    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-//        MainApp.log("SongNode::getTransferData");
-//        return this;
-//    }
+    public String getDisplayName() {
+        return getName();
+    }
+    @Override
+    public String getHtmlDisplayName() {
+        String name = getDisplayName();
+        
+        if (song.isDirty()) {
+            name = "<i>" + name + "</i>";
+        }
+        
+        return name;
+    }
     // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc=" ChangeListener interface ">
+    public void stateChanged(ChangeEvent e) {
+        fireDisplayNameChange(null, null);
+    }
+    // </editor-fold>
+
 }

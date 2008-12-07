@@ -21,8 +21,8 @@ package com.ebixio.thumbviewer;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -32,7 +32,7 @@ public class ThumbsAction extends AbstractAction {
     
     public ThumbsAction() {
         super(NbBundle.getMessage(ThumbsAction.class, "CTL_ThumbsAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(ThumbsTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(ThumbsTopComponent.ICON_PATH, true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

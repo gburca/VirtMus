@@ -388,9 +388,15 @@ final class VirtmusPanel extends javax.swing.JPanel {
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
         
+        String inkscape = "C:\\Program Files\\Inkscape\\Inkscape.exe";
+        File f = new File(inkscape);
+        if (!f.canExecute()) {
+            inkscape = "";
+        }
+
         playListDir.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptPlayListDir, ""));
         songDir.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, ""));
-        svgEditor.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, ""));
+        svgEditor.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, inkscape));
         pageScrollPercentage.setValue(Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100")));
         
         String orientation = NbPreferences.forModule(MainApp.class).get(MainApp.OptScreenRot, MainApp.screenRot.toString());

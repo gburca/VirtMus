@@ -23,9 +23,12 @@ package com.ebixio.virtmus;
 import com.ebixio.virtmus.actions.SaveAllAction;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,6 +46,9 @@ import org.openide.LifecycleManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import java.util.logging.*;
+import javax.swing.SwingUtilities;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -53,7 +59,7 @@ import org.openide.util.NbPreferences;
 public class MainApp implements ExplorerManager.Provider, ChangeListener {
     
     private static MainApp instance;
-    public Vector<PlayList> playLists = new Vector<PlayList>();
+    public List<PlayList> playLists = Collections.synchronizedList(new Vector<PlayList>());
     private transient ExplorerManager manager = new ExplorerManager();
     private static Logger logger = Logger.getLogger("com.ebixio.virtmus");
     private static DateTime lastTime = new DateTime();
@@ -61,7 +67,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "1.01";
+    public static final String VERSION = "2.00";
     private static final boolean RELEASED = true;   // Used to disable logging
     
     public static enum Rotation {
@@ -149,7 +155,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public static final String OptPageScrollDir     = "ScrollDirection";
     public static final String OptUseOpenGL         = "UseOpenGL";    
     public static final String OptSvgEditor         = "SvgEditor";
-
+    
     /** Creates a new instance of MainApp */
     private MainApp() {
         //initLogger();
@@ -160,10 +166,17 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         screenRot = Rotation.valueOf( pref.get(OptScreenRot, Rotation.Clockwise_0.toString()) );
         scrollDir = ScrollDir.valueOf( pref.get(OptPageScrollDir, ScrollDir.Horizontal.toString()) );
         
+        setupListeners(pref);
+
+        addAllPlayListsThreaded(pref, false);
+        
+        log("MainApp::MainApp finished");
+    }
+
+    private void setupListeners(Preferences pref) {
         pref.addPreferenceChangeListener(new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent evt) {
                 if (evt.getKey().equals(OptSongDir)) {
-                    // TODO: Is this causing problems by not being synchronized?
                     log("Preference SongDir changed");
                     if (MainApp.findInstance().isDirty()) {
                         int returnVal = JOptionPane.showConfirmDialog(null,
@@ -179,14 +192,42 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
                     playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
                 } else if (evt.getKey().equals(OptPlayListDir)) {
                     Preferences pref = NbPreferences.forModule(MainApp.class);
-                    addAllPlayLists(pref);
+                    addAllPlayListsThreaded(pref, false);
                 }
             }
         });
 
-        addAllPlayLists(pref);
         
-        log("MainApp::MainApp finished");
+        // To update the status bar when songs/playlists are selected
+        manager.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                    Node[] nodes = manager.getSelectedNodes();
+                    if (nodes.length == 0) {return;}
+                    Lookup l = nodes[0].getLookup();
+                    Collection songs = l.lookupResult(Song.class).allInstances();
+                    if (!songs.isEmpty()) {
+                        Song s = (Song) songs.iterator().next();
+                        displayFile("Song: ", s.getSourceFile());
+                    } else {
+                        // Let's see if we have a playlist
+                        Collection playlists = l.lookupResult(PlayList.class).allInstances();
+                        if (!playlists.isEmpty()) {
+                            PlayList p = (PlayList) playlists.iterator().next();
+                            displayFile("PlayList: ", p.getSourceFile());
+                        }
+                    }
+                }
+            }
+            private void displayFile(String pre, File f) {
+                if (f != null) {
+                    StatusDisplayer.getDefault().setStatusText(pre + f.getAbsolutePath());
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(pre + "no file");
+                }
+            }
+        });
+
     }
     
     public static void initLogger() {
@@ -216,8 +257,26 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         }
     }
     
-    void addAllPlayLists(Preferences pref) {
-        log("MainApp::addAllPlayLists thread: " + Thread.currentThread().getName());
+    /**
+     * Re-reads all the playlists and songs from the disc
+     */
+    public void refresh() {
+        addAllPlayListsThreaded(NbPreferences.forModule(MainApp.class), true);
+    }
+    
+    void addAllPlayListsThreaded(final Preferences pref, final boolean clearSongs) {
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                addAllPlayLists(pref, clearSongs);
+            }
+        };
+        
+        t.setName("addAllPlayLists");
+        t.start();
+    }
+    synchronized void addAllPlayLists(Preferences pref, boolean clearSongs) {
+        //log("MainApp::addAllPlayLists thread: " + Thread.currentThread().getName());
         PlayList pl;
         
         if (isDirty()) {
@@ -231,33 +290,53 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
                 default: break;
             }
         }
-        playLists.clear();
         
-        pl = new PlayList("Default Play List");
-        pl.type = PlayList.Type.Default;
-        playLists.add(pl);
-        
-        pl = new PlayList("All Songs");
-        pl.type = PlayList.Type.AllSongs;
-        pl.addAllSongs(new File(pref.get(OptSongDir, "")), true);
-        playLists.add(pl);
+        //synchronized (playLists) {
+            playLists.clear();
+            
+            // Discard all the songs so they get re-loaded when the playlist is re-created
+            if (clearSongs) Song.clearInstantiated();
 
-        File dir = new File(pref.get(OptPlayListDir, ""));
-        if (dir.exists() && dir.canRead() && dir.isDirectory()) {
+            pl = new PlayList("Default Play List");
+            pl.type = PlayList.Type.Default;
+            playLists.add(pl);
 
-            FilenameFilter filter = new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".playlist.xml");
+            File dir = new File(pref.get(OptPlayListDir, ""));
+            if (dir.exists() && dir.canRead() && dir.isDirectory()) {
+
+                FilenameFilter filter = new FilenameFilter() {
+
+                    public boolean accept(File dir, String name) {
+                        return name.endsWith(".playlist.xml");
+                    }
+                };
+
+                for (File f : Utils.listFiles(dir, filter, true)) {
+                    pl = PlayList.deserialize(f);
+                    if (pl != null) {
+                        playLists.add(pl);
+                        this.notifyPLListeners();
+                    }
                 }
-            };
-
-            for (File f: Utils.listFiles(dir, filter, true)) {
-                pl = PlayList.deserialize(f);
-                if (pl != null) playLists.add(pl);
             }
-        }
+
+            pl = new PlayList("All Songs");
+            pl.type = PlayList.Type.AllSongs;
+            pl.addAllSongs(new File(pref.get(OptSongDir, "")), true);
+            playLists.add(pl);
+
+            Collections.sort(playLists);
+        //}
         
         this.notifyPLListeners();
+        
+        // This function could be running on a non-EDT thread
+        Runnable r = new Runnable() {
+            public void run() {
+                StatusDisplayer.getDefault().setStatusText("Finished loading all PlayLists");
+            }
+        };
+        SwingUtilities.invokeLater(r);
     }
     
     public static synchronized MainApp findInstance() {
@@ -272,19 +351,26 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     };
     
     public boolean isDirty() {
-        for (PlayList pl: playLists) {
-            if (pl.isDirty()) return true;
-            for (Song s: pl.songs) {
-                if (s.isDirty()) return true;
-                for (MusicPage mp: s.pageOrder) {
-                    if (mp.isDirty) return true;
+        synchronized (playLists) {
+            for (PlayList pl : playLists) {
+                if (pl.isDirty()) {
+                    return true;
+                }
+                synchronized (pl.songs) {
+                    for (Song s : pl.songs) {
+                        if (s.isDirty()) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
         return false;
     }
     public void saveAll() {
-        for (PlayList pl: playLists) pl.saveAll();
+        synchronized(playLists) {
+            for (PlayList pl: playLists) pl.saveAll();
+        }
         StatusDisplayer.getDefault().setStatusText("Save All finished.");
     }
 
@@ -303,7 +389,8 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     }
     public static void log(String msg, Level lev, boolean printStackDump) {
         if (RELEASED) return;
-        logger.log(lev, getElapsedTime() + " - " + msg);
+        //logger.log(lev, getElapsedTime() + " - " + msg);
+        logger.log(lev, msg);
         if (printStackDump) {
             logger.log(lev, getStackTrace() + "\n");
         }
@@ -330,6 +417,20 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
             res.append(" Line: " + e.getLineNumber() + "\n");
         }
         return res.toString();
+    }
+    
+    public boolean replacePlayList(PlayList replace, PlayList with) {
+        synchronized (playLists) {
+            int idx = playLists.lastIndexOf(replace);
+            if (idx < 0) {
+                return false;
+            } else {
+                playLists.remove(idx);
+                playLists.add(idx, with);
+                notifyPLListeners();
+                return true;
+            }
+        }
     }
 
     public boolean addPlayList() {
@@ -395,4 +496,5 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
             System.exit(0);
         }
     }
+
 }

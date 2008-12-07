@@ -24,6 +24,7 @@ import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 
@@ -44,8 +45,10 @@ public class MusicPages extends Children.Keys<MusicPage> implements ChangeListen
     protected void addNotify() {
         Vector<MusicPage> pageKeys = new Vector<MusicPage>();
         int i = 0;
-        for (MusicPage mp: song.pageOrder) {
-            pageKeys.add(mp);
+        synchronized(song.pageOrder) {
+            for (MusicPage mp: song.pageOrder) {
+                pageKeys.add(mp);
+            }
         }
         setKeys(pageKeys);
     }
@@ -57,5 +60,28 @@ public class MusicPages extends Children.Keys<MusicPage> implements ChangeListen
     public void stateChanged(ChangeEvent e) {
         addNotify();
     }
+    
+    public Index getIndex() {
+        return new MusicPageIndexer();
+    }
 
+    
+    public class MusicPageIndexer extends Index.Support {
+
+        @Override
+        public Node[] getNodes() {
+            return MusicPages.this.getNodes();
+        }
+
+        @Override
+        public int getNodesCount() {
+            return getNodes().length;
+        }
+
+        @Override
+        public void reorder(int[] order) {
+            song.reorder(order);
+            fireChangeEvent(new ChangeEvent(MusicPageIndexer.this));
+        }
+    }
 }

@@ -76,6 +76,7 @@ public final class SongOpenAction extends CallableSystemAction {
         return NbBundle.getMessage(SongOpenAction.class, "CTL_SongOpenAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SongOpenAction.png";
     }
@@ -84,6 +85,7 @@ public final class SongOpenAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

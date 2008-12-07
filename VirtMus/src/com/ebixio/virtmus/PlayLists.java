@@ -20,6 +20,7 @@
 
 package com.ebixio.virtmus;
 
+import java.util.List;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -35,6 +36,7 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
     
     /**
      * Creates a new instance of PlayLists
+     * @param ma 
      */
     public PlayLists(MainApp ma) {
 //        MainApp.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
@@ -69,20 +71,30 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
     /**
      * This method will get called with one of the items passed to setKeys in 
      * addNotify above.
+     * @param key
+     * @return 
      */
     protected Node[] createNodes(Integer key) {
 //        MainApp.log("PlayLists::createNodes " + Thread.currentThread().getName());
 //        if(!SwingUtilities.isEventDispatchThread()){
 //           throw new AssertionError("NOT on EDT");
 //        }
-        PlayListNode pln = new PlayListNode(
-                MainApp.findInstance().playLists.get(key)
-        );
+        List<PlayList> pl = MainApp.findInstance().playLists;
+        PlayListNode pln = null;
+        
+        synchronized (pl) {
+            if (pl.size() > key) {
+                pln = new PlayListNode(pl.get(key), new Songs(pl.get(key)));
+            }  
+        }
+//        PlayListNode pln = new PlayListNode(
+//                MainApp.findInstance().playLists.get(key)
+//        );
         return new Node[] {pln};
     }
 
     public void stateChanged(ChangeEvent e) {
-        MainApp.log("PlayLists::stateChanged: " + this.toString());
+        //MainApp.log("PlayLists::stateChanged: " + this.toString());
         /* When setKeys is called from addNotify above, the class tries to be smart
            and only calls createNodes for the newly added keys. If the content of a
            node has changed, but the key remained the same, we need to call refreshKey(key)
@@ -95,4 +107,5 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
         }
     }
     
+
 }

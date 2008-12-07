@@ -11,6 +11,8 @@
         <folder name="PlayList">
             <file name="com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
             <file name="com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-PlayListDelete.instance"/>
+            <file name="com-ebixio-virtmus-actions-PlayListRevertAction.instance"/>
             <file name="com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
         </folder>
         <folder name="Song">
@@ -32,6 +34,7 @@
         </folder>
         <folder name="VirtMus">
             <file name="com-ebixio-virtmus-actions-GoLive.instance"/>
+            <file name="com-ebixio-virtmus-actions-RefreshAction.instance"/>
             <file name="com-ebixio-virtmus-actions-RenameItemAction.instance"/>
             <file name="com-ebixio-virtmus-actions-SaveAllAction.instance"/>
             <file name="com-ebixio-virtmus-actions-ExitAction.instance"/>
@@ -39,11 +42,21 @@
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
         </folder>
-        
-        <folder name="Edit_hidden"/>
+        <folder name="Edit">
+            <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance_hidden"/>
+            <file name="org-netbeans-core-ui-options-filetypes-OpenAsAction.instance_hidden"/>
+            <file name="org-openide-actions-DeleteAction.instance_hidden"/>
+            <file name="org-openide-actions-FindAction.instance_hidden"/>
+            <file name="org-openide-actions-GotoAction.instance_hidden"/>
+            <file name="org-openide-actions-RedoAction.instance_hidden"/>
+            <file name="org-openide-actions-ReplaceAction.instance_hidden"/>
+            <file name="org-openide-actions-UndoAction.instance_hidden"/>
+            <file name="org-netbeans-modules-quicksearch-QuickSearchAction.instance_hidden"/>
+
+        </folder>
         <folder name="File_hidden"/>
-        
     </folder>
+    
     <folder name="Menu">
         <folder name="File">
             <attr name="position" intvalue="100"/>
@@ -60,6 +73,10 @@
                 <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-ExitAction.instance"/>
             </file>
             
+            <file name="com-ebixio-virtmus-actions-RefreshAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-RefreshAction.instance"/>
+                <attr name="position" intvalue="150"/>
+            </file>
             <file name="org-netbeans-core-actions-SystemExit.instance_hidden"/>
             <file name="org-openide-actions-SaveAction.instance_hidden"/>
             <file name="org-openide-actions-SaveAllAction.instance_hidden"/>
@@ -69,7 +86,28 @@
             <file name="Separator3.instance_hidden"/>
             <file name="Separator4.instance_hidden"/>
             <file name="org-openide-actions-SaveAsAction.shadow_hidden"/>
-        </folder> 
+        </folder>
+
+        <folder name="Edit">
+            <attr name="position" intvalue="200"/>
+            <file name="org-openide-actions-CutAction.instance">
+                <attr name="position" intvalue="1000"/>
+            </file>
+            <file name="org-openide-actions-CopyAction.instance">
+                <attr name="position" intvalue="1100"/>
+            </file>
+            <file name="org-openide-actions-PasteAction.instance">
+                <attr name="position" intvalue="1200"/>
+            </file>
+
+            <file name="org-openide-actions-UndoAction.instance_hidden"/>
+            <file name="org-openide-actions-RedoAction.instance_hidden"/>
+            <file name="Separator1.instance_hidden"/>
+            <file name="org-openide-actions-DeleteAction.instance_hidden"/>
+            <file name="Separator2.instance_hidden"/>
+            <file name="org-openide-actions-FindAction.instance_hidden"/>
+            <file name="org-openide-actions-ReplaceAction.instance_hidden"/>
+        </folder>
         
         <folder name="PlayList">
             <attr name="position" intvalue="250"/>
@@ -80,6 +118,14 @@
             <file name="com-ebixio-virtmus-actions-OpenPlayListAction.instance">
                 <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-OpenPlayListAction.instance"/>
                 <attr name="position" intvalue="200"/>
+            </file>
+            <file name="com-ebixio-virtmus-actions-PlayListDelete.shadow">
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-PlayListDelete.instance"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="com-ebixio-virtmus-actions-PlayListRevertAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-PlayListRevertAction.instance"/>
+                <attr name="position" intvalue="400"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SavePlayListAction.instance">
                 <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-SavePlayListAction.instance"/>
@@ -189,8 +235,6 @@
         </file>
     </folder>
     
-    
-    
     <folder name="Shortcuts">
         <file name="D-O.shadow">
             <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
@@ -213,10 +257,20 @@
         <file name="O-F4.shadow">
             <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-ExitAction.instance"/>
         </file>
+        <file name="D-C.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+        </file>
+        <file name="D-V.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+        </file>
+        <file name="D-X.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+        </file>
+
     </folder>
     <folder name="Toolbars">
-        <folder name="1General">
-            <attr name="position" intvalue="400"/>
+        <folder name="General">
+            <attr name="position" intvalue="100"/>
             <file name="GoLive.shadow">
                 <attr name="position" intvalue="100"/>
                 <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-GoLive.instance"/>
@@ -231,8 +285,8 @@
             </file>
         </folder>
         
-        <folder name="2PlayList">
-            <attr name="position" intvalue="200"/>
+        <folder name="PlayList">
+            <attr name="position" intvalue="110"/>
             <file name="NewPlayListAction.shadow">
                 <attr name="position" intvalue="100"/>
                 <attr name="originalFile" stringvalue="Actions/PlayList/com-ebixio-virtmus-actions-NewPlayListAction.instance"/>
@@ -247,8 +301,8 @@
             </file>
         </folder>
 
-        <folder name="3Song">
-            <attr name="position" intvalue="100"/>
+        <folder name="Song">
+            <attr name="position" intvalue="120"/>
             <file name="NewSongAction.shadow">
                 <attr name="position" intvalue="100"/>                
                 <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
@@ -271,8 +325,8 @@
             </file>
         </folder>
         
-        <folder name="4MusicPage">
-            <attr name="position" intvalue="300"/>
+        <folder name="MusicPage">
+            <attr name="position" intvalue="130"/>
             <file name="AddPagesAction.shadow">
                 <attr name="position" intvalue="100"/>
                 <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageAddAction.instance"/>
@@ -290,19 +344,9 @@
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
-        
-        <folder name="File_hidden">
-            <attr name="position" intvalue="1000"/>
-        </folder>
-        <folder name="Edit_hidden">
-            <attr name="position" intvalue="1100"/>
-        </folder>
-        <folder name="Memory_hidden">
-            <attr name="position" intvalue="1200"/>
-        </folder>
-        <file name="Standard.xml_hidden">
-            <attr name="position" intvalue="1300"/>
-        </file>
+
+        <folder name="File_hidden"/>
+        <folder name="UndoRedo_hidden"/>
         
     </folder>
     <folder name="Windows2">
