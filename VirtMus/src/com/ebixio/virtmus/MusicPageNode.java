@@ -42,7 +42,9 @@ import org.openide.util.lookup.Lookups;
 public class MusicPageNode extends AbstractNode {
     private MusicPage page;
     
-    /** Creates a new instance of MusicPageNode */
+    /** Creates a new instance of MusicPageNode
+     * @param page
+     */
     public MusicPageNode(MusicPage page) {
         super(Children.LEAF, Lookups.fixed(new Object[]{page.song, page,
             (new MusicPages(page.song)).getIndex()

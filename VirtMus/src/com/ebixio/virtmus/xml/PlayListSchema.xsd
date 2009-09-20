@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://xml.netbeans.org/schema/PlayListSchema"
+    xmlns:tns="http://xml.netbeans.org/schema/PlayListSchema"
+    elementFormDefault="qualified" -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"
+    schemaLocation="http://www.w3.org/2001/xml.xsd" />
+
+
+<xsd:element name="PlayList">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element name="Name" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="SongFiles" minOccurs="0" maxOccurs="1" type="SongFilesType"/>
+        </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:string"/>
+    </xsd:complexType>
+</xsd:element>
+
+<xsd:complexType name="SongFilesType">
+    <xsd:sequence>
+        <xsd:element name="file" minOccurs="0" maxOccurs="unbounded" type="xsd:string"/>
+    </xsd:sequence>
+</xsd:complexType>
+
+</xsd:schema>

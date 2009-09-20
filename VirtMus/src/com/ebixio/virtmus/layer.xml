@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <folder name="Actions">
@@ -41,6 +41,13 @@
         </folder>
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
+            <!--file name="com-ebixio-virtmus-TagsAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.ebixio.virtmus.Bundle"/>
+                <attr name="component" methodvalue="com.ebixio.virtmus.TagsTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="com.ebixio.virtmus.Bundle#CTL_TagsAction"/>
+                <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/PlayListTopComponent.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file-->
         </folder>
         <folder name="Edit">
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance_hidden"/>
@@ -203,6 +210,9 @@
             <file name="PlayListAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-PlayListAction.instance"/>
             </file>
+            <file name="TagsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-TagsAction.instance"/>
+            </file>
         </folder>
         
         <folder name="Help">
@@ -352,10 +362,12 @@
     <folder name="Windows2">
         <folder name="Components">
             <file name="PlayListTopComponent.settings" url="PlayListTopComponentSettings.xml"/>
+            <file name="TagsTopComponent.settings" url="TagsTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="explorer">
                 <file name="PlayListTopComponent.wstcref" url="PlayListTopComponentWstcref.xml"/>
+                <file name="TagsTopComponent.wstcref" url="TagsTopComponentWstcref.xml"/>
             </folder>
             <file name="explorer.wsmode" url="explorerWsmode.xml"/>
         </folder>

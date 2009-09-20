@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,14 +41,12 @@ import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.joda.time.DateTime;
 import org.openide.LifecycleManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import java.util.logging.*;
 import javax.swing.SwingUtilities;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -59,16 +57,16 @@ import org.openide.util.NbPreferences;
 public class MainApp implements ExplorerManager.Provider, ChangeListener {
     
     private static MainApp instance;
-    public List<PlayList> playLists = Collections.synchronizedList(new Vector<PlayList>());
+    public final List<PlayList> playLists = Collections.synchronizedList(new Vector<PlayList>());
     private transient ExplorerManager manager = new ExplorerManager();
     private static Logger logger = Logger.getLogger("com.ebixio.virtmus");
-    private static DateTime lastTime = new DateTime();
+    private static Date lastTime = new Date();
     private transient Set<ChangeListener> plListeners = new HashSet<ChangeListener>();
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "2.00";
-    private static final boolean RELEASED = true;   // Used to disable logging
+    public static final String VERSION = "2.50";
+    private static final boolean RELEASED = false;   // Used to disable logging
     
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
@@ -93,7 +91,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
                     return 0;
             }
         }
-        AffineTransform getTransform(Dimension d) {
+        public AffineTransform getTransform(Dimension d) {
             switch (this) {
                 case Clockwise_90:
                     /**
@@ -160,6 +158,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     private MainApp() {
         //initLogger();
         log("MainApp::MainApp start");
+        System.getProperties().put("org.icepdf.core.scaleImages", "false");
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
@@ -273,6 +272,9 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         };
         
         t.setName("addAllPlayLists");
+        // We want the GUI to be responsive and show the updates instead of being
+        // stuck with the splash-screen
+        t.setPriority(Thread.MIN_PRIORITY);
         t.start();
     }
     synchronized void addAllPlayLists(Preferences pref, boolean clearSongs) {
@@ -397,11 +399,11 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     }
     public static String getElapsedTime() {
         StringBuilder res = new StringBuilder();
-        DateTime thisTime = new DateTime();
-        long elapsed = thisTime.getMillis() - lastTime.getMillis();
+        Date thisTime = new Date();
+        long elapsed = thisTime.getTime() - lastTime.getTime();
         
-        res.append("Last time " + lastTime.toTimeOfDay().toString() +
-                " now " + thisTime.toTimeOfDay().toString() +
+        res.append("Last time " + lastTime.toString() +
+                " now " + thisTime.toString() +
                 " Elapsed " + (new Long(elapsed)).toString() + "ms");
         
         lastTime = thisTime;

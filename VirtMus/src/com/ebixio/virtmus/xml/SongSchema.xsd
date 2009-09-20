@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://ebixio.com/schema/VirtMusSongSchema"
+    xmlns:tns="http://ebixio.com/schema/VirtMusSongSchema"
+    elementFormDefault="qualified" -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"
+    schemaLocation="http://www.w3.org/2001/xml.xsd" />
+
+<xsd:element name="song">
+    <xsd:complexType>
+        <xsd:sequence>
+            <xsd:element name="name" minOccurs="0" type="xsd:string"/>
+            <xsd:element name="tags" minOccurs="0" type="xsd:string"/>
+            <xsd:element name="pages">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="page" type="pageType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:string"/>
+    </xsd:complexType>
+</xsd:element>
+
+<xsd:complexType name="pageType">
+    <xsd:sequence>
+        <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+        <xsd:element name="sourceFile" type="sourceFileType"/>
+        <xsd:element name="rotation" type="rotationType"/>
+        <xsd:element name="annotationSVG" type="xsd:string" minOccurs="0"/>
+    </xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="sourceFileType">
+    <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+            <xsd:attribute name="pageNum" type="xsd:int"/>
+        </xsd:extension>
+    </xsd:simpleContent>
+</xsd:complexType>
+
+<xsd:simpleType name="rotationType">
+    <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="Clockwise_0"/>
+        <xsd:enumeration value="Clockwise_90"/>
+        <xsd:enumeration value="Clockwise_180"/>
+        <xsd:enumeration value="Clockwise_270"/>
+    </xsd:restriction>
+</xsd:simpleType>
+
+</xsd:schema>

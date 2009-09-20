@@ -526,8 +526,23 @@ For full details and a complete list of options, see: http://java.sun.com/javase
 
 Sections 3.1.3 through 3.1.5 are particularly relevant for the Windows OS.</pre>
 </div>
-<div title="ChangeLog" modifier="GabrielBurca" modified="200812070420" created="200701272322" tags="Publish" changecount="22">
-<pre>! Version 2.00
+<div title="ChangeLog" modifier="GabrielBurca" modified="200909140342" created="200701272322" tags="Publish" changecount="25">
+<pre>! Version 2.50
+* Features added:
+** Pages from a PDF document can be added to a song (as music pages).
+** The property sheet now has an option to add tags to each song. There are plans to make use of tags more extensively in future versions.
+** Page names in thumbnail view are now shortened by removing the middle part instead of truncating. In previous version the page number ended up being truncated usually making it difficult to identify the page.
+** Thumbnails are now updated when annotations are drawn in the annotations window.
+
+* Bugs fixed:
+** Not really a bug, but the file format of song and playlist files became kind of messy. Should be cleaner now.
+
+! Planned for the next version
+* A tag hierarchy view
+* Show the user a list of Songs or MusicPages that are missing
+* Additional image editing tools
+
+! Version 2.00
 * Features added:
 ** A ~MS-Windows installer that can be used instead of the zip distribution
 ** Improved start-up for large collections
@@ -540,13 +555,6 @@ Sections 3.1.3 through 3.1.5 are particularly relevant for the Windows OS.</pre>
 ** Added clipboard support and Edit menu entries
 ** Added memory usage graph in the tool bar
 ** A new script was contributed by one of the users to ConvertFromPdf directly to a song.
-
-! Planned for the next version
-* Tags for PlayLists and songs
-* A tag hierarchy view
-* Show the user a list of Songs or MusicPages that are missing
-* Direct handling of PDF files
-* Additional image editing tools
 
 ! Version 1.01
 * Features added:
@@ -571,8 +579,10 @@ Sections 3.1.3 through 3.1.5 are particularly relevant for the Windows OS.</pre>
 ** Hopefully also fixed the occasional AbstractLookup exception thrown during start-up.
 </pre>
 </div>
-<div title="ConvertFromPdf" modifier="GabrielBurca" modified="200811150440" created="200811150416" tags="Publish" changecount="12">
-<pre>If [[ImageMagic|http://www.imagemagick.org/]] is installed as suggested in the VirtMusInstall instructions, ~PDFs can be converted to image files by using the {{{convert}}} command.
+<div title="ConvertFromPdf" modifier="GabrielBurca" modified="200909140346" created="200811150416" tags="Publish" changecount="14">
+<pre>This information is now deprecated. Starting with version 2.50, VirtMus reads PDF files directly without having to convert them to image files.
+
+If [[ImageMagic|http://www.imagemagick.org/]] is installed as suggested in the VirtMusInstall instructions, ~PDFs can be converted to image files by using the {{{convert}}} command.
 
 ~PDFs can also be converted directly to a song file by using the [[script provided by Claudio Favi|http://wiki.epfl.ch/cfavi/virtmus]] and shown below. This requires the {{{bash}}} shell to be available. On Windows machines {{{bash}}} is part of the default [[CygWin install|http://www.cygwin.com/]]
 
@@ -3323,8 +3333,8 @@ Note that once you've launched the SVG editor, VirtMus will block until you exit
 
 [img[img/Annotations.png]]</pre>
 </div>
-<div title="MusicPages" modifier="GabrielBurca" modified="200811150437" created="200701132229" tags="Publish" changecount="4">
-<pre>Music pages can be ''JPGs'', ''PNGs'', ''GIFs'' or any other graphic file format that Java and JAI supports by default. It is also possible to ConvertFromPdf to graphic file formats that are usable by VirtMus.
+<div title="MusicPages" modifier="GabrielBurca" modified="200909140347" created="200701132229" tags="Publish" changecount="5">
+<pre>Music pages can be ''JPGs'', ''PNGs'', ''GIFs'' or any other graphic file format that Java and JAI supports by default. It is also possible to read PDF files directly, or ConvertFromPdf to graphic file formats that are usable by VirtMus.
 
 The resolution of the images should be approximately the same as the resolution of the display. If it is much higher, the application will consume too much memory trying to work with them. If it is much lower they will not look sharp when stretched to fill the whole display.
 
@@ -4157,14 +4167,14 @@ These are the various VirtMusOptions available:
 <div title="SiteUrl" modifier="GabrielBurca" modified="200711060628" created="200710101920" changecount="5">
 <pre>http://virtmus.com/</pre>
 </div>
-<div title="SongLists" modifier="GabrielBurca" modified="200811150438" created="200701130746" tags="Publish" changecount="2">
+<div title="SongLists" modifier="GabrielBurca" modified="200909140344" created="200701130746" tags="Publish" changecount="3">
 <pre>A song is nothing more than a list of MusicPages. The pages can appear in any order, and can appear multiple times. If there's a repeat on page 4 going back to page 2, it is recommended to add pages &quot;2, 3, 4&quot; twice in a row so you can page-down every time you get to the end of a page and not worry about going back to find the repeat on page 2 while performing. You would then end up with the following page sequence: 1, 2, 3, 4, 2, 3, 4, 5, 6.
 
 See ReOrdering for more information on how songs can be re-ordered within a playlist, and how songs can be moved and copied between PlayLists.
 
 Song files have the extension {{{.song.xml}}} on disk and they store the full path to the MusicPages making up the song.
 
-PDF files can be converted directly to song files by following the instructions to ConvertFromPdf.</pre>
+PDF files can be converted directly to song files by following the instructions to ConvertFromPdf. Starting with version 2.50, PDF files can be read directly by opening them just like a regular graphic file. A dialog box will prompt for the range of pages to use out of the PDF.</pre>
 </div>
 <div title="TemporaryTiddlersPlugin" modifier="ELSDesignStudios" modified="200702090203" created="200702081951" tags="AuthoringPackage ImportExportPackage includeNew systemConfig" changecount="1">
 <pre>/***
@@ -5048,7 +5058,7 @@ VirtMus is Copyright (C) 2006-2008 Gabriel Burca and released under the [[GPL|ht
 * Use the left/right mouse buttons or Page Down/Up to advance through the pages, or use a FootSwitch. See the LiveWindowKeyboardShortcuts section for a list of available keyboard shortcuts.
 * Also, see ''Tools''-&gt;''Options'' and the VirtMusOptions section for various settings that can be used to customize the display orientation, scroll amount and scroll direction.</pre>
 </div>
-<div title="VirtMusInstall" modifier="GabrielBurca" modified="200811150433" created="200701131904" tags="Publish" changecount="13">
+<div title="VirtMusInstall" modifier="GabrielBurca" modified="200909140328" created="200701131904" tags="Publish" changecount="14">
 <pre>! Install the Requirements:
 The only &quot;hard&quot; requirement is the Java Runtime Environment (JRE) 6 SE which you might already have. If not, it can be obtained from:
 * Windows/Linux/Solaris: http://java.sun.com/javase/downloads/index.jsp
@@ -5065,7 +5075,7 @@ All of the optional requirements are available for Unix/Linux, Windows and OSX.
 ! Install
 To &quot;install&quot; on Windows/Linux/Solaris, simply unzip the downloaded file in a convenient place.
 
-To &quot;install&quot; on Mac... wait until Java 6.0 is released.
+To &quot;install&quot; on Mac... you're on your own.
 
 ! Run
 * On Windows: go to the directory you unzipped the file and execute the {{{virtmus.exe}}} file from the {{{bin}}} subdirectory.

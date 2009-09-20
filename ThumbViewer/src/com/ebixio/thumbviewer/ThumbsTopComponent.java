@@ -23,6 +23,7 @@ package com.ebixio.thumbviewer;
 import com.ebixio.virtmus.DraggableThumbnail;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
+import com.ebixio.virtmus.MusicPageNode;
 import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.Thumbnail;
 import java.awt.Component;
@@ -35,6 +36,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
@@ -46,6 +48,7 @@ import net.java.swingfx.jdraggable.DraggableManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -75,10 +78,29 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
             }
         }
     };
-    
+
+    /**
+     * We want to know when the song pages have been marked "dirty" so we can update
+     * the thumbnail and set the proper one to "selected"
+     */
     private ChangeListener changeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-            if (e.getSource().getClass() == Song.class) loadSong((Song)e.getSource());
+            if (e.getSource().getClass() == Song.class) {
+                MusicPage selectedPage = null;
+                Song s = (Song)e.getSource();
+                for (Component c: jPanel.getComponents()) {
+                    Thumbnail t = (Thumbnail)c;
+                    if (t.isSelected()) {
+                        // If the page has changed (the page annotations or name)
+                        // this thumbnail might have been discarded by the page.
+                        selectedPage = t.getPage();
+                        break;
+                    }
+                }
+                
+                loadSong(s);
+                if (selectedPage != null) selectedPage.getThumbnail().setSelected(true);
+            }
         }
     };
     
@@ -232,11 +254,11 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
                     } else {
                         m.getThumbnail().setSelected(false);
                     }
-                }                
+                }
             }
         }        
     }
-    
+
     /** replaces this in object stream */
     @Override
     public Object writeReplace() {
@@ -260,14 +282,13 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
                 ((Thumbnail)c).setSelected(false);
             }
             t.setSelected(true);
-            ExplorerManager manager = com.ebixio.virtmus.MainApp.findInstance().getExplorerManager();
+
+//            ExplorerManager manager = com.ebixio.virtmus.MainApp.findInstance().getExplorerManager();
 //            try {
-//                manager.setSelectedNodes(new Node[] {t.getPage().node});
+//                manager.setSelectedNodes(new Node[]{new MusicPageNode(t.getPage())});
 //            } catch (PropertyVetoException ex) {
-//                //ex.printStackTrace();
+//                Exceptions.printStackTrace(ex);
 //            }
-            
-            File f = t.getImgFile();
         }
     }
     
@@ -290,6 +311,8 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
    
     public void loadSong(Song s) {
         if (loadedSong != null) loadedSong.removeChangeListener(changeListener);
+
+
         s.addChangeListener(changeListener);
         loadedSong = s;
         
@@ -385,7 +408,8 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
             }
             
             if (changed) {
-                loadedSong.pageOrder = newOrder;
+                loadedSong.pageOrder.clear();
+                loadedSong.pageOrder.addAll(newOrder);
                 loadedSong.setDirty(true);
                 loadedSong.notifyListeners();
                 loadSong(loadedSong);

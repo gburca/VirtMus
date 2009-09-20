@@ -61,7 +61,7 @@ public class Utils {
         return getScreenSizes()[screen];
     }
 
-    static Dimension[] getScreenSizes() {
+    public static Dimension[] getScreenSizes() {
         Vector<Dimension> sizes = new Vector<Dimension>();
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
@@ -70,8 +70,8 @@ public class Utils {
             DisplayMode dm = gs[i].getDisplayMode();
             sizes.add(new Dimension(dm.getWidth(), dm.getHeight()));
         }
-        
-        return (Dimension[]) sizes.toArray();
+
+        return sizes.toArray(new Dimension[sizes.size()]);
     }
 
     static int getNumberOfScreens() {
@@ -102,7 +102,7 @@ public class Utils {
         return Math.min(scaleX, scaleY);
     }
     
-    static Rectangle shrinkToFit(Rectangle container, Rectangle item) {
+    public static Rectangle shrinkToFit(Rectangle container, Rectangle item) {
         double scale = scaleProportional(container, item);
         if (scale > 1) {
             return item;
@@ -111,7 +111,7 @@ public class Utils {
         }
     }
     
-    static Rectangle stretchToFit(Rectangle container, Rectangle item) {
+    public static Rectangle stretchToFit(Rectangle container, Rectangle item) {
         double scale = scaleProportional(container, item);
         if (scale < 1) {
             return item;
@@ -120,15 +120,22 @@ public class Utils {
         }
     }
     
-    static Rectangle scaleToFit(Rectangle container, Rectangle item) {
+    public static Rectangle scaleToFit(Rectangle container, Rectangle item) {
         double scale = scaleProportional(container, item);
         return new Rectangle((int)(item.width * scale), (int)(item.height * scale));        
     }
     
-    static Point centerItem(Rectangle container, Rectangle item) {
+    public static Point centerItem(Rectangle container, Rectangle item) {
         int x = (container.width / 2) - (item.width / 2);
         int y = (container.height / 2) - (item.height / 2);
         return new Point(x, y);
+    }
+
+    public static Rectangle scale(Rectangle rect, float scale) {
+        Rectangle res = rect;
+        res.width *= scale;
+        res.height *= scale;
+        return res;
     }
     // </editor-fold>
     
@@ -325,5 +332,16 @@ public class Utils {
 
         return files;
     }
-    
+
+    public static String shortenString(String orig, int charsToRemove) {
+        if (charsToRemove <= 0) { return orig; }
+        if (charsToRemove >= orig.length() - 1) { return orig.charAt(0) + "..."; }
+
+        int cut = orig.length() - charsToRemove;
+        int s1len = cut / 2 + cut % 2;
+        int s2len = cut / 2;
+        String s1 = orig.substring(0, s1len);
+        String s2 = orig.substring(orig.length() - s2len);
+        return s1 + "..." + s2;
+    }
 }

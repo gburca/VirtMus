@@ -186,6 +186,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * Returns the state of the current {@link Draggable} component which this
      * manager is handling
      *
+     * @param draggableComponent 
      * @return the state of the current <code>Draggable</code> component
      *
      * @see net.java.swingfx.jdraggable.DraggableManager#getState(net.java.swingfx.jdraggable.Draggable)

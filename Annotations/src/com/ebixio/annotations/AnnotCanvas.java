@@ -28,6 +28,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -55,6 +56,8 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     
     private MusicPage musicPage = null;
     private ShapeLine line = null;
+
+    public Rectangle imgBounds;
 
     public AnnotCanvas() {
         addMouseListener(this);
@@ -149,10 +152,10 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     
     public void mouseClicked(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
-            Point p = e.getPoint();
+            Point p = getAbsolutePoint(e.getPoint());
 
             if (musicPage != null) {
-                musicPage.addAnnotation(new ShapePoint(paint, alpha, Math.round(diam / scale), getAbsolutePoint(p)));
+                musicPage.addAnnotation(new ShapePoint(paint, alpha, Math.round(diam / scale), p));
             }
             repaint();
         }
@@ -162,6 +165,10 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
         if (e.getButton() == MouseEvent.BUTTON1) {
             dragState = Drag.DRAGGING;
             dragStart = e.getPoint();
+
+            if (imgBounds.contains(getAbsolutePoint(dragStart))) {
+                line = new ShapeLine(paint, alpha, Math.round(diam/scale), getAbsolutePoint(dragStart));
+            }
         }
     }
     
@@ -190,12 +197,19 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     
     public void mouseDragged(MouseEvent e) {
         if (dragState == Drag.DRAGGING) {
+            if (musicPage == null) return;
+
+            Point p = getAbsolutePoint(e.getPoint());
             if (line == null) {
-                if (musicPage != null) {
-                    line = new ShapeLine(paint, alpha, Math.round(diam/scale), getAbsolutePoint(dragStart));
-                }
+                if (!imgBounds.contains(p)) return;
+                line = new ShapeLine(paint, alpha, Math.round(diam/scale), p);
             } else {
-                line.addEnd(getAbsolutePoint(e.getPoint()));
+                if (!imgBounds.contains(p)) {
+                    musicPage.addAnnotation(line);
+                    line = null;
+                } else {
+                    line.addEnd(getAbsolutePoint(e.getPoint()));
+                }
                 repaint();
             }
         }        

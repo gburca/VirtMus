@@ -35,7 +35,9 @@ import org.openide.util.WeakListeners;
 public class MusicPages extends Children.Keys<MusicPage> implements ChangeListener {
     private Song song;
     
-    /** Creates a new instance of MusicPages */
+    /** Creates a new instance of MusicPages
+     * @param song 
+     */
     public MusicPages(Song song) {
         this.song = song;
         song.addChangeListener(WeakListeners.change(this, song));

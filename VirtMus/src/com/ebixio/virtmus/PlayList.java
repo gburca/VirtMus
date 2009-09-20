@@ -22,8 +22,9 @@ package com.ebixio.virtmus;
 
 import com.ebixio.virtmus.filefilters.PlayListFilter;
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.annotations.Annotations;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.io.xml.TraxSource;
 import java.awt.Frame;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
@@ -43,6 +45,12 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -55,10 +63,15 @@ import org.openide.windows.WindowManager;
  */
 @XStreamAlias("PlayList")
 public class PlayList implements Comparable<PlayList> {
+
     @XStreamAlias("SongFiles")
     public Vector<File> songFiles = new Vector<File>();
+
     @XStreamAlias("Name")
     private String name = null;
+
+    @XStreamAsAttribute
+    private String version = MainApp.VERSION;   // Used in the XML output
 
     // We don't want to save the "Song", with all it's pages, etc... just the song.xml file name
     public transient List<Song> songs = Collections.synchronizedList(new Vector<Song>());
@@ -72,7 +85,20 @@ public class PlayList implements Comparable<PlayList> {
     
     public static enum Type { Default, AllSongs, Normal }
     public transient Type type = Type.Normal;
-    
+
+    private transient static Transformer plXFormer;
+
+    static {
+        InputStream plXform = Song.class.getResourceAsStream("/com/ebixio/virtmus/xml/PlayListTransform.xsl");
+        TransformerFactory factory = TransformerFactory.newInstance();
+        try {
+            plXFormer = factory.newTransformer(new StreamSource(plXform));
+            plXFormer.setOutputProperty(OutputKeys.INDENT, "yes");
+            plXFormer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+        } catch (TransformerConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
     
     /** Creates a new instance of PlayList */
     public PlayList() {}
@@ -116,6 +142,7 @@ public class PlayList implements Comparable<PlayList> {
         isDirty = false;
         listeners = new HashSet<ChangeListener>();
         type = Type.Normal;
+        version = MainApp.VERSION;
         return this;
     }
     
@@ -257,7 +284,7 @@ public class PlayList implements Comparable<PlayList> {
         if (toFile == null || toFile.isDirectory()) return false;
         
         XStream xs = new XStream();
-        Annotations.configureAliases(xs, PlayList.class);
+        xs.processAnnotations(PlayList.class);
         
         // We need to re-create the songFiles
         songFiles.clear();
@@ -268,7 +295,12 @@ public class PlayList implements Comparable<PlayList> {
         }
         
         try {
-            xs.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
+            TraxSource traxSource = new TraxSource(this, xs);
+            OutputStreamWriter buffer = new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8");
+            synchronized(PlayList.class) {
+                plXFormer.transform(traxSource, new StreamResult(buffer));
+            }
+            //xs.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
             return false;
@@ -285,7 +317,7 @@ public class PlayList implements Comparable<PlayList> {
         if (f == null || !f.getName().endsWith(".playlist.xml")) return null;
 
         XStream xs = new XStream();
-        Annotations.configureAliases(xs, PlayList.class);
+        xs.processAnnotations(PlayList.class);
 
         final PlayList pl;
 
@@ -376,7 +408,11 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void setName(String name) {
-        if (name.equals(this.name)) return;
+        if (name == null) {
+            if (this.name == null) return;
+        } else if (name.equals(this.name)) {
+            return;
+        }
         
         this.name = name;
         setDirty(true);
@@ -392,7 +428,8 @@ public class PlayList implements Comparable<PlayList> {
             this.isDirty = isDirty;
             notifyListeners();
         }
-        MainApp.findInstance().saveAllAction.updateEnable();
+        if (MainApp.findInstance().saveAllAction != null)
+            MainApp.findInstance().saveAllAction.updateEnable();
     }
     
     public void addChangeListener(ChangeListener listener) {

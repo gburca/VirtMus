@@ -22,6 +22,7 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.virtmus.imgsrc.PdfImg;
 import com.ebixio.virtmus.shapes.*;
 import com.ebixio.virtmus.svg.SvgGenerator;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -85,11 +86,8 @@ public class MusicPageSVG extends MusicPage {
      */
     public transient final static String SVG_BACKGROUND_ID = "VirtMusBackground";
 
-    public MusicPageSVG(Song song) {
-        super(song);
-    }
-    public MusicPageSVG(Song song, File sourceFile) {
-        super(song, sourceFile);
+    public MusicPageSVG(Song song, File sourceFile, Object opt) {
+        super(song, sourceFile, opt);
     }
     
     @Override
@@ -112,6 +110,7 @@ public class MusicPageSVG extends MusicPage {
                 changeListener.stateChanged(new ChangeEvent(this));
             }
         }
+        song.notifyListeners();
     }
     
     @Override
@@ -124,7 +123,7 @@ public class MusicPageSVG extends MusicPage {
             this.annotationSVG = document2Str(svgDocument);
         }
     }
-    
+
     protected SVGDocument addImgBackground(String svgStr) {
         return addImgBackground(MusicPageSVG.str2Document(svgStr));
     }
@@ -141,9 +140,9 @@ public class MusicPageSVG extends MusicPage {
         if (doc == null) return doc;
 
         Element img = doc.createElement("image");
-        img.setAttribute("xlink:href", this.sourceFile.getName());
-        img.setAttribute("width", Integer.toString(this.getDimension().width));
-        img.setAttribute("height", Integer.toString(this.getDimension().height));
+        img.setAttribute("xlink:href", imgSrc.getSourceFile().getName());
+        img.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
+        img.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
         img.setAttribute("x", Integer.toString(0));
         img.setAttribute("y", Integer.toString(0));
         img.setAttribute("id", MusicPageSVG.SVG_BACKGROUND_ID);
@@ -164,8 +163,8 @@ public class MusicPageSVG extends MusicPage {
         }
 
         // If we created a new document, it won't have width/height
-        if (!root.hasAttribute("width"))  root.setAttribute("width", Integer.toString(this.getDimension().width));
-        if (!root.hasAttribute("height")) root.setAttribute("height", Integer.toString(this.getDimension().height));
+        if (!root.hasAttribute("width"))  root.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
+        if (!root.hasAttribute("height")) root.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
         
         return doc;
     }
@@ -252,7 +251,7 @@ public class MusicPageSVG extends MusicPage {
     public File generateSvgFilename() {
         File file = null;
         try {
-            file = new File(sourceFile.getCanonicalPath() + "." +
+            file = new File(imgSrc.getSourceFile().getCanonicalPath() + "." +
                     Integer.toString(getPageNumber()) + ".svg");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -266,11 +265,13 @@ public class MusicPageSVG extends MusicPage {
         svgDocument = null;
         graphicsNode = null;
         setDirty(true);
+        song.notifyListeners();
     }
     
     public void addAnnotation(VmShape s) {
         shapes.add(s);
         setDirty(true);
+        song.notifyListeners();
     }
     
     /**
@@ -315,7 +316,7 @@ public class MusicPageSVG extends MusicPage {
         
         // The dimensions of the SVG page (should match the size of the
         // music page image the annotations were drawn on).
-        svgGraphics2D.setSVGCanvasSize(getDimension());
+        svgGraphics2D.setSVGCanvasSize(imgSrc.getDimension());
 
         for (VmShape s: shapes) {
             s.paint(svgGraphics2D);
@@ -349,7 +350,13 @@ public class MusicPageSVG extends MusicPage {
         return this.clone(this.song);
     }
     public MusicPageSVG clone(Song song) {
-        MusicPageSVG mp = new MusicPageSVG(song, this.sourceFile);
+        MusicPageSVG mp;
+        if (imgSrc.getClass() == PdfImg.class) {
+            PdfImg img = (PdfImg)imgSrc;
+            mp = new MusicPageSVG(song, imgSrc.getSourceFile(), img.pageNum);
+        } else {
+            mp = new MusicPageSVG(song, imgSrc.getSourceFile(), null);
+        }
         mp.setName(this.getName());
         mp.rotation = this.rotation;
         prepareToSave();
@@ -434,7 +441,7 @@ public class MusicPageSVG extends MusicPage {
 
         // Build the tree and get the document dimensions
         UserAgentAdapter userAgentAdapter;
-        Dimension dim = getDimension();
+        Dimension dim = imgSrc.getDimension();
         if (dim.width > 1 && dim.height > 1) {
             // If the SVG document contains dimensions, which one has precedence,
             // the SVG or the userAgentAdapter?

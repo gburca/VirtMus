@@ -10,7 +10,7 @@
 ;--------------------------------
 ;General
         ; Name and file.
-	!define VERSION "2.00"
+	!define VERSION "2.50"
 
 	; This ${PRODUCT} !define is used throughout this intaller for a lot of
 	; things including install directory names and links. It should probably
@@ -22,7 +22,7 @@
 	OutFile "${PRODUCT}_${VERSION}.exe"
 	
 	; Default installation folder
-	InstallDir "$PROGRAMFILES\${PRODUCT}"
+	InstallDir "$PROGRAMFILES\${PRODUCT}_${VERSION}"
   
 	;Request application privileges for Windows Vista
 	RequestExecutionLevel user
@@ -87,7 +87,7 @@ SectionEnd
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-    !insertmacro MUI_DESCRIPTION_TEXT ${SVirtMus} $(DESC_SVirtMus)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SVirtMus} $(DESC_SVirtMus)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
  
 ;--------------------------------

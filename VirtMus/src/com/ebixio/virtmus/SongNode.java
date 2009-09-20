@@ -57,7 +57,8 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
     
     /** Creates a new instance of SongNode
      * @param playList
-     * @param song 
+     * @param song
+     * @param children
      */
     public SongNode(PlayList playList, Song song, MusicPages children) {
         super(children, Lookups.fixed(new Object[]{playList, song, children.getIndex()}));
@@ -85,10 +86,13 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
         try {
             Property nameProp = new PropertySupport.Reflection<String>(s, String.class, "name"); // get/setName
             Property fileProp = new PropertySupport.Reflection<String>(s, String.class, "getSourceFileStr", null); // only getSourceFileStr
+            Property tagsProp = new PropertySupport.Reflection<String>(s, String.class, "tags"); // get/setTags
             nameProp.setName("Name");
             fileProp.setName("Source File");
+            tagsProp.setName("Tags");
             set.put(nameProp);
             set.put(fileProp);
+            set.put(tagsProp);
         } catch (NoSuchMethodException ex) {
             ErrorManager.getDefault().notify(ex);
         }

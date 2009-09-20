@@ -46,6 +46,7 @@ public final class MusicPageCloneAction extends NodeAction {
         return NbBundle.getMessage(MusicPageCloneAction.class, "CTL_MusicPageCloneAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/CloneMusicPage.gif";
     }
@@ -54,6 +55,7 @@ public final class MusicPageCloneAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

@@ -21,7 +21,11 @@
 package com.ebixio.virtmus;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -33,15 +37,11 @@ import javax.swing.border.Border;
  * @author  gburca
  */
 public class Thumbnail extends javax.swing.JPanel {
-    private File imgFile;
     private boolean selected = false;    // Show a different border when the thumbnail is selected
     private MusicPage page;
     private BufferedImage img = null;
     private Color defaultLabelColor;
     private Border defaultBorder;
-    private static ArrayList renderQ = new ArrayList();
-    private static boolean modifyingQ = false;
-    //private static List renderQ = Collections.synchronizedList(new ArrayList());
     
     /** Creates new form Thumbnail */
     public Thumbnail() {
@@ -53,11 +53,19 @@ public class Thumbnail extends javax.swing.JPanel {
     public Thumbnail(int w, int h) {
         this();         // Call the default constructor first
         this.setSize(w, h);
+
+        Border b = getBorder();
+        h = label.getPreferredSize().height;
+        if (b != null) {
+            Insets insets = b.getBorderInsets(this);
+            label.setSize(w - insets.left - insets.right, h);
+        } else {
+            label.setSize(w, h);
+        }
     }
-    public Thumbnail(int w, int h, File file, String description) {
+    public Thumbnail(int w, int h, String description) {
         this(w, h);
-        imgFile = file;
-        label.setText(description);
+        setName(description);
     }
     
     /** This method is called from within the constructor to
@@ -111,15 +119,21 @@ public class Thumbnail extends javax.swing.JPanel {
     private javax.swing.JPanel canvas;
     private javax.swing.JLabel label;
     // End of variables declaration//GEN-END:variables
-    
-    
-    public File getImgFile() {
-        return this.imgFile;
-    }
+
 
     @Override
     public void setName(String name) {
+        String origName = name;
+        FontMetrics fm = label.getFontMetrics(label.getFont());
+        int chars = 0;
+
+        do {
+            name = Utils.shortenString(origName, chars++);
+        } while (fm.stringWidth(name) > label.getSize().getWidth()
+                && chars < origName.length());
+
         label.setText(name);
+        this.setToolTipText(origName);
     }
     @Override
     public String getName() {

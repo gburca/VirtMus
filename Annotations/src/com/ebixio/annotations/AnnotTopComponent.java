@@ -21,14 +21,17 @@ package com.ebixio.annotations;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.swing.JSlider;
@@ -57,7 +60,6 @@ public final class AnnotTopComponent extends TopComponent
     static final String ICON_PATH = "com/ebixio/annotations/annot-tab-icon.png";
     
     private static final String PREFERRED_ID = "AnnotTopComponent";
-    private Lookup.Result lookupResult = null;
     private PlanarImage source = null;
     private PlanarImage scaledSource = null;
     private MusicPage currentlyShowing = null;
@@ -307,6 +309,7 @@ public final class AnnotTopComponent extends TopComponent
         JSlider js = (JSlider) evt.getSource();
         int newValue = js.getValue();
         canvas.setDiam( newValue );
+        canvas.setThreshold(255 - newValue);
         brushPreview.setDiam(newValue);
     }//GEN-LAST:event_jsBrushSizeStateChanged
 
@@ -420,6 +423,10 @@ public final class AnnotTopComponent extends TopComponent
         }
     }
     
+    /**
+     *
+     * @param scale A scaling percentage between [0.1 .. 1]
+     */
     public void resizeImage(float scale) {
         if (source == null) {
             return;
@@ -427,19 +434,19 @@ public final class AnnotTopComponent extends TopComponent
         
         if (scale < 0.1) {
             scale = 0.1F;
-        } else if (scale >= 1) {
-            return;
+        } else if (scale > 1) {
+            scale = 1.0F;
         }
         
         canvas.setScale(scale);
-        
+
         // Use "SubsampleAverage" because it looks much better.
         RenderingHints qualityHints = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         scaledSource = JAI.create("SubsampleAverage", source, (double)scale, (double)scale, qualityHints);
 
         showImage(scaledSource);
     }
-    
+
     public void showPage(MusicPage page) {
         source = scaledSource = null;
         // Reset zoom so the change property fires when the page is scaled to fit.
@@ -451,10 +458,10 @@ public final class AnnotTopComponent extends TopComponent
                 canvas.repaint();
             }
         });
-        
-        File file = page.getSourceFile();
-        if (file.exists() && file.canRead()) {
-            source = JAI.create("fileload", file.toString());
+
+        PlanarImage src = currentlyShowing.imgSrc.getFullImg();
+        if (src != null) {
+            source = src;
         } else {
             return;
         }
@@ -463,8 +470,8 @@ public final class AnnotTopComponent extends TopComponent
         SwingWorker w = new SwingWorker<Boolean, Void>() {
             protected Boolean doInBackground() {
                 try {
-                    // We don't really need the bounds, but this forces the image to load.
-                    source.getBounds();
+                    // This forces the image to load.
+                    canvas.imgBounds = source.getBounds();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -496,7 +503,9 @@ public final class AnnotTopComponent extends TopComponent
                         canvas.imgLoader.get();    // The returned value is irrelevant
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    if (! ex.getClass().equals(CancellationException.class)) {
+                        ex.printStackTrace();
+                    }
                 }
                 return new Boolean(true);
             }
@@ -521,8 +530,8 @@ public final class AnnotTopComponent extends TopComponent
         
         if (dScale < 1) {
             scale = 1;
-        } else if (dScale > 1000) {
-            scale = 1000;
+        } else if (dScale >= 1000) {
+            scale = 999;
         } else {
             scale = (int)dScale;
         }
@@ -585,6 +594,7 @@ public final class AnnotTopComponent extends TopComponent
     }
 
     /** replaces this in object stream 
+     * @return
      */
     @Override
     public Object writeReplace() {

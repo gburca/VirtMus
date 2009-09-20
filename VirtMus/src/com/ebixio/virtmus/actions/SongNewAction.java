@@ -41,7 +41,10 @@ public final class SongNewAction extends CallableSystemAction {
                 MainApp.findInstance().playLists.get(0).addSong(s);
             }
             // Add the song to the All Songs playlist
-            MainApp.findInstance().playLists.get(1).addSong(s);
+            PlayList allSongs = MainApp.findInstance().playLists.get(1);
+            if (pl != allSongs) {
+                allSongs.addSong(s);
+            }
         }
     }
     
@@ -49,6 +52,7 @@ public final class SongNewAction extends CallableSystemAction {
         return NbBundle.getMessage(SongNewAction.class, "CTL_SongNewAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/NewSongAction.gif";
     }
@@ -57,6 +61,7 @@ public final class SongNewAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

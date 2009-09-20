@@ -22,26 +22,24 @@ package com.ebixio.virtmus;
 
 import com.ebixio.virtmus.actions.SaveAllAction;
 import com.ebixio.virtmus.actions.SongSaveAction;
+import com.ebixio.virtmus.imgsrc.GenericImg;
+import com.ebixio.virtmus.imgsrc.ImgSrc;
+import com.ebixio.virtmus.imgsrc.PdfImg;
 import com.ebixio.virtmus.shapes.VmShape;
-import com.sun.media.jai.codec.FileSeekableStream;
-import java.awt.Color;
+import com.ebixio.virtmus.xml.FileConverter;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Transparency;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,22 +47,20 @@ import java.util.concurrent.PriorityBlockingQueue;
 import javax.imageio.ImageIO;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.KernelJAI;
 import javax.media.jai.RenderedOp;
 import javax.swing.event.ChangeListener;
-import org.apache.batik.ext.awt.RenderingHintsKeyExt;
-import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author gburca
  */
+@XStreamAlias("page")
 public abstract class MusicPage {
-    protected File sourceFile;
     public MainApp.Rotation rotation = MainApp.Rotation.Clockwise_0;
     private String name = null;
     public static int thumbW = 130, thumbH = 200;
+    public volatile ImgSrc imgSrc;
     
 
     private static transient PriorityBlockingQueue<JobRequest> renderQ = new PriorityBlockingQueue<JobRequest>();
@@ -75,7 +71,6 @@ public abstract class MusicPage {
     private transient DraggableThumbnail thumbnail;
     public transient Song song;
     public transient boolean isDirty = false;
-    private transient Dimension dimension = null;
     /** The AnnotTopComponent sets itself as a change listener so that we can 
      * tell it to repaint the annotation canvas when the SVG changes */
     protected transient ChangeListener changeListener = null;
@@ -93,14 +88,17 @@ public abstract class MusicPage {
 
     /** Creates a new instance of MusicPage 
      * @param song The song that this music page belongs to.
+     * @param sourceFile
+     * @param opt
      */
-    public MusicPage(Song song) {
+    public MusicPage(Song song, File sourceFile, Object opt) {
         this.song = song;
-    }
-    
-    public MusicPage(Song song, File sourceFile) {
-        this.song = song;
-        this.setSourceFile(sourceFile);
+        if (sourceFile.getName().toLowerCase().endsWith(".pdf")) {
+            int page = (Integer)opt;
+            imgSrc = new PdfImg(sourceFile, page);
+        } else {
+            imgSrc = new GenericImg(sourceFile);
+        }
     }
 
     /**
@@ -116,12 +114,14 @@ public abstract class MusicPage {
         this.changeListener = changeListener;
     }
 
-
     public void setDirty(boolean isDirty) {
+        this.thumbnail = null;
+
         if (this.isDirty == isDirty) return;
         
+        //song.fire("pageSetDirty", this.isDirty, isDirty);
+
         this.isDirty = isDirty;
-        this.thumbnail = null;
         // If this change is not done by a NodeAction, we need to enable the actions here.
         SystemAction.get(SaveAllAction.class).setEnabled(true);
         SystemAction.get(SongSaveAction.class).setEnabled(true);
@@ -131,16 +131,16 @@ public abstract class MusicPage {
         return this.isDirty;
     }
     
-    /** When reading old files in (that don't have a rotation value) we need to
-     * initialize rotation */
-    private Object readResolve() {
-        if (rotation == null) { rotation = MainApp.Rotation.Clockwise_0; }
-        return this;
-    }
+//    /** When reading old files in (that don't have a rotation value) we need to
+//     * initialize rotation */
+//    private Object readResolve() {
+//        if (rotation == null) { rotation = MainApp.Rotation.Clockwise_0; }
+//        return this;
+//    }
     
     public DraggableThumbnail getThumbnail() {
         if (thumbnail == null) {
-            thumbnail = new DraggableThumbnail(thumbW, thumbH, getSourceFile(), getName());
+            thumbnail = new DraggableThumbnail(thumbW, thumbH, getName());
             thumbnail.setPage(this);
             thumbnail.setPreferredSize(new Dimension(thumbW, thumbH));
             thumbnail.setMinimumSize(new Dimension(thumbW, thumbH));
@@ -149,64 +149,26 @@ public abstract class MusicPage {
     }
 
     public File getSourceFile() {
-        return sourceFile;
+        return imgSrc.getSourceFile();
     }
 
-    public void setSourceFile(File sourceFile) {
-        this.sourceFile = sourceFile;
+    public void setSourceFile(File file) {
+        imgSrc.setSourceFile(file);
     }
-    
+
     public void setName(String name) {
         if (name.equals(this.name)) return;
         this.name = name;
         if (this.thumbnail != null) this.thumbnail.setName(name);
         setDirty(true);
-        //notifyListeners();
+        song.notifyListeners();
     }
     public String getName() {
         if (name != null && name.length() > 0) return name;
-        if (sourceFile != null) return this.sourceFile.getName().replaceFirst("\\..*", "");
+        if (imgSrc != null) {
+            return imgSrc.getName();
+        }
         return "No name";
-    }
-    
-    void closeStream(FileSeekableStream stream) {
-        if (stream == null) return;
-        try {
-            stream.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public Dimension getDimension() {
-        if (dimension != null) {
-            return dimension;
-        } else {
-            FileSeekableStream stream = null;
-            try {
-                stream = new FileSeekableStream(sourceFile.toString());
-            } catch (IOException e) {
-                MainApp.log("MusicPage file: " + sourceFile.toString());
-                MainApp.log(e.toString());
-                closeStream(stream);
-                return new Dimension(1,1);
-            }
-        
-            // Create an operator to decode the image file
-            RenderedOp srcImg = JAI.create("stream", stream);
-        
-            try {
-                dimension = srcImg.getBounds().getSize();
-                srcImg.dispose();
-            } catch (Exception e) {
-                MainApp.log("Bad file format: " + sourceFile.toString());
-                closeStream(stream);
-                return new Dimension(1,1);
-            }
-            
-            closeStream(stream);
-            return dimension;
-        }
     }
     
     /**
@@ -218,159 +180,8 @@ public abstract class MusicPage {
     }
     
     
-    private BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize) {
-        RenderedOp srcImg, destImg;
-        Rectangle destSize;
-
-        // Acquiring the current Graphics Device and Graphics Configuration
-        GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice graphDevice = graphEnv.getDefaultScreenDevice();
-        GraphicsConfiguration graphicConf = graphDevice.getDefaultConfiguration();
-        System.gc();
-        BufferedImage result = graphicConf.createCompatibleImage(containerSize.width, containerSize.height, Transparency.OPAQUE);
-
-        //BufferedImage result = new BufferedImage(containerSize.width, containerSize.height, BufferedImage.TYPE_INT_ARGB_PRE);
-        // TYPE_4BYTE_ABGR_PRE (instead of TYPE_INT_ARGB_PRE) REQUIRED for OpenGL
-        //BufferedImage result = new BufferedImage(containerSize.width, containerSize.height, BufferedImage.TYPE_4BYTE_ABGR_PRE);
-
-        Graphics2D g = result.createGraphics();
-        
-        /** If a BUFFERED_IMAGE hint is not provided, the batik code issues the following warning:
-         * "Graphics2D from BufferedImage lacks BUFFERED_IMAGE hint"
-         * 
-         * See: http://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-dev/200603.mbox/%3C20060309110529.1B7C96ACA9@ajax%3E
-         * See: org.apache.batik.ext.awt.image.GraphicsUtil getDestination(Graphics2D g2d)
-         */
-        RenderingHints renderingHints = new RenderingHints(
-                RenderingHintsKeyExt.KEY_BUFFERED_IMAGE,
-                new WeakReference<BufferedImage>(result));
-        g.addRenderingHints(renderingHints);
-        
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, result.getWidth(), result.getHeight());
-        g.setColor(Color.WHITE);
-        
-        RenderingHints qualityHints = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        RenderingHints interpHints = new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        
-        AffineTransform origXform = g.getTransform();
-        g.setTransform(rotation.getTransform(containerSize.getSize()));
-        
-        switch (rotation) {
-            case Clockwise_90:
-            case Clockwise_270:
-                g.setRenderingHints(interpHints);
-                // Rotate the container size if the image is rotated sideways
-                destSize = new Rectangle(containerSize.height, containerSize.width);
-                break;
-            default:
-                destSize = new Rectangle(containerSize);
-                break;
-        }
-
-        FileSeekableStream stream = null;
-        try {
-            stream = new FileSeekableStream(sourceFile.toString());
-        } catch (IOException e) {
-            String msg = "Bad file.";
-            int strW = g.getFontMetrics().stringWidth(msg);
-            g.drawString(msg, (int)(destSize.getWidth()/2 - strW/2), (int)(destSize.getHeight()/2));
-            return result;
-        }
-        
-        // Create an operator to decode the image file
-        srcImg = JAI.create("stream", stream);
-        float scale = 1;
-        
-        try {
-            this.dimension = srcImg.getBounds().getSize();
-            scale = (float)Utils.scaleProportional(destSize, srcImg.getBounds());
-        } catch (Exception e) {
-            String msg = "Bad file format.";
-            int strW = g.getFontMetrics().stringWidth(msg);
-            g.drawString(msg, (int)(destSize.getWidth()/2 - strW/2), (int)(destSize.getHeight()/2));
-            srcImg.dispose();
-            closeStream(stream);
-            return result;
-        }
-        
-        /* When using the "scale" operator to reduce the size of an image, the result is very poor,
-         * even with bicubic interpolation. SubsampleAverage gives much better results, but can
-         * only scale down an image.
-         */
-        if (scale == 1.0) {
-            destImg = srcImg;            
-        } else if (scale < 1.0 && Math.min(destSize.height, destSize.width) < 600) {
-            // For the SubsampleAverage operator, scale must be (0,1]
-            
-            /** SubsampleAverage sometimes creates black horizontal lines which
-             * look almost like staff lines. This only happens at certain scale
-             * factors. We will therefore only use this for icons and thumbnails.
-             * Anything larger than that will be scaled below. 
-             */
-            destImg = JAI.create("SubsampleAverage", srcImg, (double)scale, (double)scale, qualityHints);
-        } else {
-            if (scale < 1.0) {
-                // We apply a mild low-pass filter first. See:
-                // http://archives.java.sun.com/cgi-bin/wa?A2=ind0311&L=jai-interest&P=15036
-                // http://www.leptonica.com/scaling.html
-                KernelJAI k;
-                k = VirtMusKernel.getKernel(1, 1, 6);
-                //k = VirtMusKernel.getKernel(0, 0, 1);   // Identity kernel
-                destImg = JAI.create("Convolve", srcImg, k);
-                srcImg = destImg;
-            } else { // scale > 1.0
-                scale = Math.min(scale, 2.0F);   // Don't zoom in more than 2x
-            }
-            
-            // Create a bicubic interpolation object to be used with the "scale" operator
-            Interpolation interp = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-
-            scale = Math.min(scale, 2.0F);   // Don't zoom in more than 2x
-
-            ParameterBlock params = new ParameterBlock();
-            params.addSource(srcImg);
-            params.add(scale);   // x scale factor
-            params.add(scale);   // y scale factor
-            params.add(0.0F);   // x translation
-            params.add(0.0F);   // y translation
-            params.add(interp); // interpolation method
-
-            destImg = JAI.create("scale", params);
-        }
-
-        srcImg = destImg;
-        Point destPt;
-        
-        if (fillSize) {
-            destPt = Utils.centerItem(destSize, srcImg.getBounds());
-        } else {
-            destPt = new Point(0, 0);
-        }
-        
-        AffineTransform newXform = g.getTransform();
-        newXform.concatenate(AffineTransform.getTranslateInstance(destPt.x, destPt.y));
-        g.setTransform(newXform);
-        // Image is already scaled. Draw it before applying the scaling transform.
-        g.drawImage(srcImg.getAsBufferedImage(), 0, 0, null);
-        
-        // The annotations need to be scaled properly before being drawn.
-        newXform.concatenate(AffineTransform.getScaleInstance(scale, scale));
-
-        g.setTransform(newXform);
-        this.paintAnnotations(g);
-        g.setTransform(origXform);
-
-        Dimension dim = srcImg.getBounds().getSize();
-        srcImg.dispose();
-        closeStream(stream);
-        g.dispose();
-
-        if (fillSize) {
-            return result;
-        } else {
-            return result.getSubimage(0, 0, dim.width, dim.height);
-        }
+    protected BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize) {
+        return imgSrc.getImage(containerSize, rotation, fillSize, this);
     }
         
     private RenderedOp rotate(RenderedOp srcImg, MainApp.Rotation rotation) {
@@ -443,6 +254,7 @@ public abstract class MusicPage {
         
         if (renderThread == null || !renderThread.isAlive()) {
             renderThread = new RenderThread();
+            renderThread.setName("MusicPage render");
             renderThread.start();
         }
         
@@ -492,6 +304,7 @@ public abstract class MusicPage {
         public void run() {
             while (!renderQ.isEmpty()) {
                 JobRequest j = renderQ.poll();
+                this.setName("Rendering " + j.page.getName());
                 
                 int maxPriority = this.getThreadGroup().getMaxPriority();
                 float relativePriority = 1.0F - (j.priority / JobRequest.MAX_PRIORITY);
@@ -502,6 +315,7 @@ public abstract class MusicPage {
                 renderResults.put(j.requester, j.page.getImage(j.dim, j.rotation, j.fillSize));
                 j.requester.renderingComplete(j.page, j);
             }
+            this.setName("MusicPage render");
         }
     }
 

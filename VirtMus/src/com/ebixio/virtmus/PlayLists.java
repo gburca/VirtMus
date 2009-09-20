@@ -42,7 +42,6 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
 //        MainApp.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
         //ma.addAllPlayLists(NbPreferences.forModule(MainApp.class));
         ma.addPLChangeListener(WeakListeners.change(this, ma));
-        //ma.addPLChangeListener(this);
     }
 
     /**
@@ -51,7 +50,6 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * The framework will then call createNode with each "key" in turn to obtain the
      * actual PlayList object to be displayed.
      * 
-     * TODO: Where do we get the list of playlists from?
      * See the "Recognizing a File Type" tutorial
      */
     @Override

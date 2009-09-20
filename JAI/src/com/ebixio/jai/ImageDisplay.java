@@ -360,6 +360,27 @@ public class ImageDisplay extends JComponent {
             }
 
             repaint();
+            brightness = b;
+        }
+    }
+
+
+    /**
+     * Sets the upper threshold (the lightest color displayed). Anything lighter
+     * than this value will be clamped to max (255).
+     * @param t A value between 0 and 255.
+     */
+    public final void setThreshold(int t) {
+        if (brightnessEnabled = true) {
+            for (int i = 0; i < 256; i++) {
+                if (i > t) {
+                    lutData[i] = (byte)255;
+                } else {
+                    lutData[i] = (byte)i;
+                }
+            }
+
+            repaint();
         }
     }
 

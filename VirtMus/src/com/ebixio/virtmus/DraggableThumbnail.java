@@ -40,8 +40,8 @@ public class DraggableThumbnail extends Thumbnail implements Draggable {
 //    public DraggableThumbnail(int w, int h, String filename, String description) {
 //        super(w, h, new File(filename), description);
 //    }
-    public DraggableThumbnail(int w, int h, File file, String description) {
-        super(w, h, file, description);
+    public DraggableThumbnail(int w, int h, String description) {
+        super(w, h, description);
     }
 
     public Component getComponent() {
