@@ -29,14 +29,19 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.Dimension2D;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -102,6 +107,7 @@ public class MusicPageSVG extends MusicPage {
     }
     public void setAnnotationSVG(SVGDocument svgDoc, boolean flagAsDirty) {
         shapes.clear();
+        graphicsNode = null;
         svgDocument = svgDoc;
         
         if (flagAsDirty) {
@@ -137,35 +143,47 @@ public class MusicPageSVG extends MusicPage {
      * @return The updated DOM document.
      */
     protected SVGDocument addImgBackground(SVGDocument doc) {
-        if (doc == null) return doc;
-
-        Element img = doc.createElement("image");
-        img.setAttribute("xlink:href", imgSrc.getSourceFile().getName());
-        img.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
-        img.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
-        img.setAttribute("x", Integer.toString(0));
-        img.setAttribute("y", Integer.toString(0));
-        img.setAttribute("id", MusicPageSVG.SVG_BACKGROUND_ID);
-
-        Element root = doc.getDocumentElement();    // <svg>
-        if (root != null) {
-            Node firstChild = root.getFirstChild();
-            if (firstChild != null) {
-                root.insertBefore(img, firstChild);
-            } else {
-                root.appendChild(img);
+        try {
+            if (doc == null) {
+                return doc;
             }
-        } else {
-            // We should never be in this situation.
-            root = doc.createElement("svg");
-            root.appendChild(img);
-            doc.appendChild(root);
+
+            File imgFile = imgSrc.createImageFile();
+            if (imgFile == null) return doc;
+
+            Element img = doc.createElement("image");
+            img.setAttribute("xlink:href", imgFile.getCanonicalPath());
+            img.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
+            img.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
+            img.setAttribute("x", Integer.toString(0));
+            img.setAttribute("y", Integer.toString(0));
+            img.setAttribute("id", MusicPageSVG.SVG_BACKGROUND_ID);
+            Element root = doc.getDocumentElement(); // <svg>
+            if (root != null) {
+                Node firstChild = root.getFirstChild();
+                if (firstChild != null) {
+                    root.insertBefore(img, firstChild);
+                } else {
+                    root.appendChild(img);
+                }
+            } else {
+                // We should never be in this situation.
+                root = doc.createElement("svg");
+                root.appendChild(img);
+                doc.appendChild(root);
+            }
+            // If we created a new document, it won't have width/height
+            if (!root.hasAttribute("width")) {
+                root.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
+            }
+            if (!root.hasAttribute("height")) {
+                root.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
+            }
+            return doc;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
-        // If we created a new document, it won't have width/height
-        if (!root.hasAttribute("width"))  root.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
-        if (!root.hasAttribute("height")) root.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
-        
         return doc;
     }
 
@@ -190,7 +208,7 @@ public class MusicPageSVG extends MusicPage {
     }
 
     public void importSVG(File fromFile) {
-        if (fromFile == null) fromFile = this.generateSvgFilename();
+        if (fromFile == null) return;
         
         if (!(fromFile.exists() && fromFile.canRead())) return;
         
@@ -203,7 +221,7 @@ public class MusicPageSVG extends MusicPage {
      * Generates an SVG document that can be edited with external SVG editors.
      * @return 
      */
-    public String export2SVG() {
+    public String export2SvgStr() {
         String svg = null;
         SVGDocument document;
         
@@ -224,17 +242,14 @@ public class MusicPageSVG extends MusicPage {
     /**
      * Generates an SVG document that can be edited with external SVG editors.
      * @param toFile The SVG file to export to. This file will be overwritten.
-     * If <b>null</b>, a file-name will be auto-generated based on the sourceFile.
-     * @return If the input argument was null, returns the file the SVG was exported to.
      */
-    public File export2SVG(File toFile) {
+    public void export2SVG(File toFile) {
+        if (toFile == null) return;
+
         OutputStreamWriter out = null;
         try {
-            if (toFile == null) {
-                toFile = generateSvgFilename();
-            }
             out = new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8");
-            out.write(export2SVG());
+            out.write(export2SvgStr());
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -243,21 +258,58 @@ public class MusicPageSVG extends MusicPage {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-        
-        return toFile;
+        }        
     }
-    
-    public File generateSvgFilename() {
-        File file = null;
+
+
+    /**
+     * Launches an external SVG editor to edit an SVG file. After the external
+     * editor exits, it asks the MusicPage to load the edited SVG file as its
+     * annotation.
+     * @param editorPath The external editor to use
+     */
+    synchronized public void externalSvgEdit(String editorPath) {
         try {
-            file = new File(imgSrc.getSourceFile().getCanonicalPath() + "." +
-                    Integer.toString(getPageNumber()) + ".svg");
+
+            File svgFile = File.createTempFile("VirtMus", ".svg");
+            export2SVG(svgFile);
+
+            List<String> command = new ArrayList<String>();
+
+            //command.add("c:\\Program Files\\Inkscape\\inkscape.exe");
+            command.add(editorPath);
+            //command.add("-f");
+            command.add(svgFile.getCanonicalPath());
+
+            ProcessBuilder builder = new ProcessBuilder(command);
+            //Map<String, String> environ = builder.environment();
+            //builder.directory(new File(System.getenv("temp")));
+            builder.directory(svgFile.getParentFile());
+            builder.redirectErrorStream(true);
+
+            //System.out.println("Directory : " + System.getenv("temp"));
+            final Process process = builder.start();
+            InputStream is = process.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                MainApp.log(line);
+            }
+            MainApp.log("SVG editor program terminated!");
+
+            if (svgFile.canRead()) {
+                importSVG(svgFile);
+            }
+
+            if (svgFile.canWrite()) {
+                svgFile.delete();
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-        return file;
+
+        imgSrc.destroyImageFile();
     }
     
     public void clearAnnotations() {

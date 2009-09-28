@@ -40,10 +40,10 @@ import org.apache.batik.ext.awt.RenderingHintsKeyExt;
 import org.icepdf.core.exceptions.PDFException;
 import org.icepdf.core.exceptions.PDFSecurityException;
 import org.icepdf.core.pobjects.Document;
-import org.icepdf.core.pobjects.PDimension;
 import org.icepdf.core.pobjects.PRectangle;
 import org.icepdf.core.pobjects.Page;
 import org.icepdf.core.util.GraphicsRenderingHints;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,6 +57,7 @@ public class PdfImg extends ImgSrc {
     transient Rectangle2D.Float pdfMediaBox = null;
     // By how much we would need to rotate the image so it's straight
     transient int pdfRotation = 0;
+    transient File tmpImgFile = null;
 
     public PdfImg(File sourceFile, int pageNum) {
         super(sourceFile);
@@ -409,7 +410,6 @@ public class PdfImg extends ImgSrc {
         }
     }
 
-    // Used by Annotation component (not by thumbs, they use getImage)
     @Override
     public PlanarImage getFullImg() {
         if (getPageScale() > 0) {
@@ -417,6 +417,27 @@ public class PdfImg extends ImgSrc {
         } else {
             // Single image in the whole page
             return PlanarImage.wrapRenderedImage( getFullRenderedOp() );
+        }
+    }
+
+    @Override
+    public File createImageFile() {
+        try {
+            tmpImgFile = File.createTempFile("VirtMus", ".jpg");
+            JAI.create("filestore", getFullImg(), tmpImgFile.getCanonicalPath(), "JPEG");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        return tmpImgFile;
+    }
+
+    @Override
+    public void destroyImageFile() {
+        try {
+            if (tmpImgFile != null) tmpImgFile.delete();
+            tmpImgFile = null;
+        } catch (Exception e) {
         }
     }
 }

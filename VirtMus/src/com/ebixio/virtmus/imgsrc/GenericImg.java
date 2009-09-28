@@ -238,4 +238,14 @@ public class GenericImg extends ImgSrc {
             return null;
         }
     }
+
+    @Override
+    public File createImageFile() {
+        return sourceFile;
+    }
+
+    @Override
+    public void destroyImageFile() {
+        // Nothing to do.
+    }
 }

@@ -25,16 +25,9 @@ package com.ebixio.virtmus.actions;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageSVG;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.swing.SwingWorker;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -48,58 +41,30 @@ public final class ExportSVG extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
         MusicPageSVG mp = (MusicPageSVG)activatedNodes[0].getLookup().lookup(MusicPage.class);
 
-        File svgFile = mp.export2SVG(null);
-        editSVG(mp, svgFile);
+        // Obtain the path to the SVG editor from the user options.
+        String svgEditor = NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, "");
+        File editor = new File(svgEditor);
+        if (!editor.canExecute()) {
+            MainApp.log("Could not execute SVG editor: " + svgEditor);
+            return;
+        } else {
+//            EditWorker worker = new EditWorker();
+//            worker.mp = mp;
+//            worker.editor = svgEditor;
+//            worker.execute();
+            mp.externalSvgEdit(svgEditor);
+        }
     }
 
-    /**
-     * Launches an external SVG editor to edit an SVG file. After the external
-     * editor exits, it asks the MusicPage to load the edited SVG file as its
-     * annotation.
-     */
-    protected void editSVG(MusicPageSVG mp, File svgFile) {
-        try {
-            // Obtain the path to the SVG editor from the user options.
-            String svgEditor = NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, "");
-            File editor = new File(svgEditor);
-            if (!editor.canExecute()) {
-                MainApp.log("Could not execute SVG editor: " + svgEditor);
-                return;
-            }
-            
-            List<String> command = new ArrayList<String>();
-            
-            //command.add("c:\\Program Files\\Inkscape\\inkscape.exe");
-            command.add(svgEditor);
-            //command.add("-f");
-            command.add(svgFile.getCanonicalPath());
-
-            ProcessBuilder builder = new ProcessBuilder(command);
-            //Map<String, String> environ = builder.environment();
-            //builder.directory(new File(System.getenv("temp")));
-            builder.directory(svgFile.getParentFile());
-
-            //System.out.println("Directory : " + System.getenv("temp"));
-            final Process process = builder.start();
-            InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            while ((line = br.readLine()) != null) {
-                MainApp.log(line);
-            }
-            MainApp.log("SVG editor program terminated!");
-            
-            if (svgFile.canRead()) {
-                mp.importSVG(svgFile);
-            }
-            
-            if (svgFile.canWrite()) {
-                svgFile.delete();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    private class EditWorker extends SwingWorker<Void, Void> {
+        public MusicPageSVG mp;
+        public String editor;
+        @Override
+        protected Void doInBackground() {
+            mp.externalSvgEdit(editor);
+            return null;
         }
+
     }
     
     protected int mode() {

@@ -65,7 +65,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "2.50";
+    public static final String VERSION = "2.51";
     private static final boolean RELEASED = false;   // Used to disable logging
     
     public static enum Rotation {

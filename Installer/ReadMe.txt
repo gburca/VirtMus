@@ -3,20 +3,25 @@
 	- nbproject/project.properties
 	- VirtMus/src/com/ebixio/virtmus/MainApp.java
 
-- Run the "update-version-string" ant target
+- Set the MainApp.RELEASED to true
 
-- Change the copyright year range on the splash screen
+- Update the documentation ChangeLog
+
+- If needed, change the copyright year range on the splash screen
 	- branding/core/core.jar/org/netbeans/core/startup/...
 
 - Run the following targets:
 	- clean
 	- update-version-string
 	- build-zip
-	- create-installer
 
-- Rename dist/virtmus.zip to VirtMus_v.vv.zip
-- Rename the "virtmus" directory inside the zip to VirtMus_v.vv
+- Rename dist/virtmus.zip to VirtMus-v.vv.zip
+- Rename the "virtmus" directory inside the zip to VirtMus-v.vv
+- Unzip the VirtMus-v.vv in the "dist" directory
+- Run the create-installer target
 
 - Distribute:
-	- Installer/VirtMus_v.vv.exe
-	- dist/VirtMus_v.vv.zip
+	- Installer/VirtMus-v.vv.exe
+	- dist/VirtMus-v.vv.zip
+
+- Update virtmus.com

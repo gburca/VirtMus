@@ -10,7 +10,7 @@
 ;--------------------------------
 ;General
         ; Name and file.
-	!define VERSION "2.50"
+	!define VERSION "2.51"
 
 	; This ${PRODUCT} !define is used throughout this intaller for a lot of
 	; things including install directory names and links. It should probably
@@ -19,10 +19,10 @@
 
 	Name "${PRODUCT} ${VERSION}"
 	
-	OutFile "${PRODUCT}_${VERSION}.exe"
+	OutFile "${PRODUCT}-${VERSION}.exe"
 	
 	; Default installation folder
-	InstallDir "$PROGRAMFILES\${PRODUCT}_${VERSION}"
+	InstallDir "$PROGRAMFILES\${PRODUCT}-${VERSION}"
   
 	;Request application privileges for Windows Vista
 	RequestExecutionLevel user
@@ -61,7 +61,7 @@ Section "VirtMus" SVirtMus
 
   SetOutPath "$INSTDIR"
 
-  File /r ..\dist\VirtMus\*.*
+  File /r ..\dist\VirtMus-${VERSION}\*.*
   
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -70,10 +70,10 @@ Section "VirtMus" SVirtMus
     
   ;Create shortcuts
   CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${PRODUCT}.lnk" "$INSTDIR\bin\VirtMus.exe"
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${PRODUCT} Docs.lnk" "$INSTDIR\Docs\index.html"
-  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
-  CreateShortCut "$DESKTOP\${PRODUCT}.lnk" "$INSTDIR\bin\VirtMus.exe"
+  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${PRODUCT}-${VERSION}.lnk" "$INSTDIR\bin\VirtMus.exe"
+  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${PRODUCT}-${VERSION} Docs.lnk" "$INSTDIR\Docs\index.html"
+  CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall-${VERSION}.lnk" "$INSTDIR\Uninstall.exe"
+  CreateShortCut "$DESKTOP\${PRODUCT}-${VERSION}.lnk" "$INSTDIR\bin\VirtMus.exe"
  
   !insertmacro MUI_STARTMENU_WRITE_END
 
@@ -103,10 +103,10 @@ Section "Uninstall"
   
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
     
-  Delete "$SMPROGRAMS\$StartMenuFolder\${PRODUCT}.lnk"
-  Delete "$SMPROGRAMS\$StartMenuFolder\${PRODUCT} Docs.lnk"
-  Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\${PRODUCT}-${VERSION}.lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\${PRODUCT}-${VERSION} Docs.lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall-${VERSION}.lnk"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
-  Delete "$DESKTOP\${PRODUCT}.lnk"
+  Delete "$DESKTOP\${PRODUCT}-${VERSION}.lnk"
   
 SectionEnd

@@ -41,13 +41,13 @@
         </folder>
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
-            <!--file name="com-ebixio-virtmus-TagsAction.instance">
+            <!-- file name="com-ebixio-virtmus-TagsAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="com.ebixio.virtmus.Bundle"/>
                 <attr name="component" methodvalue="com.ebixio.virtmus.TagsTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="com.ebixio.virtmus.Bundle#CTL_TagsAction"/>
                 <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/PlayListTopComponent.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
-            </file-->
+            </file -->
         </folder>
         <folder name="Edit">
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance_hidden"/>
