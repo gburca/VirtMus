@@ -28,7 +28,17 @@
             <file name="com-ebixio-virtmus-actions-MusicPageCloneAction.instance"/>
             <file name="com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
         </folder>
+
         <file name="System_hidden"/>
+
+        <folder name="VirtMusSystem">
+            <!-- If we don't hide the original set of "System" actions, we end up
+            with all kinds of undesirable menu entries, etc... so we just pick the
+            actions we want here in our custom VirtMusSystem -->
+            <!-- attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/ -->
+            <file name="org-openide-actions-GarbageCollectAction.instance"/>
+        </folder>
+
         <folder name="View">
             <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
         </folder>
@@ -38,6 +48,13 @@
             <file name="com-ebixio-virtmus-actions-RenameItemAction.instance"/>
             <file name="com-ebixio-virtmus-actions-SaveAllAction.instance"/>
             <file name="com-ebixio-virtmus-actions-ExitAction.instance"/>
+            <file name="com-ebixio-virtmus-actions-OpenMusicDir.instance">
+                <attr name="delegate" newvalue="com.ebixio.virtmus.actions.OpenMusicDir"/>
+                <attr name="displayName" bundlevalue="com.ebixio.virtmus.actions.Bundle#CTL_OpenMusicDir"/>
+                <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/OpenPlayListAction.gif"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file>
         </folder>
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
@@ -59,7 +76,6 @@
             <file name="org-openide-actions-ReplaceAction.instance_hidden"/>
             <file name="org-openide-actions-UndoAction.instance_hidden"/>
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.instance_hidden"/>
-
         </folder>
         <folder name="File_hidden"/>
     </folder>
@@ -67,6 +83,10 @@
     <folder name="Menu">
         <folder name="File">
             <attr name="position" intvalue="100"/>
+            <file name="com-ebixio-virtmus-actions-OpenMusicDir.shadow">
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-OpenMusicDir.instance"/>
+                <attr name="position" intvalue="0"/>
+            </file>
             <file name="SaveAllAction.shadow">
                 <attr name="position" intvalue="100"/>
                 <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
@@ -97,16 +117,6 @@
 
         <folder name="Edit">
             <attr name="position" intvalue="200"/>
-            <file name="org-openide-actions-CutAction.instance">
-                <attr name="position" intvalue="1000"/>
-            </file>
-            <file name="org-openide-actions-CopyAction.instance">
-                <attr name="position" intvalue="1100"/>
-            </file>
-            <file name="org-openide-actions-PasteAction.instance">
-                <attr name="position" intvalue="1200"/>
-            </file>
-
             <file name="org-openide-actions-UndoAction.instance_hidden"/>
             <file name="org-openide-actions-RedoAction.instance_hidden"/>
             <file name="Separator1.instance_hidden"/>
@@ -115,7 +125,16 @@
             <file name="org-openide-actions-FindAction.instance_hidden"/>
             <file name="org-openide-actions-ReplaceAction.instance_hidden"/>
         </folder>
-        
+
+        <folder name="View">
+            <attr name="position" intvalue="225"/>
+            <file name="com-ebixio-virtmus-actions-GoLive.shadow">
+                <attr name="position" intvalue="100"/>
+                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-GoLive.instance"/>
+            </file>
+            <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
+        </folder>
+
         <folder name="PlayList">
             <attr name="position" intvalue="250"/>
             <file name="com-ebixio-virtmus-actions-NewPlayListAction.instance">
@@ -196,21 +215,14 @@
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance_hidden"/>
         </folder>
         
-        <folder name="View">
-            <attr name="position" intvalue="600"/>
-            <file name="com-ebixio-virtmus-actions-GoLive.shadow">
-                <attr name="position" intvalue="100"/>
-                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-GoLive.instance"/>
-            </file>
-            <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
-        </folder>
-        
         <folder name="Window">
             <attr name="position" intvalue="700"/>
             <file name="PlayListAction.shadow">
+                <attr name="position" intvalue="100"/>
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-PlayListAction.instance"/>
             </file>
             <file name="TagsAction.shadow">
+                <attr name="position" intvalue="400"/>
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-TagsAction.instance"/>
             </file>
         </folder>
@@ -350,15 +362,29 @@
                 <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-MusicPageRemoveAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-ExportSVG.shadow">
-                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-ExportSVG.instance"/>
                 <attr name="position" intvalue="400"/>
+                <attr name="originalFile" stringvalue="Actions/MusicPage/com-ebixio-virtmus-actions-ExportSVG.instance"/>
             </file>
         </folder>
 
         <folder name="File_hidden"/>
         <folder name="UndoRedo_hidden"/>
-        
+
+        <folder name="Clipboard">
+            <attr name="position" intvalue="200"/>
+        </folder>
+
+        <folder name="Memory">
+            <attr name="position" intvalue="600"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
+            <file name="org-openide-actions-GarbageCollectAction.shadow_hidden"/>
+            <file name="org-openide-actions-GarbageCollectAction-VirtMus.shadow">
+                <attr name="originalFile" stringvalue="Actions/VirtMusSystem/org-openide-actions-GarbageCollectAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file> 
+        </folder>
     </folder>
+
     <folder name="Windows2">
         <folder name="Components">
             <file name="PlayListTopComponent.settings" url="PlayListTopComponentSettings.xml"/>

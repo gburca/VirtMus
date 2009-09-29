@@ -92,12 +92,10 @@ final class TagsTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
     }
 
     /** replaces this in object stream */

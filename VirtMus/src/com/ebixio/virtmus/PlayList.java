@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -76,6 +77,10 @@ public class PlayList implements Comparable<PlayList> {
     // We don't want to save the "Song", with all it's pages, etc... just the song.xml file name
     public transient List<Song> songs = Collections.synchronizedList(new Vector<Song>());
     protected transient boolean isDirty = false;
+    // Some of the songs in this playlist have been found at a different location
+    protected transient boolean movedSongs = false;
+    // Some of the songs in this playlist could not be found
+    protected transient boolean missingSongs = false;
     
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
@@ -346,9 +351,22 @@ public class PlayList implements Comparable<PlayList> {
 
         Thread t = new Thread() {
             @Override public void run() {
+                pl.missingSongs = false;
+                pl.movedSongs = false;
                 for (File sf: pl.songFiles) {
                     if (!sf.exists()) {
+                        String msg = "Song file " + sf.getAbsolutePath() +
+                                " in playlist " + pl.sourceFile.getAbsolutePath() +
+                                " doesn't exist.";
                         sf = Utils.findFileRelative(f, sf);
+                        if (sf != null && sf.exists()) {
+                            msg += " Using " + sf.getAbsolutePath() + "instead.";
+                            pl.movedSongs = true;
+                        } else {
+                            msg += " No replacement found.";
+                            pl.missingSongs = true;
+                        }
+                        MainApp.log(msg, Level.WARNING);
                     }
                     Song s = Song.deserialize(sf);
                     if (s != null) pl.songs.add(s);
@@ -393,6 +411,10 @@ public class PlayList implements Comparable<PlayList> {
         notifyListeners();
     }
 
+    public int getSongCnt() {
+        return songs.size();
+    }
+
     public File getSourceFile() {
         return sourceFile;
     }
@@ -430,6 +452,13 @@ public class PlayList implements Comparable<PlayList> {
         }
         if (MainApp.findInstance().saveAllAction != null)
             MainApp.findInstance().saveAllAction.updateEnable();
+    }
+
+    /** The playlist contents do not match the disk contents.
+     * @return true if some of the playlist files are missing, or have been moved.
+     */
+    public boolean isStale() {
+        return movedSongs || missingSongs;
     }
     
     public void addChangeListener(ChangeListener listener) {

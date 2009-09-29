@@ -20,7 +20,8 @@
 
 package com.ebixio.annotations;
 
-import com.ebixio.virtmus.shapes.*;
+import com.ebixio.annotations.tools.ToolRect;
+import com.ebixio.annotations.tools.DrawingTool;
 import com.ebixio.jai.ImageDisplay;
 import com.ebixio.virtmus.MusicPage;
 import java.awt.Color;
@@ -33,7 +34,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
-import java.beans.*;
 import java.io.Serializable;
 
 /**
@@ -41,23 +41,16 @@ import java.io.Serializable;
  */
 public class AnnotCanvas extends ImageDisplay implements Serializable, MouseListener, MouseMotionListener {
     
-    // Dragging states
-    public static enum Drag {
-        UNKNOWN, DRAGGING, STILL, EXITED;
-    }
-
-    private Drag dragState = Drag.UNKNOWN;
-    private Point dragStart;
+    public Paint paint = Color.BLUE;
+    public int diam = 10;
+    public float alpha = 1.0F;
+    public float scale = 1.0F;
     
-    private Paint paint = Color.BLUE;
-    private int diam = 10;
-    private float alpha = 1.0F;
-    private float scale = 1.0F;
-    
-    private MusicPage musicPage = null;
-    private ShapeLine line = null;
+    public MusicPage musicPage = null;
 
     public Rectangle imgBounds;
+
+    public DrawingTool tool = new ToolRect(this);
 
     public AnnotCanvas() {
         addMouseListener(this);
@@ -130,9 +123,7 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
         if (musicPage != null) {
             musicPage.paintAnnotations(g2d);
         }
-        if (line != null) {
-            line.paint(g2d);
-        }
+        tool.paint(g2d);
 
         g2d.setTransform(origXform);
     }
@@ -141,8 +132,10 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     /** This function will convert the coordinates of a mouse click (with (0,0) being
      * the upper-left corner of the canvas component) into coordinates with respect
      * to the raw image file. The image could be scaled and translated.
+     * @param point Coordinates wrt upper-left corner of canvas
+     * @return Coordinates wrt raw image file
      */
-    private Point getAbsolutePoint(Point point) {
+    public Point getAbsolutePoint(Point point) {
         Point origin = getOrigin();
         Point p = new Point(point);
         p.translate(origin.x, origin.y);
@@ -150,71 +143,38 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
         return p;
     }
     
+    @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            Point p = getAbsolutePoint(e.getPoint());
-
-            if (musicPage != null) {
-                musicPage.addAnnotation(new ShapePoint(paint, alpha, Math.round(diam / scale), p));
-            }
-            repaint();
-        }
+        if (musicPage != null) tool.mouseClicked(e);
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            dragState = Drag.DRAGGING;
-            dragStart = e.getPoint();
-
-            if (imgBounds.contains(getAbsolutePoint(dragStart))) {
-                line = new ShapeLine(paint, alpha, Math.round(diam/scale), getAbsolutePoint(dragStart));
-            }
-        }
+        if (musicPage != null) tool.mousePressed(e);
     }
     
+    @Override
     public void mouseReleased(MouseEvent e) {
-        dragState = Drag.STILL;
-        if (line != null) {
-            if (musicPage != null) musicPage.addAnnotation(line);
-            line = null;
-            repaint();
-        }
+        if (musicPage != null) tool.mouseReleased(e);
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
-        if (dragState == Drag.EXITED) {
-            dragState = Drag.DRAGGING;
-        }
+        if (musicPage != null) tool.mouseEntered(e);
     }
     
+    @Override
     public void mouseExited(MouseEvent e) {
-        if (dragState == Drag.DRAGGING) {
-            dragState = Drag.EXITED;
-        } else {
-            dragState = Drag.STILL;
-        }
+        if (musicPage != null) tool.mouseExited(e);
     }
     
+    @Override
     public void mouseDragged(MouseEvent e) {
-        if (dragState == Drag.DRAGGING) {
-            if (musicPage == null) return;
-
-            Point p = getAbsolutePoint(e.getPoint());
-            if (line == null) {
-                if (!imgBounds.contains(p)) return;
-                line = new ShapeLine(paint, alpha, Math.round(diam/scale), p);
-            } else {
-                if (!imgBounds.contains(p)) {
-                    musicPage.addAnnotation(line);
-                    line = null;
-                } else {
-                    line.addEnd(getAbsolutePoint(e.getPoint()));
-                }
-                repaint();
-            }
-        }        
+        if (musicPage != null) tool.mouseDragged(e);
     }
     
+    @Override
     public void mouseMoved(MouseEvent e) {
+        if (musicPage != null) tool.mouseMoved(e);
     }
 }

@@ -28,6 +28,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -85,7 +86,7 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
         
         try {
             Property nameProp = new PropertySupport.Reflection<String>(s, String.class, "name"); // get/setName
-            Property fileProp = new PropertySupport.Reflection<String>(s, String.class, "getSourceFileStr", null); // only getSourceFileStr
+            Property fileProp = new PropertySupport.Reflection<File>(s, File.class, "getSourceFile", null); // only getSourceFile
             Property tagsProp = new PropertySupport.Reflection<String>(s, String.class, "tags"); // get/setTags
             nameProp.setName("Name");
             fileProp.setName("Source File");

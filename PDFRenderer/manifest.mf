@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.ebixio.pdfrenderer
+OpenIDE-Module-Localizing-Bundle: com/ebixio/pdfrenderer/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

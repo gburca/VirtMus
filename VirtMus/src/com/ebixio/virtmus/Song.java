@@ -24,6 +24,7 @@ import com.ebixio.virtmus.filefilters.SongFilter;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.imgsrc.PdfRender;
 import com.ebixio.virtmus.xml.MusicPageConverter;
 import com.ebixio.virtmus.xml.PageOrderConverter;
 import com.thoughtworks.xstream.XStream;
@@ -259,10 +260,6 @@ public class Song implements Comparable<Song> {
     public File getSourceFile() {
         return sourceFile;
     }
-    
-    public String getSourceFileStr() {
-        return sourceFile.getPath();
-    }
 
     public void setSourceFile(File sourceFile) {
         this.sourceFile = sourceFile;
@@ -374,6 +371,7 @@ public class Song implements Comparable<Song> {
         xs.processAnnotations(MusicPageSVG.class);
         xs.processAnnotations(ImgSrc.class);
         xs.processAnnotations(PdfImg.class);
+        xs.processAnnotations(PdfRender.class);
         xs.processAnnotations(GenericImg.class);
         //xs.addDefaultImplementation(ArrayList.class, List.class);
 

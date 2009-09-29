@@ -23,6 +23,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.imgsrc.PdfRender;
 import com.ebixio.virtmus.shapes.*;
 import com.ebixio.virtmus.svg.SvgGenerator;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -40,8 +41,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -64,7 +63,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGDocument;
-import org.w3c.dom.ls.*;
 
 /**
  *
@@ -405,6 +403,9 @@ public class MusicPageSVG extends MusicPage {
         MusicPageSVG mp;
         if (imgSrc.getClass() == PdfImg.class) {
             PdfImg img = (PdfImg)imgSrc;
+            mp = new MusicPageSVG(song, imgSrc.getSourceFile(), img.pageNum);
+        } else if (imgSrc.getClass() == PdfRender.class) {
+            PdfRender img = (PdfRender)imgSrc;
             mp = new MusicPageSVG(song, imgSrc.getSourceFile(), img.pageNum);
         } else {
             mp = new MusicPageSVG(song, imgSrc.getSourceFile(), null);

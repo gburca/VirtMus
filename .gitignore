@@ -21,3 +21,9 @@ nbproject/private/
 swingfx/build/
 ThumbViewer/nbproject/private
 hs_err_pid*.log
+
+# VIM swap files
+.*.swp
+
+Installer/VirtMus-*.exe
+Installer/VirtMus-*.zip

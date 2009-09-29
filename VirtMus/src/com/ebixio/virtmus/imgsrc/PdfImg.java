@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.media.jai.Interpolation;
 import javax.media.jai.InterpolationBilinear;
@@ -42,6 +43,7 @@ import org.icepdf.core.exceptions.PDFSecurityException;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.PRectangle;
 import org.icepdf.core.pobjects.Page;
+import org.icepdf.core.pobjects.graphics.text.LineText;
 import org.icepdf.core.util.GraphicsRenderingHints;
 import org.openide.util.Exceptions;
 
@@ -58,6 +60,7 @@ public class PdfImg extends ImgSrc {
     // By how much we would need to rotate the image so it's straight
     transient int pdfRotation = 0;
     transient File tmpImgFile = null;
+    transient String pageErr = null;
 
     public PdfImg(File sourceFile, int pageNum) {
         super(sourceFile);
@@ -92,6 +95,7 @@ public class PdfImg extends ImgSrc {
     public Dimension getDimension() {
         if (dimension == null) {
             Document doc = getDocument();
+            if (doc == null) return new Dimension(1, 1);
             Page page = doc.getPageTree().getPage(pageNum, this);
 
             float rot = page.getTotalRotation(0);
@@ -146,23 +150,25 @@ public class PdfImg extends ImgSrc {
     // If the PDF page is a vector drawing, we try to make the smallest page
     // dimension the same as the largest screen dimension
     public Dimension getDimensionBasedOnDisplay(Document doc) {
-            Dimension[] dims = Utils.getScreenSizes();
-            int biggest = -1, idx = -1;
-            for (int i = 0; i < dims.length; i++) {
-                if (dims[i].width * dims[i].height > biggest) {
-                    biggest = dims[i].width * dims[i].height;
-                    idx = i;
-                }
+        if (doc == null) return new Dimension(1, 1);
+
+        Dimension[] dims = Utils.getScreenSizes();
+        int biggest = -1, idx = -1;
+        for (int i = 0; i < dims.length; i++) {
+            if (dims[i].width * dims[i].height > biggest) {
+                biggest = dims[i].width * dims[i].height;
+                idx = i;
             }
-            Dimension dim = dims[idx];
-            int max = Math.max(dim.width, dim.height);
+        }
+        Dimension dim = dims[idx];
+        int max = Math.max(dim.width, dim.height);
 
-            Dimension pdim = doc.getPageDimension(pageNum, 0).toDimension();
+        Dimension pdim = doc.getPageDimension(pageNum, 0).toDimension();
 
-            int min = Math.min(pdim.width, pdim.height);
-            pageScale = (max * 1F) / min;
+        int min = Math.min(pdim.width, pdim.height);
+        pageScale = (max * 1F) / min;
 
-            return new Dimension((int)(pdim.width * pageScale), (int)(pdim.height * pageScale));
+        return new Dimension((int)(pdim.width * pageScale), (int)(pdim.height * pageScale));
     }
 
     // Used by Thumbs and Live display
@@ -218,6 +224,9 @@ public class PdfImg extends ImgSrc {
         }
 
         float scale = (float)Utils.scaleProportional(destSize, new Rectangle(getDimension()));
+        if (pageErr != null) {
+            return errText(result, g, pageErr, destSize);
+        }
 
         srcImg = getFullRenderedOp();
 
@@ -305,15 +314,20 @@ public class PdfImg extends ImgSrc {
         try {
             document.setFile(sourceFile.getAbsolutePath());
         } catch (PDFException ex) {
-            System.out.println("Error parsing PDF document " + ex);
+            pageErr = "Error parsing PDF document";
+            System.out.println(pageErr + " " + ex);
         } catch (PDFSecurityException ex) {
-            System.out.println("Error encryption not supported " + ex);
+            pageErr = "Error PDF encryption not supported";
+            System.out.println(pageErr + " " + ex);
         } catch (FileNotFoundException ex) {
-            System.out.println("Error file not found " + ex);
+            pageErr = "Error file not found";
+            System.out.println(pageErr + " " + ex);
         } catch (IOException ex) {
-            System.out.println("Error handling PDF document " + ex);
+            pageErr = "Error handling PDF document";
+            System.out.println(pageErr + " " + ex);
         }
 
+        if (pageErr != null) document = null;
         return document;
     }
 
@@ -324,6 +338,9 @@ public class PdfImg extends ImgSrc {
 
     private BufferedImage getFullBufferedImage(float scale) {
         Document doc = getDocument();
+        if (doc == null) {
+            return null;
+        }
         BufferedImage srcImgFull = (BufferedImage)doc.getPageImage(pageNum,
                 GraphicsRenderingHints.SCREEN, Page.BOUNDARY_CROPBOX, 0, scale);
         MainApp.log("ImgSz2: " + srcImgFull.getWidth() + "x" + srcImgFull.getHeight());
@@ -333,11 +350,16 @@ public class PdfImg extends ImgSrc {
 
     private RenderedOp getFullRenderedOp() {
         Document doc = getDocument();
+        if (doc == null) {
+            return null;
+        }
+
         Image img = getPageImage(doc);
         doc.dispose();
         ParameterBlock pb;
 
         if (img != null) {
+            // A single image covers the whole PDF page.
             getDimension(); // Just to make sure the crop boxes are computed
             //MainApp.log("ImgSz1: " + img.getWidth(null) + "x" + img.getHeight(null));
             RenderedOp r = null;
@@ -388,21 +410,36 @@ public class PdfImg extends ImgSrc {
 
             return r;
         } else {
+            // A combination of text and/or images cover the PDF page, so we render
+            // the page at a suitable scale/resolution.
             pb = new ParameterBlock();
             pb.add(getFullBufferedImage(getPageScale()));
             return JAI.create("AWTImage", pb);
         }
     }
 
+    /**
+     * We want to see if the PDF page consists of a single image (usually the case
+     * when the PDF consists of scanned documents), or a combination of images
+     * and/or text (usually the case when the PDF was generated by some music
+     * notation software).
+     *
+     * If it's a single image, we extract it in its native resolution,
+     * otherwise we need to rasterize the page to a desired target resolution.
+     * 
+     * @param doc PDF document to use
+     * @return An image (in the case of a single image per page) or null otherwise.
+     */
     @SuppressWarnings(value={"unchecked"})
     private Image getPageImage(Document doc) {
-        Vector<StringBuffer> txt = doc.getPageText(pageNum);
+        ArrayList<LineText> txt = doc.getPageText(pageNum).getPageLines();
         if (txt.size() > 0) {
             return null;
         } else {
             Vector<Image> imgs = doc.getPageImages(pageNum);
             if (imgs.size() == 1) {
                 // Single image and no text == image covers whole page
+//                img = imgs.get(0);
                 return imgs.get(0);
             } else {
                 return null;
@@ -412,6 +449,12 @@ public class PdfImg extends ImgSrc {
 
     @Override
     public PlanarImage getFullImg() {
+        // We don't know yet if we have a good PDF. Let's check.
+        if (getDocument() == null) {
+            return PlanarImage.wrapRenderedImage(errText(pageErr, new Rectangle(850, 1100)));
+            //return null;
+        }
+
         if (getPageScale() > 0) {
             return PlanarImage.wrapRenderedImage(getFullBufferedImage(getPageScale()));
         } else {

@@ -11,6 +11,7 @@ import com.ebixio.virtmus.xml.FileConverter;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -92,5 +93,24 @@ public abstract class ImgSrc {
         int strW = g.getFontMetrics().stringWidth(msg);
         g.drawString(msg, (int)(destSize.getWidth()/2 - strW/2), (int)(destSize.getHeight()/2));
         return img;
+    }
+
+    protected BufferedImage errText(String msg, Rectangle destSize) {
+        // Acquiring the current Graphics Device and Graphics Configuration
+        GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice graphDevice = graphEnv.getDefaultScreenDevice();
+        GraphicsConfiguration graphicConf = graphDevice.getDefaultConfiguration();
+        System.gc();
+        BufferedImage result = graphicConf.createCompatibleImage(destSize.width, destSize.height, Transparency.OPAQUE);
+
+        Graphics2D g = result.createGraphics();
+        g.setColor(Color.gray);
+        g.fillRect(0, 0, destSize.width, destSize.height);
+        g.setColor(Color.white);
+        g.setFont(new Font("SansSerif", Font.BOLD, 32));
+
+        int strW = g.getFontMetrics().stringWidth(msg);
+        g.drawString(msg, (int)(destSize.getWidth()/2 - strW/2), (int)(destSize.getHeight()/2));
+        return result;
     }
 }

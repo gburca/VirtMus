@@ -18,24 +18,27 @@
 
 package com.ebixio.annotations;
 
+import com.ebixio.annotations.tools.*;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.image.BufferedImage;
+import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Vector;
 import java.util.concurrent.CancellationException;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JSlider;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -65,6 +68,7 @@ public final class AnnotTopComponent extends TopComponent
     private MusicPage currentlyShowing = null;
 
     transient private final PropertyChangeListener eListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 //Node[] selectedNodes = (Node[]) evt.getNewValue();
@@ -72,8 +76,14 @@ public final class AnnotTopComponent extends TopComponent
             }
         }
     };
-   
+
+    static {
+        // Linux paints the slider value above the slider throwing off the toolbar size
+        UIManager.put("Slider.paintValue", Boolean.FALSE);
+    }
+
     private AnnotTopComponent() {
+        
         initComponents();
         setName(NbBundle.getMessage(AnnotTopComponent.class, "CTL_AnnotTopComponent"));
         setToolTipText(NbBundle.getMessage(AnnotTopComponent.class, "HINT_AnnotTopComponent"));
@@ -101,47 +111,42 @@ public final class AnnotTopComponent extends TopComponent
     private void initComponents() {
 
         jToolBar = new javax.swing.JToolBar();
-        jPanel1 = new javax.swing.JPanel();
-        jsBrushSize = new javax.swing.JSlider();
-        jbClear = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        colorChooser = new net.java.dev.colorchooser.ColorChooser();
+        toolChooser = new javax.swing.JComboBox();
+        jSeparator6 = new javax.swing.JToolBar.Separator();
         jLabel1 = new javax.swing.JLabel();
+        colorChooser = new net.java.dev.colorchooser.ColorChooser();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
+        jLabel2 = new javax.swing.JLabel();
+        jsBrushSize = new javax.swing.JSlider();
         brushPreview = new com.ebixio.annotations.BrushPreview();
-        jsZoom = new javax.swing.JSlider();
-        jLabel3 = new javax.swing.JLabel();
+        jSeparator5 = new javax.swing.JToolBar.Separator();
         jLabel4 = new javax.swing.JLabel();
         jsAlpha = new javax.swing.JSlider();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        jbClear = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        jLabel3 = new javax.swing.JLabel();
+        jsZoom = new javax.swing.JSlider();
         canvasPanel = new javax.swing.JPanel();
         canvas = new com.ebixio.annotations.AnnotCanvas();
         panner = new com.ebixio.jai.Panner();
 
         setBackground(new java.awt.Color(153, 255, 153));
-        setOpaque(true);
 
-        jsBrushSize.setMajorTickSpacing(4);
-        jsBrushSize.setMaximum(24);
-        jsBrushSize.setMinimum(1);
-        jsBrushSize.setToolTipText("Brush size");
-        jsBrushSize.setMaximumSize(new java.awt.Dimension(200, 25));
-        jsBrushSize.setValue(canvas.getDiam());
-        jsBrushSize.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jsBrushSizeStateChanged(evt);
+        jToolBar.setFloatable(false);
+
+        toolChooser.setModel(getTools());
+        toolChooser.setMaximumSize(new java.awt.Dimension(100, 20));
+        toolChooser.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                toolChooserItemStateChanged(evt);
             }
         });
+        jToolBar.add(toolChooser);
+        jToolBar.add(jSeparator6);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jbClear, "Clear");
-        jbClear.setToolTipText("Remove all annotations");
-        jbClear.setBorderPainted(false);
-        jbClear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbClearActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Size: ");
-        jLabel2.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Color:");
+        jToolBar.add(jLabel1);
 
         colorChooser.setToolTipText("Foreground color");
         colorChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -150,29 +155,84 @@ public final class AnnotTopComponent extends TopComponent
             }
         });
 
-        org.jdesktop.layout.GroupLayout colorChooserLayout = new org.jdesktop.layout.GroupLayout(colorChooser);
+        javax.swing.GroupLayout colorChooserLayout = new javax.swing.GroupLayout(colorChooser);
         colorChooser.setLayout(colorChooserLayout);
         colorChooserLayout.setHorizontalGroup(
-            colorChooserLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 22, Short.MAX_VALUE)
+            colorChooserLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 22, Short.MAX_VALUE)
         );
         colorChooserLayout.setVerticalGroup(
-            colorChooserLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 10, Short.MAX_VALUE)
+            colorChooserLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 22, Short.MAX_VALUE)
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Color:");
+        jToolBar.add(colorChooser);
+        jToolBar.add(jSeparator4);
 
-        org.jdesktop.layout.GroupLayout brushPreviewLayout = new org.jdesktop.layout.GroupLayout(brushPreview);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Size: ");
+        jLabel2.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jToolBar.add(jLabel2);
+
+        jsBrushSize.setMajorTickSpacing(4);
+        jsBrushSize.setMaximum(24);
+        jsBrushSize.setMinimum(1);
+        jsBrushSize.setToolTipText("Brush size");
+        jsBrushSize.setMaximumSize(new java.awt.Dimension(100, 25));
+        jsBrushSize.setPreferredSize(new java.awt.Dimension(85, 38));
+        jsBrushSize.setValue(canvas.getDiam());
+        jsBrushSize.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jsBrushSizeStateChanged(evt);
+            }
+        });
+        jToolBar.add(jsBrushSize);
+
+        brushPreview.setMaximumSize(new java.awt.Dimension(32, 32));
+
+        javax.swing.GroupLayout brushPreviewLayout = new javax.swing.GroupLayout(brushPreview);
         brushPreview.setLayout(brushPreviewLayout);
         brushPreviewLayout.setHorizontalGroup(
-            brushPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 32, Short.MAX_VALUE)
+            brushPreviewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 32, Short.MAX_VALUE)
         );
         brushPreviewLayout.setVerticalGroup(
-            brushPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 32, Short.MAX_VALUE)
+            brushPreviewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 32, Short.MAX_VALUE)
         );
+
+        jToolBar.add(brushPreview);
+        jToolBar.add(jSeparator5);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Opacity:");
+        jToolBar.add(jLabel4);
+
+        jsAlpha.setMinimum(1);
+        jsAlpha.setToolTipText("Opacity");
+        jsAlpha.setValue(70);
+        jsAlpha.setMaximumSize(new java.awt.Dimension(100, 25));
+        jsAlpha.setPreferredSize(new java.awt.Dimension(85, 38));
+        jsAlpha.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jsAlphaStateChanged(evt);
+            }
+        });
+        jToolBar.add(jsAlpha);
+        jToolBar.add(jSeparator2);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jbClear, "Clear");
+        jbClear.setToolTipText("Remove all annotations");
+        jbClear.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jbClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbClearActionPerformed(evt);
+            }
+        });
+        jToolBar.add(jbClear);
+        jToolBar.add(jSeparator1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "Zoom:");
+        jLabel3.setToolTipText("Zoom");
+        jToolBar.add(jLabel3);
 
         jsZoom.setMajorTickSpacing(1);
         jsZoom.setMaximum(1000);
@@ -180,72 +240,14 @@ public final class AnnotTopComponent extends TopComponent
         jsZoom.setMinorTickSpacing(1);
         jsZoom.setToolTipText("Zoom");
         jsZoom.setValue(1000);
+        jsZoom.setMaximumSize(new java.awt.Dimension(100, 38));
+        jsZoom.setPreferredSize(new java.awt.Dimension(85, 38));
         jsZoom.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jsZoomStateChanged(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "Zoom:");
-        jLabel3.setToolTipText("Zoom");
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Opacity:");
-
-        jsAlpha.setMinimum(1);
-        jsAlpha.setToolTipText("Opacity");
-        jsAlpha.setValue(70);
-        jsAlpha.setMaximumSize(new java.awt.Dimension(200, 25));
-        jsAlpha.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jsAlphaStateChanged(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(colorChooser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jsBrushSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(brushPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jsAlpha, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 74, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(jbClear)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 108, Short.MAX_VALUE)
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jsZoom, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(brushPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel4)
-                    .add(jLabel2)
-                    .add(colorChooser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 12, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1)
-                    .add(jLabel3)
-                    .add(jsZoom, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jsAlpha, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jbClear)
-                    .add(jsBrushSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(33, 33, 33))
-        );
-
-        jToolBar.add(jPanel1);
+        jToolBar.add(jsZoom);
 
         canvasPanel.setBackground(new java.awt.Color(0, 0, 0));
 
@@ -256,47 +258,47 @@ public final class AnnotTopComponent extends TopComponent
         panner.setMinimumSize(new java.awt.Dimension(64, 100));
         panner.setPreferredSize(new java.awt.Dimension(64, 100));
 
-        org.jdesktop.layout.GroupLayout canvasLayout = new org.jdesktop.layout.GroupLayout(canvas);
+        javax.swing.GroupLayout canvasLayout = new javax.swing.GroupLayout(canvas);
         canvas.setLayout(canvasLayout);
         canvasLayout.setHorizontalGroup(
-            canvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, canvasLayout.createSequentialGroup()
-                .addContainerGap(606, Short.MAX_VALUE)
-                .add(panner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, canvasLayout.createSequentialGroup()
+                .addContainerGap(713, Short.MAX_VALUE)
+                .addComponent(panner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         canvasLayout.setVerticalGroup(
-            canvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(canvasLayout.createSequentialGroup()
+            canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(canvasLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(panner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(217, Short.MAX_VALUE))
+                .addComponent(panner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(271, Short.MAX_VALUE))
         );
 
-        org.jdesktop.layout.GroupLayout canvasPanelLayout = new org.jdesktop.layout.GroupLayout(canvasPanel);
+        javax.swing.GroupLayout canvasPanelLayout = new javax.swing.GroupLayout(canvasPanel);
         canvasPanel.setLayout(canvasPanelLayout);
         canvasPanelLayout.setHorizontalGroup(
-            canvasPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(canvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
+            canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE)
         );
         canvasPanelLayout.setVerticalGroup(
-            canvasPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(canvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+            canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(canvas, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jToolBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
-            .add(canvasPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE)
+            .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jToolBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 35, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(canvasPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -325,7 +327,12 @@ public final class AnnotTopComponent extends TopComponent
     private void jsAlphaStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsAlphaStateChanged
         canvas.setAlpha(jsAlpha.getValue() / 100.0F);
     }//GEN-LAST:event_jsAlphaStateChanged
-    
+
+    private void toolChooserItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_toolChooserItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            canvas.tool = (DrawingTool)evt.getItem();
+        }
+    }//GEN-LAST:event_toolChooserItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.ebixio.annotations.BrushPreview brushPreview;
@@ -336,13 +343,18 @@ public final class AnnotTopComponent extends TopComponent
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator4;
+    private javax.swing.JToolBar.Separator jSeparator5;
+    private javax.swing.JToolBar.Separator jSeparator6;
     private javax.swing.JToolBar jToolBar;
     private javax.swing.JButton jbClear;
     private javax.swing.JSlider jsAlpha;
     private javax.swing.JSlider jsBrushSize;
     private javax.swing.JSlider jsZoom;
     private com.ebixio.jai.Panner panner;
+    private javax.swing.JComboBox toolChooser;
     // End of variables declaration//GEN-END:variables
     
     // <editor-fold defaultstate="collapsed" desc=" Singleton ">
@@ -454,6 +466,7 @@ public final class AnnotTopComponent extends TopComponent
         canvas.setMusicPage(page);
         
         page.setChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 canvas.repaint();
             }
@@ -468,6 +481,7 @@ public final class AnnotTopComponent extends TopComponent
         
         // Loading an image takes some time. We do it on a separate thread.
         SwingWorker w = new SwingWorker<Boolean, Void>() {
+            @Override
             protected Boolean doInBackground() {
                 try {
                     // This forces the image to load.
@@ -564,23 +578,42 @@ public final class AnnotTopComponent extends TopComponent
             } else {
                 panner.setVisible(false);
                 canvas.setOrigin(0, 0);
+                canvas.revalidate();
             }
         } catch (Exception e) {
             
         }
     }
 
+
+    /**
+     * The list of drawing tools we will use with the toolChooser JComboBox
+     * @return
+     */
+    public ComboBoxModel getTools() {
+        DefaultComboBoxModel cbm = new DefaultComboBoxModel();
+        cbm.addElement(new ToolRect(canvas));
+        cbm.addElement(new ToolLine(canvas));
+        cbm.addElement(new ToolFreehand(canvas));
+        //cbm.addElement(new ToolDot(canvas));  // The line tool makes this redundant
+        return cbm;
+    }
+
     // <editor-fold defaultstate="collapsed" desc=" ComponentListener interface ">
+    @Override
     public void componentResized(ComponentEvent e) {
         resizeImgToFit();
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
     }
     // </editor-fold>

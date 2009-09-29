@@ -33,6 +33,7 @@ public final class OpenPlayListAction extends CallableSystemAction {
         return NbBundle.getMessage(OpenPlayListAction.class, "CTL_OpenPlayListAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/OpenPlayListAction.gif";
     }
@@ -41,6 +42,7 @@ public final class OpenPlayListAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

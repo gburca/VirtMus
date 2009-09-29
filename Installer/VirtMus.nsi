@@ -6,11 +6,13 @@
 ;Include Modern UI
 
   !include "MUI2.nsh"
+  !include "WinMessages.nsh"
+  !include "UAC.nsh"
 
 ;--------------------------------
 ;General
         ; Name and file.
-	!define VERSION "2.51"
+	!define VERSION "2.61"
 
 	; This ${PRODUCT} !define is used throughout this intaller for a lot of
 	; things including install directory names and links. It should probably
@@ -54,6 +56,21 @@
  
   !insertmacro MUI_LANGUAGE "English"
 
+
+Function .OnInstFailed
+    UAC::Unload ;Must call unload!
+FunctionEnd
+Function .OnInstSuccess
+    UAC::Unload ;Must call unload!
+FunctionEnd
+
+;Function un.OnUnInstFailed
+;    UAC::Unload ;Must call unload!
+;FunctionEnd
+;Function un.OnUnInstSuccess
+;    UAC::Unload ;Must call unload!
+;FunctionEnd
+
 ;--------------------------------
 ;Installer Sections
 
@@ -61,7 +78,7 @@ Section "VirtMus" SVirtMus
 
   SetOutPath "$INSTDIR"
 
-  File /r ..\dist\VirtMus-${VERSION}\*.*
+  File /r ..\dist\virtmus\*.*
   
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"

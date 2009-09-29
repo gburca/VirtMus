@@ -22,6 +22,7 @@ package com.ebixio.thumbviewer;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Point;
 import java.awt.event.ContainerEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,6 +74,9 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * to maintain their position even if the container is resized), or not.
      */
     private boolean nullifyLayout = true;
+
+    /** The starting location of the draggable component */
+    private Point startLocation;
     
     /**
      * Creates a new {@link DraggableManager} with no "Draggable Container"
@@ -125,6 +129,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
             if (getDragPolicy().isDraggable(componentToDrag)) {
                 hitDraggable = (componentToDrag instanceof Draggable ? (Draggable) componentToDrag : new DraggableMask(componentToDrag));
                 setState(STATE_STILL);
+                startLocation = componentToDrag.getLocation();
                 return true;
             }
         }
@@ -149,9 +154,17 @@ public class ThumbnailDraggableManager implements DraggableManager {
      */
     public boolean stopDrag() {
         if (isDraggableContainerRegistered()) {
+            // Only reorder thumbs if they've been moved by a significant amount
+            Component comp = hitDraggable.getComponent();
             hitDraggable = null;
             setState(STATE_UNKNOWN);
-            ThumbsTopComponent.findInstance().reorderThumbs();
+
+            double distance = comp.getLocation().distance(startLocation);
+            if (distance < Math.min(comp.getWidth()/2, comp.getHeight()/2)) {
+                comp.setLocation(startLocation);
+            } else {
+                ThumbsTopComponent.findInstance().reorderThumbs();
+            }
             return true;
         }
         return false;

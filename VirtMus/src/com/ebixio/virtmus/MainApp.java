@@ -59,13 +59,13 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     private static MainApp instance;
     public final List<PlayList> playLists = Collections.synchronizedList(new Vector<PlayList>());
     private transient ExplorerManager manager = new ExplorerManager();
-    private static Logger logger = Logger.getLogger("com.ebixio.virtmus");
+    private static final Logger logger = Logger.getLogger("com.ebixio.virtmus");
     private static Date lastTime = new Date();
     private transient Set<ChangeListener> plListeners = new HashSet<ChangeListener>();
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "2.51";
+    public static final String VERSION = "2.61";
     private static final boolean RELEASED = false;   // Used to disable logging
     
     public static enum Rotation {
@@ -159,6 +159,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         //initLogger();
         log("MainApp::MainApp start");
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
+        System.getProperties().put("org.icepdf.core.awtFontLoading", "true");
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
@@ -174,6 +175,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
 
     private void setupListeners(Preferences pref) {
         pref.addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
             public void preferenceChange(PreferenceChangeEvent evt) {
                 if (evt.getKey().equals(OptSongDir)) {
                     log("Preference SongDir changed");
@@ -199,6 +201,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         
         // To update the status bar when songs/playlists are selected
         manager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                     Node[] nodes = manager.getSelectedNodes();
@@ -279,6 +282,16 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     }
     synchronized void addAllPlayLists(Preferences pref, boolean clearSongs) {
         //log("MainApp::addAllPlayLists thread: " + Thread.currentThread().getName());
+
+        // This function could be running on a non-EDT thread
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                StatusDisplayer.getDefault().setStatusText("Re-loading all PlayLists");
+            }
+        };
+        SwingUtilities.invokeLater(r1);
+
         PlayList pl;
         
         if (isDirty()) {
@@ -308,6 +321,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
 
                 FilenameFilter filter = new FilenameFilter() {
 
+                    @Override
                     public boolean accept(File dir, String name) {
                         return name.endsWith(".playlist.xml");
                     }
@@ -333,12 +347,13 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         this.notifyPLListeners();
         
         // This function could be running on a non-EDT thread
-        Runnable r = new Runnable() {
+        Runnable r2 = new Runnable() {
+            @Override
             public void run() {
                 StatusDisplayer.getDefault().setStatusText("Finished loading all PlayLists");
             }
         };
-        SwingUtilities.invokeLater(r);
+        SwingUtilities.invokeLater(r2);
     }
     
     public static synchronized MainApp findInstance() {
@@ -348,6 +363,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         return instance;
     }
     
+    @Override
     public void stateChanged(ChangeEvent arg0) {
         saveAllAction.updateEnable();
     };
@@ -379,6 +395,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public void setExplorerManager(ExplorerManager manager) {
         this.manager = manager;
     }
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -394,7 +411,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         //logger.log(lev, getElapsedTime() + " - " + msg);
         logger.log(lev, msg);
         if (printStackDump) {
-            logger.log(lev, getStackTrace() + "\n");
+            logger.log(lev, "{0}\n", getStackTrace());
         }
     }
     public static String getElapsedTime() {
@@ -402,9 +419,9 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         Date thisTime = new Date();
         long elapsed = thisTime.getTime() - lastTime.getTime();
         
-        res.append("Last time " + lastTime.toString() +
-                " now " + thisTime.toString() +
-                " Elapsed " + (new Long(elapsed)).toString() + "ms");
+        res.append("Last time ").append(lastTime.toString());
+        res.append(" now ").append(thisTime.toString());
+        res.append(" Elapsed ").append((new Long(elapsed)).toString()).append("ms");
         
         lastTime = thisTime;
         return res.toString();
@@ -414,9 +431,9 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         StringBuilder res = new StringBuilder();
         StackTraceElement[] ste = (new Throwable()).getStackTrace();
         for (StackTraceElement e: ste) {
-            res.append("Class: " + e.getClassName());
-            res.append(" Method: " + e.getMethodName());
-            res.append(" Line: " + e.getLineNumber() + "\n");
+            res.append("Class: ").append(e.getClassName());
+            res.append(" Method: ").append(e.getMethodName());
+            res.append(" Line: ").append(e.getLineNumber()).append("\n");
         }
         return res.toString();
     }
@@ -473,9 +490,11 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public static final class VirtMusLifecycleManager extends LifecycleManager {
         /** Default constructor for lookup. */
         public VirtMusLifecycleManager() {}
+        @Override
         public void saveAll() {
             MainApp.findInstance().saveAll();
         }
+        @Override
         public void exit() {
             if (MainApp.findInstance().isDirty()) {
                 int returnVal = JOptionPane.showConfirmDialog(null,

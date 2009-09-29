@@ -8,8 +8,8 @@ package com.ebixio.virtmus.xml;
 import com.ebixio.virtmus.MainApp.Rotation;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageSVG;
-import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.imgsrc.PdfRender;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -50,6 +50,10 @@ public class MusicPageConverter implements Converter {
             writer.startNode("sourceFile");
             if (mp.imgSrc.getClass().equals(PdfImg.class)) {
                 PdfImg pdf = (PdfImg)mp.imgSrc;
+                writer.addAttribute("pageNum", String.valueOf(pdf.getPageNum()));
+            }
+            else if (mp.imgSrc.getClass().equals(PdfRender.class)) {
+                PdfRender pdf = (PdfRender)mp.imgSrc;
                 writer.addAttribute("pageNum", String.valueOf(pdf.getPageNum()));
             }
 

@@ -29,18 +29,22 @@ import com.ebixio.virtmus.actions.SongNewAction;
 import com.ebixio.virtmus.actions.SongOpenAction;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.*;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -79,6 +83,33 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
             SystemAction.get(PlayListDelete.class)
 
         };
+    }
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        Sheet.Set set = Sheet.createPropertiesSet();
+        PlayList pl = getLookup().lookup(PlayList.class);
+
+        try {
+            Property nameProp = new PropertySupport.Reflection<String>(pl, String.class, "name"); // get/setName
+            Property fileProp = new PropertySupport.Reflection<File>(pl, File.class, "getSourceFile", null); // only getSourceFile
+            Property songsProp = new PropertySupport.Reflection<Integer>(pl, Integer.class, "getSongCnt", null);
+            //Property tagsProp = new PropertySupport.Reflection<String>(pl, String.class, "tags"); // get/setTags
+            nameProp.setName("Name");
+            fileProp.setName("Source File");
+            songsProp.setName("Songs");
+            //tagsProp.setName("Tags");
+            set.put(nameProp);
+            set.put(fileProp);
+            set.put(songsProp);
+            //set.put(tagsProp);
+        } catch (NoSuchMethodException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+
+        sheet.put(set);
+        return sheet;
     }
     
     // <editor-fold defaultstate="collapsed" desc=" Drag-n-drop ">
@@ -158,6 +189,10 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
         
         if (playList.isDirty()) {
             name = "<i>" + name + "</i>";
+        }
+
+        if (playList.isStale()) {
+            name = "<b>" + name + "</b>";
         }
         
         return name;

@@ -423,6 +423,7 @@ public class ImageDisplay extends JComponent {
              transX < (componentWidth-source.getWidth()) ||
              transY < (componentHeight-source.getHeight())) {
             g2D.setColor(getBackground());
+//            g2D.setColor(Color.red);
             g2D.fillRect(0, 0, componentWidth, componentHeight);
         }
 

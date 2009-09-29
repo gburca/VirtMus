@@ -25,10 +25,9 @@ import com.ebixio.virtmus.actions.SongSaveAction;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.imgsrc.PdfRender;
 import com.ebixio.virtmus.shapes.VmShape;
-import com.ebixio.virtmus.xml.FileConverter;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamConverter;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -95,7 +94,8 @@ public abstract class MusicPage {
         this.song = song;
         if (sourceFile.getName().toLowerCase().endsWith(".pdf")) {
             int page = (Integer)opt;
-            imgSrc = new PdfImg(sourceFile, page);
+            //imgSrc = new PdfImg(sourceFile, page);
+            imgSrc = new PdfRender(sourceFile, page);
         } else {
             imgSrc = new GenericImg(sourceFile);
         }
@@ -251,7 +251,8 @@ public abstract class MusicPage {
         request.page = this;
         cancelRendering(request.requester);
         MusicPage.renderQ.add(request);
-        
+
+        // TODO: Allow multiple threads
         if (renderThread == null || !renderThread.isAlive()) {
             renderThread = new RenderThread();
             renderThread.setName("MusicPage render");

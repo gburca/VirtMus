@@ -525,6 +525,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
      * @param mp The page that has been rendered (which is also the page performing the rendering)
      * @param jr The job request that was used to request the rendering.
      */
+    @Override
     public void renderingComplete(MusicPage mp, MusicPage.JobRequest jr) {
         waitingForImage = false;
         if (song == null) {

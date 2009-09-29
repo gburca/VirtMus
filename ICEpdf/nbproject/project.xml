@@ -7,83 +7,7 @@
             <suite-component/>
             <module-dependencies/>
             <public-packages>
-                <package>org.bouncycastle</package>
-                <package>org.bouncycastle.asn1</package>
-                <package>org.bouncycastle.asn1.cmp</package>
-                <package>org.bouncycastle.asn1.cms</package>
-                <package>org.bouncycastle.asn1.crmf</package>
-                <package>org.bouncycastle.asn1.cryptopro</package>
-                <package>org.bouncycastle.asn1.eac</package>
-                <package>org.bouncycastle.asn1.esf</package>
-                <package>org.bouncycastle.asn1.ess</package>
-                <package>org.bouncycastle.asn1.gnu</package>
-                <package>org.bouncycastle.asn1.iana</package>
-                <package>org.bouncycastle.asn1.icao</package>
-                <package>org.bouncycastle.asn1.isismtt</package>
-                <package>org.bouncycastle.asn1.isismtt.ocsp</package>
-                <package>org.bouncycastle.asn1.isismtt.x509</package>
-                <package>org.bouncycastle.asn1.kisa</package>
-                <package>org.bouncycastle.asn1.microsoft</package>
-                <package>org.bouncycastle.asn1.misc</package>
-                <package>org.bouncycastle.asn1.mozilla</package>
-                <package>org.bouncycastle.asn1.nist</package>
-                <package>org.bouncycastle.asn1.ntt</package>
-                <package>org.bouncycastle.asn1.ocsp</package>
-                <package>org.bouncycastle.asn1.oiw</package>
-                <package>org.bouncycastle.asn1.pkcs</package>
-                <package>org.bouncycastle.asn1.sec</package>
-                <package>org.bouncycastle.asn1.smime</package>
-                <package>org.bouncycastle.asn1.teletrust</package>
-                <package>org.bouncycastle.asn1.tsp</package>
-                <package>org.bouncycastle.asn1.util</package>
-                <package>org.bouncycastle.asn1.x500</package>
-                <package>org.bouncycastle.asn1.x509</package>
-                <package>org.bouncycastle.asn1.x509.qualified</package>
-                <package>org.bouncycastle.asn1.x509.sigi</package>
-                <package>org.bouncycastle.asn1.x9</package>
-                <package>org.bouncycastle.crypto</package>
-                <package>org.bouncycastle.crypto.agreement</package>
-                <package>org.bouncycastle.crypto.agreement.kdf</package>
-                <package>org.bouncycastle.crypto.agreement.srp</package>
-                <package>org.bouncycastle.crypto.digests</package>
-                <package>org.bouncycastle.crypto.encodings</package>
-                <package>org.bouncycastle.crypto.engines</package>
-                <package>org.bouncycastle.crypto.examples</package>
-                <package>org.bouncycastle.crypto.generators</package>
-                <package>org.bouncycastle.crypto.io</package>
-                <package>org.bouncycastle.crypto.macs</package>
-                <package>org.bouncycastle.crypto.modes</package>
-                <package>org.bouncycastle.crypto.paddings</package>
-                <package>org.bouncycastle.crypto.params</package>
-                <package>org.bouncycastle.crypto.prng</package>
-                <package>org.bouncycastle.crypto.signers</package>
-                <package>org.bouncycastle.crypto.tls</package>
-                <package>org.bouncycastle.crypto.util</package>
-                <package>org.bouncycastle.i18n</package>
-                <package>org.bouncycastle.i18n.filter</package>
-                <package>org.bouncycastle.jce</package>
-                <package>org.bouncycastle.jce.examples</package>
-                <package>org.bouncycastle.jce.exception</package>
-                <package>org.bouncycastle.jce.interfaces</package>
-                <package>org.bouncycastle.jce.netscape</package>
-                <package>org.bouncycastle.jce.provider</package>
-                <package>org.bouncycastle.jce.provider.asymmetric</package>
-                <package>org.bouncycastle.jce.provider.asymmetric.ec</package>
-                <package>org.bouncycastle.jce.provider.symmetric</package>
-                <package>org.bouncycastle.jce.spec</package>
-                <package>org.bouncycastle.math.ec</package>
-                <package>org.bouncycastle.mozilla</package>
-                <package>org.bouncycastle.ocsp</package>
-                <package>org.bouncycastle.openssl</package>
-                <package>org.bouncycastle.util</package>
-                <package>org.bouncycastle.util.encoders</package>
-                <package>org.bouncycastle.util.io</package>
-                <package>org.bouncycastle.util.test</package>
-                <package>org.bouncycastle.voms</package>
-                <package>org.bouncycastle.x509</package>
-                <package>org.bouncycastle.x509.examples</package>
-                <package>org.bouncycastle.x509.extension</package>
-                <package>org.bouncycastle.x509.util</package>
+                <package>apple.dts.samplecode.osxadapter</package>
                 <package>org.icepdf.core</package>
                 <package>org.icepdf.core.application</package>
                 <package>org.icepdf.core.events</package>
@@ -99,20 +23,43 @@
                 <package>org.icepdf.core.pobjects.graphics</package>
                 <package>org.icepdf.core.pobjects.graphics.batik.ext.awt</package>
                 <package>org.icepdf.core.pobjects.graphics.batik.ext.awt.image</package>
+                <package>org.icepdf.core.pobjects.graphics.text</package>
                 <package>org.icepdf.core.pobjects.security</package>
+                <package>org.icepdf.core.search</package>
+                <package>org.icepdf.core.tag</package>
+                <package>org.icepdf.core.tag.query</package>
                 <package>org.icepdf.core.util</package>
                 <package>org.icepdf.core.views</package>
+                <package>org.icepdf.core.views.common</package>
                 <package>org.icepdf.core.views.swing</package>
                 <package>org.icepdf.ri.common</package>
+                <package>org.icepdf.ri.common.annotation</package>
+                <package>org.icepdf.ri.common.search</package>
                 <package>org.icepdf.ri.common.views</package>
                 <package>org.icepdf.ri.images</package>
                 <package>org.icepdf.ri.util</package>
                 <package>org.icepdf.ri.viewer</package>
+                <package>org.jpedal.jbig2</package>
+                <package>org.jpedal.jbig2.decoders</package>
+                <package>org.jpedal.jbig2.examples.jai</package>
+                <package>org.jpedal.jbig2.examples.pdf</package>
+                <package>org.jpedal.jbig2.image</package>
+                <package>org.jpedal.jbig2.io</package>
+                <package>org.jpedal.jbig2.jai</package>
+                <package>org.jpedal.jbig2.segment</package>
+                <package>org.jpedal.jbig2.segment.extensions</package>
+                <package>org.jpedal.jbig2.segment.pageinformation</package>
+                <package>org.jpedal.jbig2.segment.pattern</package>
+                <package>org.jpedal.jbig2.segment.region</package>
+                <package>org.jpedal.jbig2.segment.region.generic</package>
+                <package>org.jpedal.jbig2.segment.region.halftone</package>
+                <package>org.jpedal.jbig2.segment.region.refinement</package>
+                <package>org.jpedal.jbig2.segment.region.text</package>
+                <package>org.jpedal.jbig2.segment.stripes</package>
+                <package>org.jpedal.jbig2.segment.symboldictionary</package>
+                <package>org.jpedal.jbig2.segment.tables</package>
+                <package>org.jpedal.jbig2.util</package>
             </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/bcprov-jdk15.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/bcprov-jdk15.jar</binary-origin>
-            </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/icepdf-core.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/icepdf-core.jar</binary-origin>

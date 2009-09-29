@@ -24,7 +24,11 @@ import com.ebixio.virtmus.actions.MusicPageCloneAction;
 import com.ebixio.virtmus.actions.MusicPageRemoveAction;
 import com.ebixio.virtmus.actions.RenameItemAction;
 import com.ebixio.virtmus.actions.SongSaveAction;
+import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.imgsrc.PdfRender;
+import java.io.File;
 import java.text.MessageFormat;
+import org.openide.ErrorManager;
 import javax.swing.Action;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -32,6 +36,8 @@ import org.openide.actions.MoveDownAction;
 import org.openide.actions.MoveUpAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -103,6 +109,50 @@ public class MusicPageNode extends AbstractNode {
             SystemAction.get( MoveUpAction.class ),
             SystemAction.get( MoveDownAction.class )
         };
+    }
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        Sheet.Set set = Sheet.createPropertiesSet();
+        MusicPage mp = getLookup().lookup(MusicPage.class);
+
+        try {
+            Property nameProp = new PropertySupport.Reflection<String>(mp, String.class, "name"); // get/setName
+            Property fileProp = new PropertySupport.Reflection<File>(mp, File.class, "getSourceFile", null); // only getSourceFile
+            Property pageProp = new PropertySupport.Reflection<Integer>(mp, Integer.class, "getPageNumber", null); // only getPageNumber
+            Property typeProp = new PropertySupport.Reflection<Class>(mp.imgSrc, Class.class, "getClass", null);
+            nameProp.setName("Name");
+            fileProp.setName("Source File");
+            pageProp.setName("Page Number in Song");
+            pageProp.setShortDescription("This is the n-th (0-based) page in the song");
+            typeProp.setName("Page Type");
+            set.put(nameProp);
+            set.put(fileProp);
+            set.put(pageProp);
+            set.put(typeProp);
+
+            Property pdfPage = null;
+            if (mp.imgSrc instanceof PdfImg) {
+                PdfImg pdf = (PdfImg)mp.imgSrc;
+                pdfPage = new PropertySupport.Reflection<Integer>(pdf, Integer.class, "getPageNum", null);
+            } else if (mp.imgSrc instanceof PdfRender) {
+                PdfRender pdf = (PdfRender)mp.imgSrc;
+                pdfPage = new PropertySupport.Reflection<Integer>(pdf, Integer.class, "getPageNum", null);
+            }
+
+            if (pdfPage != null) {
+                pdfPage.setName("PDF Page Number");
+                set.put(pdfPage);
+                pdfPage.setShortDescription("This is the n-th page in the PDF source");
+            }
+        } catch (NoSuchMethodException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+
+        sheet.put(set);
+        return sheet;
+
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Drag-n-Drop ">

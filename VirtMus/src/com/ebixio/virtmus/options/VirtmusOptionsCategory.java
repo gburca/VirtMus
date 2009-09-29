@@ -32,14 +32,17 @@ public final class VirtmusOptionsCategory extends OptionsCategory {
         return new ImageIcon(ImageUtilities.loadImage("com/ebixio/virtmus/resources/VirtMus32x32.png"));
     }
     
+    @Override
     public String getCategoryName() {
         return NbBundle.getMessage(VirtmusOptionsCategory.class, "OptionsCategory_Name_VirtMusOpt");
     }
     
+    @Override
     public String getTitle() {
         return NbBundle.getMessage(VirtmusOptionsCategory.class, "OptionsCategory_Title_VirtMusOpt");
     }
     
+    @Override
     public OptionsPanelController create() {
         return new VirtmusOptionsPanelController();
     }

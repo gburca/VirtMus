@@ -9,19 +9,16 @@
 
 - If needed, change the copyright year range on the splash screen
 	- branding/core/core.jar/org/netbeans/core/startup/...
+	- Docs/index.html VirtMus tiddler
 
 - Run the following targets:
 	- clean
 	- update-version-string
-	- build-zip
-
-- Rename dist/virtmus.zip to VirtMus-v.vv.zip
-- Rename the "virtmus" directory inside the zip to VirtMus-v.vv
-- Unzip the VirtMus-v.vv in the "dist" directory
-- Run the create-installer target
+	- #build-zip (is run automatically by target below)
+        - create-installers
 
 - Distribute:
 	- Installer/VirtMus-v.vv.exe
-	- dist/VirtMus-v.vv.zip
+	- Installer/VirtMus-v.vv.zip
 
 - Update virtmus.com

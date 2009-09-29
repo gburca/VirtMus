@@ -35,6 +35,7 @@ public class ThumbsAction extends AbstractAction {
         putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(ThumbsTopComponent.ICON_PATH, true)));
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         TopComponent win = ThumbsTopComponent.findInstance();
         win.open();

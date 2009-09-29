@@ -184,20 +184,6 @@ public class SongTest {
 //    }
 //
 //    /**
-//     * Test of getSourceFileStr method, of class Song.
-//     */
-//    @Test
-//    public void testGetSourceFileStr() {
-//        System.out.println("getSourceFileStr");
-//        Song instance = new Song();
-//        String expResult = "";
-//        String result = instance.getSourceFileStr();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
 //     * Test of setSourceFile method, of class Song.
 //     */
 //    @Test

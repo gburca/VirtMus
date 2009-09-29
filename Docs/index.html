@@ -526,8 +526,30 @@ For full details and a complete list of options, see: http://java.sun.com/javase
 
 Sections 3.1.3 through 3.1.5 are particularly relevant for the Windows OS.</pre>
 </div>
-<div title="ChangeLog" modifier="GabrielBurca" modified="200909280459" created="200701272322" tags="Publish" changecount="26">
-<pre>! Version 2.51
+<div title="ChangeLog" modifier="GabrielBurca" modified="201011130418" created="200701272322" tags="Publish" changecount="38">
+<pre>! Version 2.61
+* Features added:
+** Basic annotation tools (line, rectangle, freehand) are now available right in the annotations window (no need to use [[Inkscape|http://www.inkscape.org]] for simple edits).
+** Playlists with stale songs (missing or moved) show up in bold. The missing songs are shown in the IDE log.
+** Added File-&gt;Open Music Folder menu option
+
+* Bugs fixed:
+** Improved error handling for PDF documents.
+** Improved handling of thumbnail reordering. This issue was especially prominent when the thumbnails were in a single column. Moving a thumbnail to the left used to be interpreted as a request to place the moved thumbnail before the previous one.
+** Improved re-painting of the annotations window where sometimes the unused region was not properly cleaned up.
+** Fixed an exception on Linux when displaying the Options
+** Fixed crash when drawing on null music page
+
+* Other changes:
+** Upgraded to ~NetBeans 6.9
+** Upgraded ~ICEpdf from 3.0 to 4.0.1
+** Handle filenames with spaces.
+** Made annotations tool bar better
+** Updated documentation
+*** on bilila.com products
+*** to refer to Git instead of SVN
+
+! Version 2.51
 * Bugs fixed:
 ** Pages from a PDF document can be annotated using an external SVG editor now.
 ** Updates made using an external SVG editor show up right away now.
@@ -627,7 +649,7 @@ To process multiple PDF files at once:
 * Execute the script as follows:
 {{{
 cd DESTDIR/
-for f in ../SOURCEDIR/*.pdf; do pdf2song $f; done   
+for f in ../SOURCEDIR/*.pdf; do pdf2song &quot;$f&quot;; done   
 }}}</pre>
 </div>
 <div title="DefaultTiddlers" modifier="GabrielBurca" modified="200701140541" created="200701131810">
@@ -650,25 +672,22 @@ VirtMusGettingStarted</pre>
 * Cross platform
 ** You should be able to use this software (and any associated software) on the platform of your choice.</pre>
 </div>
-<div title="DeveloperInfo" modifier="GabrielBurca" modified="200812070415" created="200701160406" tags="Publish" changecount="8">
+<div title="DeveloperInfo" modifier="YourName" modified="201006021559" created="200701160406" tags="Publish" changecount="13">
 <pre>If you want to help, see the ToDo list.
 
-This application was built using the [[NetBeans 6.5|http://netbeans.org]] platform which can be downloaded from http://netbeans.org/
+This application was built using the [[NetBeans 6.8|http://netbeans.org]] platform which can be downloaded from http://netbeans.org/
 
 It uses the JavaAdvancedImaging library for most of the image manipulations. Follow the link for setup/installation details.
 
 If you would like to contribute to this software, please contact the author (GabrielBurca)
 
-The Subversion (SVN) repository can be accessed at https://svn.virtmus.com/svnroot/virtmus
-Please see the RepositoryStructure information. To check out the latest version, use the following command:
+The Git repository can be accessed at git://virtmus.git.sourceforge.net/gitroot/virtmus/virtmus
 
-{{{svn co https://svn.virtmus.com/svnroot/virtmus/trunk virtmus-trunk}}}
+Versions prior to 2.50 were maintained in Subversion, but the SVN repository is now deprecated and all the old revisions have been imported into Git. Please see the RepositoryStructure information for how the old SVN was structured.
 
 If you want to make changes to this TiddlyWiki document that you're reading now, right click on [[this link|index.html]] and select 'Save link as...' or 'Save target as...'.  Open the saved copy in your browser and edit as desired. When done, don't forget to click on the 'save changes' link in the upper right corner to save your changes. Changes can be submitted to GabrielBurca.
 
-To publish the contents of this TiddlyWiki using static HTML files, see DocMaintenance.
-
-The ReleaseChecklist should be used when releasing new versions of the software.</pre>
+To publish the contents of this TiddlyWiki using static HTML files, see DocMaintenance.</pre>
 </div>
 <div title="DocMaintenance" modifier="GabrielBurca" modified="200711060650" created="200710101817" changecount="15">
 <pre>This tiddler is used to generate flat HTML files out of the TiddlyWiki document.
@@ -1743,7 +1762,7 @@ function promptForExportFilename(here)
 }
 //}}}</pre>
 </div>
-<div title="FootSwitch" modifier="GabrielBurca" modified="200711020604" created="200701130700" tags="Publish" changecount="4">
+<div title="FootSwitch" modifier="GabrielBurca" modified="201001070146" created="200701130700" tags="Publish" changecount="7">
 <pre>Foot switches allow you to press the left/right mouse buttons using your feet (thus keeping your hands free to play the instrument).
 
 If you want to be able to go forward and back, you will want a 2-button foot switch. If you only need to go forward (PageDown), a single button (the left mouse button) switch will do. Either way, you have a few options.
@@ -1752,7 +1771,10 @@ If you want to be able to go forward and back, you will want a 2-button foot swi
 If you're not afraid of using a soldering gun, you can make your own switch by sacrificing a USB mouse. That's what I did. I already had two sustain pedals (the normally open type) and a spare optical mini mouse, so I bought two 1/4&quot; jacks and soldered them to the mouse button switches on the mouse PCB. The sustain pedals can now be used to move back and forth through the song.
 
 ! Comercial solutions
-''None of these have been verified to work with VirtMus'' but from the description it looks like they might. If they act as a mouse and provide mouse-click events they should work.
+''None of these have been verified to work with VirtMus'' by the VirtMus developers but from the description it looks like they might. If they act as a mouse and provide mouse-click events they should work.
+
+http://www.bilila.com/ sells a foot pedal that can be used to &quot;turn pages&quot;. Be aware that this device sends ~PgUp/~PgDn keys to the PC so VirtMus will always scroll a full page when the pedal is depressed. In order to scroll by less than a full page, the device must send left/right button mouse clicks. See:
+* http://www.bilila.com/pagescore_turner
 
 http://www.delcom-eng.com/ sells a number of USB foot switches that generate mouse click events. See for example:
 * [[Dual USB HID Foot Switch - Mouse Left &amp; Right Buttons|http://www.delcom-eng.com/productdetails.asp?productnum=803682]]
@@ -1762,8 +1784,9 @@ http://www.kinesis-ergo.com/ also sells a few types of foot switches that genera
 * http://www.kinesis-ergo.com/fs-savant.htm
 * http://www.kinesis-ergo.com/fs-savant-elite.htm
 
-http://www.bilila.com/ sells a foot pedal that can be used to &quot;turn pages&quot; but it's not clear if it generates mouse click events so check with them before buying. See:
-* http://www.bilila.com/pagescore_turner</pre>
+http://usb.brando.com/ sells 2 and 3 button foot switches:
+* http://usb.brando.com/usb-double-foot-switch_p01364c046d015.html
+* http://usb.brando.com/usb-triple-foot-switch_p01365c046d015.html</pre>
 </div>
 <div title="FrequentlyAskedQuestions" modifier="GabrielBurca" modified="200812060933" created="200711021434" tags="Publish" changecount="9">
 <pre>* How do I speed up VirtMus?
@@ -3256,11 +3279,12 @@ TW21Loader.prototype.internalizeTiddler = function(store,tiddler,title,node)
 } // END OF TW2.1.x backward-compatibility functions
 //}}}</pre>
 </div>
-<div title="MainMenu" modifier="GabrielBurca" modified="200909280506" created="200701131810" tags="Publish" changecount="30">
+<div title="MainMenu" modifier="GabrielBurca" modified="200910070605" created="200701131810" tags="Publish" changecount="31">
 <pre>VirtMus
 [[Getting Started|VirtMusGettingStarted]]
 ScreenShots
 [[Download|VirtMusInstall]]
+[[Change Log|ChangeLog]]
 ----
 [[Menu Options|MenuOptions]]
 [[VirtMus Options|VirtMusOptions]]
@@ -3273,8 +3297,6 @@ ScreenShots
 [[Annotations|MusicPageAnnotations]]
 ----
 [[Developer Info|DeveloperInfo]]
-[[Change Log|ChangeLog]]
-----
 [[FAQ|FrequentlyAskedQuestions]]
 
 [img[Sourceforge.net|http://sflogo.sourceforge.net/sflogo.php?group_id=186670&amp;amp;type=1][http://sourceforge.net]]
@@ -3318,9 +3340,10 @@ ScreenShots
 ** ''Open Annot Window'': This window allows the user to view the music page at full size. The window can be scrolled around by dragging the rectangle in the upper right corner thumbnail to the region of interest.
 </pre>
 </div>
-<div title="MusicPageAnnotations" modifier="GabrielBurca" modified="200711020453" created="200711020145" tags="Publish" changecount="19">
+<div title="MusicPageAnnotations" modifier="GabrielBurca" modified="201006021641" created="200711020145" tags="Publish" changecount="20">
 <pre>The Annotations tab allows you to add various freehand annotations to a music page. It has the following features:
 
+* A drawing tool chooser
 * A color swatch that can be used to select the pen color
 * A slider to select the pen size
 * A slider to select the opacity (so you can add transparent annotations as shown in the screen shot below)
@@ -3833,14 +3856,10 @@ urchinTracker();
 ** Right-click on the song and select &quot;Move Up&quot; or &quot;Move Down&quot; from the context menu
 </pre>
 </div>
-<div title="ReleaseChecklist" modifier="GabrielBurca" modified="200711060509" created="200711060454" tags="Publish" changecount="8">
-<pre>* Change {{{MainApp.VERSION}}}
-* Change {{{MainApp.RELEASED}}} to true
-* Rename the {{{dist\virtmus.zip}}} file generated by the &quot;Build ZIP Distribution&quot; command to {{{VirtMus-X.YY.zip}}} where {{{X.YY}}} is the release number.
-* Rename the first level directory inside the zip file to {{{VirtMus-X.YY}}}</pre>
-</div>
-<div title="RepositoryStructure" modifier="GabrielBurca" modified="200702052339" created="200701160533" tags="Publish">
-<pre>The repository is structured in a standard way with ''trunk'', ''branches'' and ''tags''.
+<div title="RepositoryStructure" modifier="GabrielBurca" modified="200909290409" created="200701160533" tags="Publish" changecount="1">
+<pre>This information is retained for historical purposes only. Development is now done in Git and this information no longer applies.
+
+The SVN repository was structured in a standard way with ''trunk'', ''branches'' and ''tags''.
 
 The ''users'' repository area is of interest only to developers that prefer to maintain a private svn repository for VirtMus and sync with the official repository at specific intervals. For example, once ready to release ''revB'' of the private changes, ''user2'' would make a copy of his or her local repository to the ''/users/user2/revB'' directory. From there a merge of the ''revA'' to ''revB'' delta can be made into the trunk.
 
@@ -4151,8 +4170,11 @@ window.promptForFilename=function(msg,path,file,defext)
 }
 //}}}</pre>
 </div>
-<div title="ScreenShots" modifier="GabrielBurca" modified="200711020502" created="200702051855" tags="Publish" changecount="4">
+<div title="ScreenShots" modifier="GabrielBurca" modified="200910060420" created="200702051855" tags="Publish" changecount="5">
 <pre>This is how the application looks when in normal use. You can see the PlayLists and SongLists on the left, and the thumbnails of the MusicPages for the currently loaded song on the right. In the middle is an example of a music page with some annotations.
+
+The various window components can be re-arranged by dragging them around by their title tab.
+
 [img[img/Annotations.png]]
 
 These are the various VirtMusOptions available:
@@ -5016,7 +5038,7 @@ config.macros.upload.UploadLog.prototype.endUpload = function() {};
 //}}}
 </pre>
 </div>
-<div title="VirtMus" modifier="GabrielBurca" modified="200812010644" created="200701130656" tags="Publish" changecount="7">
+<div title="VirtMus" modifier="GabrielBurca" modified="201006021643" created="200701130656" tags="Publish" changecount="9">
 <pre>! Summary:
 VirtMus (virtual music) is a free application that allows the user to display sheet music and turn pages without removing the hands (or feet) from the instrument the music is performed on. This feature is very useful during concerts and practice sessions as it allows the musician to focus on performing the music without interruption. The software also allows the users to store and organize their entire sheet music collection on a laptop, making it fully portable and available at a click of a button. See the ScreenShots if you want to see how it looks, or have a look at the DesignPrinciples to see some of the distinguishing features.
 
@@ -5033,9 +5055,9 @@ If you're looking for similar software but with a commercial or shareware licens
 
 This software was written and is being maintained by [[Gabriel Burca|GabrielBurca]]. Developers who wish to contribute should contact the author at gburca dash virtmus at ebixio dot com or by using the ~SourceForge system at http://sourceforge.net/users/gburca/
 
-VirtMus is Copyright (C) 2006-2008 Gabriel Burca and released under the [[GPL|http://www.gnu.org/copyleft/gpl.html]] license.</pre>
+VirtMus is Copyright (C) 2006-2010 Gabriel Burca and released under the [[GPL|http://www.gnu.org/copyleft/gpl.html]] license.</pre>
 </div>
-<div title="VirtMusGettingStarted" modifier="GabrielBurca" modified="200811150412" created="200701131854" tags="Publish" changecount="2">
+<div title="VirtMusGettingStarted" modifier="GabrielBurca" modified="200910060408" created="200701131854" tags="Publish" changecount="4">
 <pre>* Download and install the application following the VirtMusInstall instructions.
 * Decide on how to organize your music. VirtMus makes use of two kinds of files: PlayLists and SongLists. A sensible suggestion would be to create a folder for the playlists, and in that folder create a new sub-folder for each song. The individual song sub-folders would contain the SongName.song.xml file along with the image files making up that song. The layout would look something like this:
 ** ~FolderForPlayLists
@@ -5055,13 +5077,13 @@ VirtMus is Copyright (C) 2006-2008 Gabriel Burca and released under the [[GPL|ht
 * When you start the application (see VirtMusInstall for how to run especially if you're on Linux) you will see two default PlayLists that are always present: ''Default Play List'' and ''All Songs''. If you open a song without first selecting a play-list, the song will be added to the &quot;Default Play List&quot;. The &quot;All Songs&quot; play-list contains all the songs VirtMus was able to find on disk. 
 [img[img/EmptyAppSmall.png]]
 * Create a [[song|SongLists]] by using the ''Song''-&gt;''New Song'' menu option or by clicking on the corresponding toolbar button. Navigate to the directory you want to save the song in and provide a name for the song file. Open the ''Default Play List'' and you will find your newly created song there.
-* Select the new song, and use the ''~MusicPage''-&gt;''Add Pages'' menu option (or corresponding toolbar button) to select the images for this song. You can add multiple images at once from the dialog box provided by holding down Ctrl (to select random files) or Shift (to select a range of files). You can also ConvertFromPdf to some common image formats.
+* Select the new song, and use the ''~MusicPage''-&gt;''Add Pages'' menu option (or corresponding toolbar button) to select the images for this song. You can add multiple images at once from the dialog box provided by holding down Ctrl (to select random files) or Shift (to select a range of files). If you select a PDF file, you will be prompted for the page range you wish to import from the PDF.
 * Save the song using the ''Song''-&gt;''Save Song'' menu option.
 * Start your practice session by using the ''View''-&gt;''Go Live'' menu option or toolbar button.
 * Use the left/right mouse buttons or Page Down/Up to advance through the pages, or use a FootSwitch. See the LiveWindowKeyboardShortcuts section for a list of available keyboard shortcuts.
 * Also, see ''Tools''-&gt;''Options'' and the VirtMusOptions section for various settings that can be used to customize the display orientation, scroll amount and scroll direction.</pre>
 </div>
-<div title="VirtMusInstall" modifier="GabrielBurca" modified="200909140328" created="200701131904" tags="Publish" changecount="14">
+<div title="VirtMusInstall" modifier="GabrielBurca" modified="201011130419" created="200701131904" tags="Publish" changecount="21">
 <pre>! Install the Requirements:
 The only &quot;hard&quot; requirement is the Java Runtime Environment (JRE) 6 SE which you might already have. If not, it can be obtained from:
 * Windows/Linux/Solaris: http://java.sun.com/javase/downloads/index.jsp
@@ -5070,23 +5092,26 @@ The only &quot;hard&quot; requirement is the Java Runtime Environment (JRE) 6 SE
 All of the optional requirements are available for Unix/Linux, Windows and OSX.
 * It is recommended that you also install the JavaAdvancedImaging libraries for improved performance.
 * [[Inkscape|http://www.inkscape.org/]] is used for advanced annotations. Download it from http://www.inkscape.org/download/
-* [[ImageMagic|http://www.imagemagick.org/]] is a useful tool to convert graphics files between every imaginable format. Most notably, it allows you to ConvertFromPdf to image formats that can be used by VirtMus. Download the latest binary release for your platform from http://www.imagemagick.org/script/binary-releases.php
+* [[ImageMagic|http://www.imagemagick.org/]] is a useful tool to convert graphics files between every imaginable format. Most notably, it allows you to ConvertFromPdf to image formats that can be used by VirtMus if for some reason you don't want to use the PDF file directly. Download the latest binary release for your platform from http://www.imagemagick.org/script/binary-releases.php
 
 ! Download the application
 * Download the latest release from http://sourceforge.net/project/showfiles.php?group_id=186670
+* Subscribe with SourceForge.net to be notified of new releases by monitoring the [[Open Discussion|http://sourceforge.net/projects/virtmus/forums]] forum.
 
 ! Install
-To &quot;install&quot; on Windows/Linux/Solaris, simply unzip the downloaded file in a convenient place.
+To &quot;install&quot; the zip distribution on Windows/Linux/Solaris, simply unzip the downloaded file in a convenient place.
 
-To &quot;install&quot; on Mac... you're on your own.
+To install on Windows, you can download and execute the &quot;exe&quot; installer.
+
+To &quot;install&quot; on Mac... you're on your own, but you'll want to start with the zip distribution.
 
 ! Run
-* On Windows: go to the directory you unzipped the file and execute the {{{virtmus.exe}}} file from the {{{bin}}} subdirectory.
+* On Windows: if you used the &quot;zip&quot; distribution, go to the directory you unzipped the file and execute the {{{virtmus.exe}}} file from the {{{bin}}} subdirectory. If you used the &quot;exe&quot; distribution, you should already have shortcuts to VirtMus in your Start menu.
 
 * On UNIX: go to the directory you unzipped the file and execute the {{{virtmus}}} script from the {{{bin}}} subdirectory. Use the {{{--jdkhome}}} command line option to specify where your Java 6 JRE is located, or modify the {{{virtmus.conf}}} file from the {{{etc}}} subdirectory to uncomment the {{{jdkhome}}} line and make it point to your Java 6 JRE.
 ** Ex: {{{./bin/virtmus --jdkhome /usr/local/jdk1.6.0}}}
 
-* On Mac: ... wait until Java 6.0 is released.</pre>
+* On Mac: ... you're on your own. I don't have a Mac so I can't test, but theoretically it should work. I welcome contributions to this document from Mac users.</pre>
 </div>
 <div title="VirtMusOptions" modifier="GabrielBurca" modified="200711040417" created="200701132233" tags="Publish" changecount="2">
 <pre>[img[img/Options.png]]
