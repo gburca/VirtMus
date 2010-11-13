@@ -94,8 +94,8 @@ public abstract class MusicPage {
         this.song = song;
         if (sourceFile.getName().toLowerCase().endsWith(".pdf")) {
             int page = (Integer)opt;
-            //imgSrc = new PdfImg(sourceFile, page);
-            imgSrc = new PdfRender(sourceFile, page);
+            imgSrc = new PdfImg(sourceFile, page);
+            //imgSrc = new PdfRender(sourceFile, page);
         } else {
             imgSrc = new GenericImg(sourceFile);
         }

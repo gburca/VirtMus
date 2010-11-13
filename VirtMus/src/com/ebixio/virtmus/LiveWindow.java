@@ -32,8 +32,13 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.java.swingfx.waitwithstyle.PerformanceInfiniteProgressPanel;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
@@ -78,8 +83,9 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
     if the user presses "PgDn" we can display them quickly. */
     final int maxNextCache = 4;
 
-    Hashtable<Integer, BufferedImage> pageCache = new Hashtable<Integer, BufferedImage>(3);
-    Vector<Integer> toBeRendered = new Vector<Integer>(3);
+    private static final Object pageCacheLock = new Object();
+    Map<Integer, BufferedImage> pageCache = Collections.synchronizedMap(new HashMap<Integer, BufferedImage>(3));
+    ArrayList<Integer> toBeRendered = new ArrayList<Integer>(3);
     boolean waitingForImage = false;
     final int separatorSize = 3;
     final Color separatorColor = Color.RED;
@@ -115,7 +121,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             }
         });
 
-        pageIncrement = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100")) / 100;
+        pageIncrement = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100.0")) / 100;
         if (pageIncrement == 0) {
             pageShiftNeeded = false;
         } else {
@@ -185,7 +191,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
     }//GEN-LAST:event_formKeyPressed
 
     public void setLiveSong(Song song) {
-        if (song.pageOrder.size() == 0) {
+        if (song.pageOrder.isEmpty()) {
             return;
         }
         setLiveSong(song, song.pageOrder.get(0));
@@ -195,7 +201,9 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         this.song = song;
         page = song.pageOrder.indexOf(startingPage);
         pageShift = page;
-        this.pageCache.clear();
+        synchronized (pageCacheLock) {
+            this.pageCache.clear();
+        }
         this.toBeRendered.clear();
         MusicPage.cancelRendering(this);
 
@@ -467,26 +475,17 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
      * are beyond maxPrevCache or maxNextCache.
      */
     private void cleanCache(int currentPage) {
-        int lastPage = 0;
-
-        for (int i = 0; i < currentPage - maxPrevCache; i++) {
-            if (pageCache.containsKey(i)) {
-                pageCache.remove(i);
-                MainApp.log("LiveWindow: removed page " + i);
-            }
-        }
-        for (int i : pageCache.keySet()) {
-            if (i > lastPage) {
-                lastPage = i;
-            }
-        }
-        for (int i = currentPage + maxNextCache + 1; i < lastPage; i++) {
-            if (pageCache.containsKey(i)) {
-                pageCache.remove(i);
-                MainApp.log("LiveWindow: removed page " + i);
+        HashSet<Integer> toKeep = new HashSet<Integer>(getPagesToCache(currentPage));
+        synchronized (pageCacheLock) {
+            // Must create new set. keySet() gives us a reference to the set and
+            // we'll get access exceptions for modifying while iterating.
+            Set<Integer> cache = new HashSet<Integer>(pageCache.keySet());
+            for (int i : cache) {
+                if (! toKeep.contains(i)) pageCache.remove(i);
             }
         }
     }
+
 
     /**
      * Requests rendering of page-maxPrevCache through page+maxNextCache pages.
@@ -495,28 +494,47 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         if (song == null) {
             return;
         }
-        int range = Math.max(maxPrevCache, maxNextCache);
         toBeRendered.clear();
-
-        if (!pageCache.containsKey(page)) {
-            toBeRendered.add(page);
-        }
-
-        // Render closest pages first, then next removed, etc...
-        for (int i = 1; i <= range; i++) {
-            if (i <= maxNextCache && !pageCache.containsKey(page + i)) {
-                if (page + i < song.pageOrder.size()) {
-                    toBeRendered.add(page + i);
-                }
-            }
-            if (i <= maxPrevCache && !pageCache.containsKey(page - i)) {
-                if (page - i >= 0) {
-                    toBeRendered.add(page - i);
-                }
-            }
+        for (Integer i: getPagesToCache(page)) {
+            if (!pageCache.containsKey(i)) toBeRendered.add(i);
         }
 
         renderNext();
+    }
+
+    /**
+     * Computes list of pages we want rendered/cached (page-maxPrevCache through
+     * page+maxNextCache) and arranges them in order based on how close they are
+     * to the given page.
+     *
+     * @param page 0-based page number
+     * @return A list of pages to be rendered/cached
+     */
+    private ArrayList<Integer> getPagesToCache(int page) {
+        ArrayList<Integer> list = new ArrayList<Integer>(maxNextCache + maxPrevCache + 1);
+        int range = Math.max(maxPrevCache, maxNextCache);
+        list.add(page);
+
+        // Render closest pages first, then next removed, etc...
+        for (int i = 1; i <= range; i++) {
+            // When we reach the end of the song, start rendering the beginning
+            int next = page + i;
+            if (next >= song.pageOrder.size()) {
+                next = next % song.pageOrder.size();
+            }
+            if (i <= maxNextCache) {
+                if (next < song.pageOrder.size()) {
+                    list.add(next);
+                }
+            }
+            if (i <= maxPrevCache) {
+                if (page - i >= 0) {
+                    list.add(page - i);
+                }
+            }
+        }
+
+        return list;
     }
 
     /**
@@ -534,7 +552,9 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
 
         if (jr.pageNr >= 0 && jr.requester == this) {
             BufferedImage img = mp.getRenderedImage(this);
-            pageCache.put(jr.pageNr, img);
+            synchronized (pageCacheLock) {
+                pageCache.put(jr.pageNr, img);
+            }
             if (jr.pageNr == page || !fullyPainted) {
                 paintDblBuf();
             }

@@ -65,8 +65,8 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "2.61";
-    private static final boolean RELEASED = false;   // Used to disable logging
+    public static final String VERSION = "2.62";
+    private static final boolean RELEASED = true;   // Used to disable logging
     
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
@@ -153,6 +153,8 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public static final String OptPageScrollDir     = "ScrollDirection";
     public static final String OptUseOpenGL         = "UseOpenGL";    
     public static final String OptSvgEditor         = "SvgEditor";
+
+    public static final Object playListPrefLock = new Object();
     
     /** Creates a new instance of MainApp */
     private MainApp() {
@@ -190,7 +192,9 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
                             default: break;
                         }
                     }
-                    playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
+                    synchronized(playListPrefLock) {
+                        playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
+                    }
                 } else if (evt.getKey().equals(OptPlayListDir)) {
                     Preferences pref = NbPreferences.forModule(MainApp.class);
                     addAllPlayListsThreaded(pref, false);
@@ -306,7 +310,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
             }
         }
         
-        //synchronized (playLists) {
+        synchronized (playListPrefLock) {
             playLists.clear();
             
             // Discard all the songs so they get re-loaded when the playlist is re-created
@@ -342,7 +346,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
             playLists.add(pl);
 
             Collections.sort(playLists);
-        //}
+        }
         
         this.notifyPLListeners();
         

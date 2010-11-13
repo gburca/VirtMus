@@ -10,7 +10,6 @@ import com.ebixio.virtmus.MainApp.Rotation;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.VirtMusKernel;
-import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFImage;
 import com.sun.pdfview.PDFPage;

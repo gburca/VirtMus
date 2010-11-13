@@ -38,7 +38,7 @@ final class VirtmusPanel extends javax.swing.JPanel {
         initComponents();
         this.openGLOptions.setVisible(false);
         
-        pageScrollPercentage.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        pageScrollPercentage.setModel(new SpinnerNumberModel(new Float(0), new Float(0), new Float(100), new Float(1)));
         // Can listen to changes in form fields and call controller.changed()
         // Only need to do this if we want the changes to be noticed before the user selects "OK"
     }
@@ -389,7 +389,7 @@ final class VirtmusPanel extends javax.swing.JPanel {
         playListDir.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptPlayListDir, ""));
         songDir.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, ""));
         svgEditor.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, inkscape));
-        pageScrollPercentage.setValue(Integer.parseInt(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100")));
+        pageScrollPercentage.setValue(Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100.0")));
         
         String orientation = NbPreferences.forModule(MainApp.class).get(MainApp.OptScreenRot, MainApp.screenRot.toString());
         enableOptionButton(orientationButtonGroup.getElements(), orientation);
