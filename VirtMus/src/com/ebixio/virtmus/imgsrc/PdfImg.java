@@ -48,7 +48,7 @@ import org.icepdf.core.util.GraphicsRenderingHints;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * Renders PDF pages using the original IcePdf library.
  * @author GBURCA
  */
 @XStreamAlias("pdfImg")
@@ -76,10 +76,14 @@ public class PdfImg extends ImgSrc {
         return pageScale;
     }
 
-    private Rectangle.Float scale(PRectangle pRect, double scale) {
+    private Rectangle.Float scale(PRectangle pRect, double scaleW, double scaleH) {
         return new Rectangle.Float(
-            (float)(pRect.x * scale), (float)(pRect.y * scale),
-            (float)(pRect.width * scale), (float)(pRect.height * scale));
+            (float)(pRect.x * scaleW), (float)(pRect.y * scaleH),
+            (float)(pRect.width * scaleW), (float)(pRect.height * scaleH));
+    }
+
+    private Rectangle.Float rectRound(Rectangle.Float r) {
+        return new Rectangle.Float(Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height));
     }
 
     // Convert from PDF to Java
@@ -122,12 +126,14 @@ public class PdfImg extends ImgSrc {
             if (img != null) {
                 // TODO: How do we get the size synchronously?
                 int imgW = img.getWidth(null);
-                //int imgH = img.getHeight(null);
+                int imgH = img.getHeight(null);
 
                 // Multiply getPageBoundary() values by this factor to get true sizes
-                double pdfScale = imgW / mediaBox.getWidth();
-                pdfCropBox = scale(cropBox, pdfScale);
-                pdfMediaBox = scale(mediaBox, pdfScale);
+                double pdfScaleW = imgW / mediaBox.getWidth();
+                double pdfScaleH = imgH / mediaBox.getHeight();
+                //double delta = pdfScaleH - pdfScaleW; // W&H scale in PDF is not always the same
+                pdfCropBox = scale(cropBox, pdfScaleW, pdfScaleH);
+                pdfMediaBox = scale(mediaBox, pdfScaleW, pdfScaleH);
                 pdfCropBox = rect2Java(pdfCropBox, pdfMediaBox.height);
                 pdfMediaBox = rect2Java(pdfMediaBox, pdfMediaBox.height);
 
@@ -173,7 +179,7 @@ public class PdfImg extends ImgSrc {
 
     // Used by Thumbs and Live display
     @Override
-    public BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize, MusicPage page) {
+    public synchronized BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize, MusicPage page) {
         RenderedOp srcImg, destImg = null;
         Rectangle destSize;
 
@@ -360,19 +366,24 @@ public class PdfImg extends ImgSrc {
 
         if (img != null) {
             // A single image covers the whole PDF page.
-            getDimension(); // Just to make sure the crop boxes are computed
+            Dimension dim = getDimension(); // Just to make sure the crop boxes are computed
             //MainApp.log("ImgSz1: " + img.getWidth(null) + "x" + img.getHeight(null));
             RenderedOp r = null;
 
             pb = new ParameterBlock();
             pb.addSource(img);
-            pb.add(pdfCropBox.x);
-            pb.add(pdfCropBox.y);
-            pb.add(pdfCropBox.width);
-            pb.add(pdfCropBox.height);
+
+            // Due to floating point math, pdfCropBox could be slightly larger than the image
+            // and that would cause the "crop" to throw an exception. Round the crop.
+            Rectangle.Float crop = rectRound(pdfCropBox);
+            pb.add(crop.x);
+            pb.add(crop.y);
+            pb.add(crop.width - 1);
+            pb.add(crop.height - 1);
             r = JAI.create("crop", pb);
 
-            // Cropping leaves the origin at topLeftX/Y we need to translate to 0,0
+            // Cropping leaves the origin at the old topLeftX/Y we need to translate
+            // the image so the top-left corner is again at 0,0
             pb = new ParameterBlock();
             pb.addSource(r);
             pb.add(-pdfCropBox.x);
@@ -387,15 +398,17 @@ public class PdfImg extends ImgSrc {
                 pb.add((float)Math.toRadians(pdfRotation));
                 pb.add(new InterpolationBilinear());
                 r = JAI.create("rotate", pb);
+                // Image is now rotated around the 0,0 point, and completely outside
+                // the view-port. We need to translate it back into the view-port.
 
                 Point.Float transl;
                 switch (pdfRotation) {
                     case 90:
                         transl = new Point.Float(pdfCropBox.height, 0F); break;
                     case 180:
-                        transl = new Point.Float(pdfCropBox.width, -pdfCropBox.height); break;
+                        transl = new Point.Float(pdfCropBox.width, pdfCropBox.height); break;
                     case 270:
-                        transl = new Point.Float(0, -pdfCropBox.width); break;
+                        transl = new Point.Float(0, pdfCropBox.width); break;
                     case 0:
                     default:
                         transl = new Point.Float(0F, 0F); break;
@@ -403,8 +416,8 @@ public class PdfImg extends ImgSrc {
 
                 pb = new ParameterBlock();
                 pb.addSource(r);
-                pb.add(transl.x);
-                pb.add(transl.y);
+                pb.add(transl.x);   // Positive value moves image to the right
+                pb.add(transl.y);   // Positive value moves image downwards
                 r = JAI.create("translate", pb);
             }
 
@@ -433,13 +446,13 @@ public class PdfImg extends ImgSrc {
     @SuppressWarnings(value={"unchecked"})
     private Image getPageImage(Document doc) {
         ArrayList<LineText> txt = doc.getPageText(pageNum).getPageLines();
-        if (txt.size() > 0) {
+        if (!txt.isEmpty()) {
             return null;
         } else {
-            Vector<Image> imgs = doc.getPageImages(pageNum);
+            ArrayList<Image> imgs = new ArrayList<Image>(doc.getPageImages(pageNum));
+
             if (imgs.size() == 1) {
                 // Single image and no text == image covers whole page
-//                img = imgs.get(0);
                 return imgs.get(0);
             } else {
                 return null;
@@ -452,7 +465,6 @@ public class PdfImg extends ImgSrc {
         // We don't know yet if we have a good PDF. Let's check.
         if (getDocument() == null) {
             return PlanarImage.wrapRenderedImage(errText(pageErr, new Rectangle(850, 1100)));
-            //return null;
         }
 
         if (getPageScale() > 0) {

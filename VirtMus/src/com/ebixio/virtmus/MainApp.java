@@ -27,6 +27,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -34,7 +37,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -46,6 +48,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import java.util.logging.*;
 import javax.swing.SwingUtilities;
+import org.openide.awt.ToolbarPool;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -54,10 +57,10 @@ import org.openide.util.NbPreferences;
  *
  * @author gburca
  */
-public class MainApp implements ExplorerManager.Provider, ChangeListener {
+public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     
     private static MainApp instance;
-    public final List<PlayList> playLists = Collections.synchronizedList(new Vector<PlayList>());
+    public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
     private transient ExplorerManager manager = new ExplorerManager();
     private static final Logger logger = Logger.getLogger("com.ebixio.virtmus");
     private static Date lastTime = new Date();
@@ -65,7 +68,7 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
     public transient SaveAllAction saveAllAction = null;
     
     // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "2.62";
+    public static final String VERSION = "3.00";
     private static final boolean RELEASED = true;   // Used to disable logging
     
     public static enum Rotation {
@@ -169,6 +172,8 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         scrollDir = ScrollDir.valueOf( pref.get(OptPageScrollDir, ScrollDir.Horizontal.toString()) );
         
         setupListeners(pref);
+
+        ToolbarPool.getDefault().setConfiguration("StandardToolbar");
 
         addAllPlayListsThreaded(pref, false);
         
@@ -417,6 +422,14 @@ public class MainApp implements ExplorerManager.Provider, ChangeListener {
         if (printStackDump) {
             logger.log(lev, "{0}\n", getStackTrace());
         }
+    }
+    public static void log(Throwable t) {
+        log(t.toString());
+        
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        log(pw.toString());
     }
     public static String getElapsedTime() {
         StringBuilder res = new StringBuilder();

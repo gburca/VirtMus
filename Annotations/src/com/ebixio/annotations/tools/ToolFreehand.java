@@ -63,7 +63,7 @@ public class ToolFreehand extends DrawingTool {
     public void mouseReleased(MouseEvent e) {
         dragState = Drag.STILL;
         if (line != null) {
-            if (canvas.musicPage != null) canvas.musicPage.addAnnotation(line);
+            canvas.addAnnotation(line, getName());
             line = null;
             canvas.repaint();
         }

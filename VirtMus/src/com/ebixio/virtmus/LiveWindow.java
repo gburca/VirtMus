@@ -76,12 +76,18 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
     /** Maximum number of "previous" pages to keep cached. For example, if the user is
     playing page 8, a value of "3" means we want to keep cached pages 5,6,7 so that
     if the user presses "PgUp" we can display them quickly. */
-    final int maxPrevCache = 3;
+    final int maxPrevCache = 2;
 
     /** Maximum number of "next" pages to keep cached. For example, if the user is
     playing page 8, a value of "4" means we want to keep cached pages 9,10,11,12 so that
-    if the user presses "PgDn" we can display them quickly. */
-    final int maxNextCache = 4;
+    if the user presses "PgDn" we can display them quickly. This number should be >=
+    number of pages visible on the screen at a time. */
+    final int maxNextCache = 5;
+
+    /**
+     * TODO: Make this configurable.
+     */
+    final private boolean renderSequentially = true;
 
     private static final Object pageCacheLock = new Object();
     Map<Integer, BufferedImage> pageCache = Collections.synchronizedMap(new HashMap<Integer, BufferedImage>(3));
@@ -97,10 +103,6 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
     public LiveWindow(GraphicsConfiguration gConfig) {
         super(gConfig);
         initComponents();
-
-        // Double-buffering
-        this.createBufferStrategy(2);
-        this.bufferStrategy = this.getBufferStrategy();
 
         this.setSize(displaySize.width, displaySize.height);
 //        glasspane.setBackground(Color.RED);
@@ -129,7 +131,17 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         }
 
         this.setCursor(Utils.getInvisibleCursor());
+
         //glasspane.setVisible(true);   // Causes strange behavior.
+    }
+
+    @Override
+    public void setVisible(boolean vis) {
+        super.setVisible(vis);
+
+        // Double-buffering (can only do this after component is added to container)
+        this.createBufferStrategy(2);
+        this.bufferStrategy = this.getBufferStrategy();
     }
 
     /** This method is called from within the constructor to
@@ -224,6 +236,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         setLiveSong(s);
     }
 
+    // <editor-fold defaultstate="collapsed" desc="show routines">
     public void showNextPage() {
         if (song == null || song.pageOrder == null) {
             return;
@@ -283,7 +296,9 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             startShift(pageShift, newShift);
         }
     }
+    // </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="paint routines">
     @Override
     public void paint(Graphics gOld) {
         paintDblBuf();
@@ -465,6 +480,8 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         g.setTransform(origXform);
     }
 
+    // </editor-fold>
+
     private void cleanCache() {
         cleanCache(page);
     }
@@ -488,18 +505,24 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
 
 
     /**
-     * Requests rendering of page-maxPrevCache through page+maxNextCache pages.
+     * Requests rendering of pages missing from the getPagesToCache list.
      */
     private void repopulateCache(int page) {
         if (song == null) {
             return;
         }
         toBeRendered.clear();
-        for (Integer i: getPagesToCache(page)) {
-            if (!pageCache.containsKey(i)) toBeRendered.add(i);
+        synchronized (pageCacheLock) {
+            for (Integer i: getPagesToCache(page)) {
+                if (!pageCache.containsKey(i)) toBeRendered.add(i);
+            }
         }
 
-        renderNext();
+        if (renderSequentially) {
+            renderNext();
+        } else {
+            renderAll();
+        }
     }
 
     /**
@@ -513,24 +536,30 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
     private ArrayList<Integer> getPagesToCache(int page) {
         ArrayList<Integer> list = new ArrayList<Integer>(maxNextCache + maxPrevCache + 1);
         int range = Math.max(maxPrevCache, maxNextCache);
-        list.add(page);
+        int visible = 3;    // How many pages are visible at once on the screen
+
+        // Render pages visible on the screen first
+        for (int i= 0; i < visible; i++) {
+            int p = page + i;
+            if (p < song.pageOrder.size() && i <= maxNextCache)
+                list.add(page + i);
+        }
 
         // Render closest pages first, then next removed, etc...
         for (int i = 1; i <= range; i++) {
-            // When we reach the end of the song, start rendering the beginning
-            int next = page + i;
-            if (next >= song.pageOrder.size()) {
-                next = next % song.pageOrder.size();
-            }
-            if (i <= maxNextCache) {
-                if (next < song.pageOrder.size()) {
-                    list.add(next);
+            int next = page + visible-1 + i;
+            int prev = page - i;
+
+            if (next - page <= maxNextCache) {
+                // When we reach the end of the song, start rendering the beginning
+                if (next >= song.pageOrder.size()) {
+                    next = next % song.pageOrder.size();
                 }
+                if (!list.contains(next)) list.add(next);
             }
-            if (i <= maxPrevCache) {
-                if (page - i >= 0) {
-                    list.add(page - i);
-                }
+
+            if (prev >= 0 && page - prev <= maxPrevCache) {
+                if (!list.contains(prev)) list.add(prev);
             }
         }
 
@@ -556,11 +585,33 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
                 pageCache.put(jr.pageNr, img);
             }
             if (jr.pageNr == page || !fullyPainted) {
-                paintDblBuf();
+                try {
+                    paintDblBuf();
+                } catch(Exception e) { }
             }
         }
         cleanCache();
-        renderNext();
+        if (renderSequentially) renderNext();
+    }
+
+    private void renderAll() {
+        if (song == null) {
+            return;
+        }
+
+        MusicPage.cancelRendering(this);
+        int priority = 0;
+
+        for (int newPage : toBeRendered) {
+            if (newPage < 0 || newPage >= song.pageOrder.size()) {
+                continue;
+            }
+            MusicPage.JobRequest request = new MusicPage.JobRequest(this, newPage, priority++, MainApp.screenRot.getSize(displaySize.getSize()));
+
+            song.pageOrder.get(newPage).requestRendering(request);
+            this.waitingForImage = true;
+        }
+        toBeRendered.clear();
     }
 
     private void renderNext() {

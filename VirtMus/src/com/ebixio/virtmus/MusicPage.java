@@ -42,12 +42,16 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import javax.imageio.ImageIO;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -66,6 +70,23 @@ public abstract class MusicPage {
     private static transient Map<JobRequester, BufferedImage> renderResults = 
             Collections.synchronizedMap( new HashMap<JobRequester, BufferedImage>() );
     private static transient RenderThread renderThread = null;
+    // Heap space must be increased proportional to the thread pool size
+    private static transient ExecutorService execSvc;
+    static {
+        int numProcessors = Runtime.getRuntime().availableProcessors();
+        execSvc = Executors.newFixedThreadPool(numProcessors, new NamedThreadFactory("PageRenderers"));
+    }
+
+    public static class NamedThreadFactory implements ThreadFactory {
+        private final String poolName;
+        public NamedThreadFactory(String poolName) {
+            this.poolName = poolName;
+        }
+        @Override
+        public Thread newThread(Runnable runnable) {
+            return new Thread(runnable, poolName);
+        }
+    }
     
     private transient DraggableThumbnail thumbnail;
     public transient Song song;
@@ -76,13 +97,13 @@ public abstract class MusicPage {
 
     
     public abstract void clearAnnotations();
+    public abstract void popAnnotation();
     public abstract void addAnnotation(VmShape shape);
     public abstract void paintAnnotations(Graphics2D g2d);
     @Override
     public abstract MusicPage clone();
     public abstract MusicPage clone(Song song);
     public abstract void prepareToSave();
-    
     
 
     /** Creates a new instance of MusicPage 
@@ -103,7 +124,7 @@ public abstract class MusicPage {
 
     /**
      * The transient fields need to be initialized here. No constructor is called when
-     * the object is deserialized.
+     * the object is de-serialized.
      * @param s The Song that this music page belongs to.
      */
     public void deserialize(Song s) {
@@ -222,6 +243,7 @@ public abstract class MusicPage {
         Graphics2D g2 = imgToSave.createGraphics();
         boolean done = g2.drawImage(img, 0, 0, new ImageObserver() {
             
+            @Override
             public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                 if ((infoflags & ImageObserver.ALLBITS) > 0) {
                     try {
@@ -246,7 +268,7 @@ public abstract class MusicPage {
         return renderResults.remove(requester);
     }
     
-    public boolean requestRendering(JobRequest request) {
+    public boolean requestRendering1(JobRequest request) {
         // TODO: Consider switching to org.openide.util.RequestProcessor
         request.page = this;
         cancelRendering(request.requester);
@@ -267,6 +289,12 @@ public abstract class MusicPage {
             if (j.requester == requester) renderQ.remove(j);
         }        
     }
+
+    public boolean requestRendering(JobRequest request) {
+        request.page = this;
+        execSvc.execute(new RenderRunnable(request));
+        return true;
+    }
     
     public interface JobRequester {
         public void renderingComplete(MusicPage mp, JobRequest jr);
@@ -284,14 +312,22 @@ public abstract class MusicPage {
         public Dimension dim;
         public MainApp.Rotation rotation = MainApp.Rotation.Clockwise_0;
         public boolean fillSize = false;
-        
+
+        /**
+         * Creates a new job request to render an image.
+         * @param requester Entity to be notified when the image is ready
+         * @param pageNr The page number to render
+         * @param priority The priority with which to render (0 .. MAX_PRIORITY). 0 = fastest.
+         * @param dim The dimension to render at
+         */
         public JobRequest(JobRequester requester, int pageNr, int priority, Dimension dim) {
             this.requester = requester;
             this.pageNr = pageNr;
-            this.priority = priority;
+            this.priority = priority < 0 ? 0 : Math.min(priority, MAX_PRIORITY);
             this.dim = dim;
         }
 
+        @Override
         public int compareTo(Object other) {
             return this.priority.compareTo( ((JobRequest)other).priority);
         }
@@ -311,6 +347,7 @@ public abstract class MusicPage {
                 float relativePriority = 1.0F - (j.priority / JobRequest.MAX_PRIORITY);
                 relativePriority = maxPriority * relativePriority;
                 relativePriority = Math.max(Math.round(relativePriority), Thread.MIN_PRIORITY);
+                relativePriority = Math.min(relativePriority, Thread.MAX_PRIORITY);
                 this.setPriority((int)relativePriority);
                 
                 renderResults.put(j.requester, j.page.getImage(j.dim, j.rotation, j.fillSize));
@@ -320,5 +357,37 @@ public abstract class MusicPage {
         }
     }
 
-    
+    private class RenderRunnable implements Runnable {
+        JobRequest j;
+        public RenderRunnable(JobRequest jr) {
+            j = jr;
+        }
+
+        @Override
+        public void run() {
+            BufferedImage img = null;
+
+            for (int i= 0; i < 3; i++) {
+                try {
+                    img = j.page.getImage(j.dim, j.rotation, j.fillSize);
+                    break;
+                } catch (Throwable e) {
+                    if (!(e instanceof OutOfMemoryError)) {
+                        MainApp.log(e);
+                        break;
+                    }
+                    MainApp.log("Caught OOM !!!!! " + j.pageNr + " in file " + j.page.imgSrc.sourceFile);
+                    try {
+                        this.wait(250); // Wait a little for some memory to hopefully free up
+                    } catch (InterruptedException ex) { }
+                }
+            }
+
+            if (img != null) {
+                renderResults.put(j.requester, img);
+                j.requester.renderingComplete(j.page, j);
+            }
+        }
+
+    }
 }

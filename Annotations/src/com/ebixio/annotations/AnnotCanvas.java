@@ -24,6 +24,7 @@ import com.ebixio.annotations.tools.ToolRect;
 import com.ebixio.annotations.tools.DrawingTool;
 import com.ebixio.jai.ImageDisplay;
 import com.ebixio.virtmus.MusicPage;
+import com.ebixio.virtmus.shapes.VmShape;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -35,11 +36,20 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.io.Serializable;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
+import org.openide.awt.UndoRedo;
 
 /**
  * @author gburca
  */
-public class AnnotCanvas extends ImageDisplay implements Serializable, MouseListener, MouseMotionListener {
+public class AnnotCanvas extends ImageDisplay implements Serializable,
+        MouseListener, MouseMotionListener {
     
     public Paint paint = Color.BLUE;
     public int diam = 10;
@@ -51,6 +61,8 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
     public Rectangle imgBounds;
 
     public DrawingTool tool = new ToolRect(this);
+    public UndoRedo.Manager undoManager = new UndoRedo.Manager();
+
 
     public AnnotCanvas() {
         addMouseListener(this);
@@ -126,6 +138,40 @@ public class AnnotCanvas extends ImageDisplay implements Serializable, MouseList
         tool.paint(g2d);
 
         g2d.setTransform(origXform);
+    }
+
+    /**
+     * Simple annotation undo class. Only undoes annotations that have not
+     * been turned to SVG yet.
+     */
+    class AnnotUndo extends AbstractUndoableEdit {
+        private String name;
+        public AnnotUndo(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return name;
+        }
+
+        @Override
+        public void undo() {
+            super.undo();
+            if (musicPage != null) {
+                musicPage.popAnnotation();
+                repaint();  // canvas.repaint()
+            }
+        }
+    }
+
+    public void addAnnotation(VmShape s, String name) {
+        if (musicPage != null) {
+            musicPage.addAnnotation(s);
+            UndoableEdit edit = new AnnotUndo(name);
+            UndoableEditEvent ue = new UndoableEditEvent(this, edit);
+            undoManager.undoableEditHappened(ue);
+        }
     }
     
     

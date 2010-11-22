@@ -72,7 +72,7 @@ public class ToolLine extends DrawingTool {
                 updateLine(p);
             }
             if (line != null) {
-                if (canvas.musicPage != null) canvas.musicPage.addAnnotation(line);
+                canvas.addAnnotation(line, getName());
                 line = null;
             }
             dragState = Drag.STILL;

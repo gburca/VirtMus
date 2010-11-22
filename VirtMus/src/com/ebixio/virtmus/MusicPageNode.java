@@ -59,6 +59,10 @@ public class MusicPageNode extends AbstractNode {
         //setName(page.getName());
         displayFormat = new MessageFormat("{0}");
     }
+
+    public MusicPage getPage() {
+        return page;
+    }
     
     @Override
     public boolean canDestroy() { return true; }

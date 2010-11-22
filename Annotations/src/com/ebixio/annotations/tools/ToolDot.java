@@ -43,7 +43,9 @@ public class ToolDot extends DrawingTool {
             Point p = getAbsolutePoint(e.getPoint());
 
             if (canvas.musicPage != null) {
-                canvas.musicPage.addAnnotation(new ShapePoint(canvas.paint, canvas.alpha, Math.round(canvas.diam / canvas.scale), p));
+                canvas.addAnnotation(
+                        new ShapePoint(canvas.paint, canvas.alpha, Math.round(canvas.diam / canvas.scale), p),
+                        getName());
             }
             canvas.repaint();
         }

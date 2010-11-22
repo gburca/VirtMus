@@ -113,7 +113,7 @@ public class PdfRender extends ImgSrc {
     }
 
     @Override
-    public BufferedImage getImage(Dimension containerSize, Rotation rotation, boolean fillSize, MusicPage page) {
+    public synchronized BufferedImage getImage(Dimension containerSize, Rotation rotation, boolean fillSize, MusicPage page) {
         RenderedOp srcImg, destImg = null;
         Rectangle destSize;
 

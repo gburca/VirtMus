@@ -310,6 +310,7 @@ public class MusicPageSVG extends MusicPage {
         imgSrc.destroyImageFile();
     }
     
+    @Override
     public void clearAnnotations() {
         shapes.clear();
         svgDocument = null;
@@ -317,7 +318,17 @@ public class MusicPageSVG extends MusicPage {
         setDirty(true);
         song.notifyListeners();
     }
-    
+
+    @Override
+    public void popAnnotation() {
+        if (!shapes.isEmpty()) {
+            shapes.remove(shapes.size() - 1);
+            setDirty(true);
+            song.notifyListeners();
+        }
+    }
+
+    @Override
     public void addAnnotation(VmShape s) {
         shapes.add(s);
         setDirty(true);
@@ -399,6 +410,7 @@ public class MusicPageSVG extends MusicPage {
     public MusicPageSVG clone() {
         return this.clone(this.song);
     }
+    @Override
     public MusicPageSVG clone(Song song) {
         MusicPageSVG mp;
         if (imgSrc.getClass() == PdfImg.class) {
@@ -520,7 +532,7 @@ public class MusicPageSVG extends MusicPage {
             return null;
         CompositeGraphicsNode cgn = (CompositeGraphicsNode)gn;
         List children = cgn.getChildren();
-        if (children.size() == 0)
+        if (children.isEmpty())
             return null;
         gn = (GraphicsNode)children.get(0);
         if (!(gn instanceof CanvasGraphicsNode))

@@ -31,6 +31,7 @@ import org.openide.util.actions.CookieAction;
 
 public final class GoLive extends CookieAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         LiveWindowJOGL lw = null;
         //MainApp.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
@@ -104,14 +105,17 @@ public final class GoLive extends CookieAction {
         }
     }
     
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(GoLive.class, "CTL_GoLive");
     }
     
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] {
             PlayList.class,
@@ -124,6 +128,7 @@ public final class GoLive extends CookieAction {
         return "com/ebixio/virtmus/resources/GoLiveAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

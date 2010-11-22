@@ -30,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Vector;
 import java.util.concurrent.CancellationException;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
@@ -43,6 +42,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -317,6 +317,8 @@ public final class AnnotTopComponent extends TopComponent
 
     private void jbClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbClearActionPerformed
         canvas.clear();
+        canvas.undoManager.discardAllEdits();
+        //canvas.musicPage.popAnnotation();
     }//GEN-LAST:event_jbClearActionPerformed
 
     private void colorChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorChooserActionPerformed
@@ -409,6 +411,11 @@ public final class AnnotTopComponent extends TopComponent
     public void removeNotify() {
         super.removeNotify();
         getExplorerManager().removePropertyChangeListener(eListener);
+    }
+
+    @Override
+    public UndoRedo getUndoRedo() {
+        return canvas.undoManager;
     }
     
     /**

@@ -61,7 +61,7 @@ public class ToolRect extends DrawingTool {
                 updateRect(p);
             }
             if (rect != null) {
-                if (canvas.musicPage != null) canvas.musicPage.addAnnotation(rect);
+                canvas.addAnnotation(rect, getName());
                 rect = null;
             }
             dragState = Drag.STILL;

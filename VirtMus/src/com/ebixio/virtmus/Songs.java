@@ -59,6 +59,7 @@ public class Songs extends Children.Keys<Song> implements ChangeListener
         return songKeys;
     }
     
+    @Override
     protected Node[] createNodes(Song key) {
         if (key != null) {
             return new Node[] {new SongNode(playList, key, new MusicPages(key))};
@@ -67,6 +68,7 @@ public class Songs extends Children.Keys<Song> implements ChangeListener
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         // See comments in PlayLists::stateChanged
         addNotify();

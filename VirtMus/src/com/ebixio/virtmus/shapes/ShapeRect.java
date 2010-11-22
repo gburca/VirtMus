@@ -29,6 +29,7 @@ public class ShapeRect extends VmShape {
         this.end = end;
     }
     
+    @Override
     public void paint(Graphics2D g) {
         Composite origComposite = g.getComposite();
         

@@ -25,6 +25,7 @@ import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageNode;
 import com.ebixio.virtmus.Song;
+import com.ebixio.virtmus.SongNode;
 import com.ebixio.virtmus.Thumbnail;
 import java.awt.Component;
 import java.awt.Container;
@@ -37,10 +38,9 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.swingfx.jdraggable.DragPolicy;
@@ -69,8 +69,10 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     private Song loadedSong = null;
     private DraggableManager draggableManager;
     private int hgap = 25, vgap = 25;
+    private SongNode songNode = null;
 
     transient private final PropertyChangeListener eListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 //Node[] selectedNodes = (Node[]) evt.getNewValue();
@@ -84,6 +86,7 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
      * the thumbnail and set the proper one to "selected"
      */
     private ChangeListener changeListener = new ChangeListener() {
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (e.getSource().getClass() == Song.class) {
                 MusicPage selectedPage = null;
@@ -238,6 +241,14 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
         Node[] nodes = getExplorerManager().getSelectedNodes();
         if (nodes.length > 0) {
             Lookup l = nodes[0].getLookup();
+            if (nodes[0] instanceof SongNode) {
+                songNode = (SongNode) nodes[0];
+            } else if (nodes[0] instanceof MusicPageNode) {
+                MusicPageNode mpn = (MusicPageNode) nodes[0];
+                if (mpn.getParentNode() instanceof SongNode) {
+                    songNode = (SongNode) mpn.getParentNode();
+                }
+            }
 
             Collection songs = l.lookupResult(Song.class).allInstances();
             if (!songs.isEmpty()) {
@@ -271,9 +282,28 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     }
     
     // <editor-fold defaultstate="collapsed" desc=" MouseListener interface ">
+    @Override
     public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() == 2 || e.getButton() != MouseEvent.BUTTON1) {
+            Thumbnail t = (Thumbnail)e.getComponent();
+            try {
+                if (songNode == null) return;
+                MusicPage mp = t.getPage();
+                for (Node n: songNode.getChildren().getNodes()) {
+                    if (n instanceof MusicPageNode) {
+                        MusicPageNode mpn = (MusicPageNode) n;
+                        if (mpn.getPage() == mp) {
+                            getExplorerManager().setSelectedNodes(new Node[]{mpn});
+                        }
+                    }
+                }
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             Thumbnail t = (Thumbnail)e.getComponent();
@@ -282,22 +312,18 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
                 ((Thumbnail)c).setSelected(false);
             }
             t.setSelected(true);
-
-//            ExplorerManager manager = com.ebixio.virtmus.MainApp.findInstance().getExplorerManager();
-//            try {
-//                manager.setSelectedNodes(new Node[]{new MusicPageNode(t.getPage())});
-//            } catch (PropertyVetoException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
         }
     }
     
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
     
+    @Override
     public void mouseExited(MouseEvent e) {
     } // </editor-fold>
     
@@ -337,7 +363,7 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     }
 
     void reorderThumbs() {
-        Vector<MusicPage> newOrder = new Vector<MusicPage>();
+        ArrayList<MusicPage> newOrder = new ArrayList<MusicPage>();
         Thumbnail selectedThumb = null, otherThumb = null;
         int components = jPanel.getComponentCount();
         int selectedIdx = 0, insertBefore = components;
@@ -438,10 +464,12 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
             super(align, hgap, vgap);
         }
         
+        @Override
         public Dimension minimumLayoutSize(Container target) {
             return computeSize(target, true);
         }
         
+        @Override
         public Dimension preferredLayoutSize(Container target) {
             return computeSize(target, false);
         }

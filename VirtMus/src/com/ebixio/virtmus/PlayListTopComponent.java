@@ -22,6 +22,7 @@ import java.io.Serializable;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.ErrorManager;
+import org.openide.awt.ToolbarPool;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -134,6 +135,10 @@ final class PlayListTopComponent extends TopComponent
     protected void componentActivated() {
         ExplorerManager manager = MainApp.findInstance().getExplorerManager();
         ExplorerUtils.activateActions(manager, true);
+
+        // TODO: Why doesn't this work?
+        // See StandardToolbar.xml and http://wiki.netbeans.org/DevFaqHideShowToolbar
+        ToolbarPool.getDefault().setConfiguration("StandardToolbar");
     }
     
     @Override
@@ -153,6 +158,7 @@ final class PlayListTopComponent extends TopComponent
         return PREFERRED_ID;
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return MainApp.findInstance().getExplorerManager();
     }

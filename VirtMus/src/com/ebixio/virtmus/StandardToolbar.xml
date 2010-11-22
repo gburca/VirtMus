@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configuration PUBLIC "-//NetBeans IDE//DTD toolbar//EN"
+"http://www.netbeans.org/dtds/toolbar.dtd">
+<Configuration>
+    <Row>
+        <Toolbar name="General" />
+        <Toolbar name="PlayList" />
+        <Toolbar name="Song" />
+        <Toolbar name="MusicPage" />
+        <Toolbar name="Clipboard" />
+        <Toolbar name="Memory" />
+    </Row>
+</Configuration>

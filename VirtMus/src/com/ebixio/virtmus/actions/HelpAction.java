@@ -11,6 +11,7 @@ import org.openide.util.actions.CallableSystemAction;
 
 public final class HelpAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         try {
             /*
@@ -18,24 +19,23 @@ public final class HelpAction extends CallableSystemAction {
             "\nApp1: " + Utils.getAppPath1() +
             "\nApp2: " + Utils.getAppPath2());
              */
-            File appPath = Utils.getAppPath();
-            if (appPath == null) {
-                appPath = Utils.getAppPath1();
+            File appPaths[] = { Utils.getAppPath(), Utils.getAppPath1(), Utils.getAppPath2() };
+            for (File appPath: appPaths) {
+                if (appPath == null) continue;
+                String appPathS = appPath.getCanonicalPath().replace(File.separatorChar, '/');
+                appPathS += "/Docs/index.html";
+                File index = new File(appPathS);
+                if (index.canRead()) {
+                    Utils.openURL("file://" + appPathS);
+                    return;
+                }
             }
-            if (appPath == null) {
-                appPath = Utils.getAppPath2();
-            }
-            if (appPath == null) {
-                return;
-            }
-            String appPathS = appPath.getCanonicalPath().replace(File.separatorChar, '/');
-            // This URL is only valid when VirtMus is running from the zip distribution
-            Utils.openURL("\"file://" + appPathS + "/Docs/index.html\"");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(HelpAction.class, "CTL_HelpAction");
     }
@@ -47,6 +47,7 @@ public final class HelpAction extends CallableSystemAction {
         putValue("noIconInMenu", Boolean.TRUE);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -205,6 +205,7 @@ public class Thumbnail extends javax.swing.JPanel {
             g.drawString(msg, getWidth()/2 - msgW/2, getHeight()/2);
         }
 
+        @Override
         public void renderingComplete(MusicPage mp, MusicPage.JobRequest request) {
             img = mp.getRenderedImage(this);
             imgReturned = true;

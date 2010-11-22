@@ -55,10 +55,12 @@ public class MusicPages extends Children.Keys<MusicPage> implements ChangeListen
         setKeys(pageKeys);
     }
     
+    @Override
     protected Node[] createNodes(MusicPage page) {
         return new Node[] {new MusicPageNode(page)};
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         addNotify();
     }

@@ -4,13 +4,11 @@
  */
 package com.ebixio.virtmus.imgsrc;
 
-import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.VirtMusKernel;
 import com.sun.media.jai.codec.FileSeekableStream;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -56,6 +54,7 @@ public class GenericImg extends ImgSrc {
         }
     }
 
+    @Override
     public Dimension getDimension() {
         if (dimension != null) {
             return dimension;
@@ -84,7 +83,8 @@ public class GenericImg extends ImgSrc {
         }
     }
 
-    public BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize, MusicPage page) {
+    @Override
+    public synchronized BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize, MusicPage page) {
         RenderedOp srcImg, destImg;
         Rectangle destSize;
 
@@ -231,6 +231,7 @@ public class GenericImg extends ImgSrc {
         }
     }
 
+    @Override
     public PlanarImage getFullImg() {
         if (sourceFile.exists() && sourceFile.canRead()) {
             return JAI.create("fileload", sourceFile.toString());
