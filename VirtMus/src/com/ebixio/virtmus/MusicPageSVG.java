@@ -22,23 +22,15 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
 import com.ebixio.virtmus.imgsrc.PdfImg;
-import com.ebixio.virtmus.imgsrc.PdfRender;
-import com.ebixio.virtmus.shapes.*;
+import com.ebixio.virtmus.shapes.VmShape;
 import com.ebixio.virtmus.svg.SvgGenerator;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.Dimension2D;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -58,10 +50,7 @@ import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.w3c.dom.svg.SVGDocument;
 
 /**
@@ -123,8 +112,10 @@ public class MusicPageSVG extends MusicPage {
             this.annotationSVG = null;
         } else {
             transferShapes2Doc();
-            updateGraphicsNode();
-            this.annotationSVG = document2Str(svgDocument);
+            String svg = document2Str(svgDocument);
+            clearAnnotations();
+            this.annotationSVG = svg;
+            setAnnotationSVG(svg, false);
         }
     }
 
@@ -220,7 +211,7 @@ public class MusicPageSVG extends MusicPage {
      * @return 
      */
     public String export2SvgStr() {
-        String svg = null;
+        String svg;
         SVGDocument document;
         
         prepareToSave();
@@ -292,9 +283,9 @@ public class MusicPageSVG extends MusicPage {
             BufferedReader br = new BufferedReader(isr);
             String line;
             while ((line = br.readLine()) != null) {
-                MainApp.log(line);
+                Log.log(line);
             }
-            MainApp.log("SVG editor program terminated!");
+            Log.log("SVG editor program terminated!");
 
             if (svgFile.canRead()) {
                 importSVG(svgFile);
@@ -363,7 +354,52 @@ public class MusicPageSVG extends MusicPage {
             s.paint(g2d);
         }
     }
-    
+
+
+    public static Node cloneNodeRec(Node source, Document targetDoc) {
+	String nodeName;
+	int sourceType  = source.getNodeType();
+	Node result = null;
+	NamedNodeMap attr;
+	NodeList children;
+
+	switch (sourceType) {
+	case Node.DOCUMENT_NODE:
+	    break;
+	case Node.ELEMENT_NODE:
+	    nodeName = source.getNodeName();
+	    Element resultE =  targetDoc.createElement(nodeName);
+	    NamedNodeMap attrs = source.getAttributes();
+	    for(int i = 0; i < attrs.getLength();i++) {
+		Node current = attrs.item(i);
+		resultE.setAttributeNode((Attr)targetDoc.importNode(attrs.item(i), true));
+	    }
+	    children = source.getChildNodes();
+	    if(children != null) {
+		for (int i = 0; i < children.getLength(); i++) {
+		    resultE.appendChild(cloneNodeRec(children.item(i), targetDoc));
+		}
+	    }
+	    result = (Node) resultE;
+	    break;
+	case Node.TEXT_NODE:
+	    Node txtNode = targetDoc.createTextNode(source.getNodeValue());
+	    result = txtNode;
+	    break;
+	default:
+	    nodeName = source.getNodeName();
+	    Element resultD = targetDoc.createElement(nodeName);
+	    NamedNodeMap attrs2 = source.getAttributes();
+	    for(int i = 0; i < attrs2.getLength();i++) {
+		Node current = attrs2.item(i);
+		resultD.setAttributeNode((Attr)targetDoc.importNode(attrs2.item(i), true));
+	    }
+	    result = (Node) resultD;
+	    // no children!!
+	}
+	return result;
+    }
+
     /**
      * Updates the existing SVG document with the new annotations (if any) from 
      * the com.ebixio.virtmus.shapes.* objects in the <b>shapes</b> array.
@@ -383,7 +419,7 @@ public class MusicPageSVG extends MusicPage {
             s.paint(svgGraphics2D);
         }
         shapes.clear();
-        
+
         SVGDocument newSvgDoc = str2Document(svgGenerator.getSVG());
         if (svgDocument == null) {
             svgDocument = newSvgDoc;
@@ -392,13 +428,13 @@ public class MusicPageSVG extends MusicPage {
             // We will append new shapes to this document.
             Element svgRoot = svgDocument.getRootElement();
 
-            Element element = svgGraphics2D.getRoot();  // The <svg> element
+            Element element = newSvgDoc.getRootElement();  // The <svg> element
             NodeList children = element.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 Node child = children.item(i);
                 if (child.getNodeType() != Node.COMMENT_NODE) {
                     if ( !child.getNodeName().equals("defs") ) {
-                        Node dup = svgDocument.importNode(child, true);
+                        Node dup = cloneNodeRec(child, svgDocument);
                         svgRoot.appendChild(dup);
                     }
                 }
@@ -414,11 +450,8 @@ public class MusicPageSVG extends MusicPage {
     public MusicPageSVG clone(Song song) {
         MusicPageSVG mp;
         if (imgSrc.getClass() == PdfImg.class) {
-            PdfImg img = (PdfImg)imgSrc;
-            mp = new MusicPageSVG(song, imgSrc.getSourceFile(), img.pageNum);
-        } else if (imgSrc.getClass() == PdfRender.class) {
-            PdfRender img = (PdfRender)imgSrc;
-            mp = new MusicPageSVG(song, imgSrc.getSourceFile(), img.pageNum);
+            PdfImg pdf = (PdfImg)imgSrc;
+            mp = new MusicPageSVG(song, imgSrc.getSourceFile(), pdf.getPageNum());
         } else {
             mp = new MusicPageSVG(song, imgSrc.getSourceFile(), null);
         }

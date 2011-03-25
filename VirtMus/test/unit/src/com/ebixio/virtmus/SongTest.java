@@ -23,7 +23,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author GBURCA1
+ * @author GBURCA
  */
 public class SongTest {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +18,19 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
 import java.io.Serializable;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.ErrorManager;
-import org.openide.awt.ToolbarPool;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.nodes.AbstractNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.explorer.*;
-import org.openide.nodes.*;
-import org.openide.util.ImageUtilities;
 
 /**
  * Top component which displays something.
@@ -59,9 +60,9 @@ final class PlayListTopComponent extends TopComponent
         // Place the Explorer Manager in the TopComponent's Lookup
         associateLookup(ExplorerUtils.createLookup(manager, map));
         
-        MainApp.log("PlayListTopComponent::constructor before addAllPlayLists thread:" + Thread.currentThread().getName());
+        Log.log("PlayListTopComponent::constructor before addAllPlayLists thread:" + Thread.currentThread().getName());
         //MainApp.findInstance().addAllPlayLists(NbPreferences.forModule(MainApp.class));
-        MainApp.log("PlayListTopComponent::constructor before new PlayLists");
+        Log.log("PlayListTopComponent::constructor before new PlayLists");
         manager.setRootContext(new AbstractNode(new PlayLists(MainApp.findInstance())));
         manager.getRootContext().setDisplayName("Playlists");
         this.beanTreeView1.setRootVisible(false);
@@ -136,9 +137,12 @@ final class PlayListTopComponent extends TopComponent
         ExplorerManager manager = MainApp.findInstance().getExplorerManager();
         ExplorerUtils.activateActions(manager, true);
 
-        // TODO: Why doesn't this work?
         // See StandardToolbar.xml and http://wiki.netbeans.org/DevFaqHideShowToolbar
-        ToolbarPool.getDefault().setConfiguration("StandardToolbar");
+        
+        // Configuring toolbar from ModuleInstall.restored() because NB activates
+        // the last activated component on start-up, so this function might not
+        // get called until the user selects a node.
+        //ToolbarPool.getDefault().setConfiguration("StandardToolbar");
     }
     
     @Override

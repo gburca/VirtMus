@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,40 +18,38 @@
 
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.*;
+import com.ebixio.virtmus.MainApp;
+import com.ebixio.virtmus.VirtMusLookup;
+import java.util.Collection;
 import javax.swing.SwingUtilities;
+import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
-public final class SaveAllAction extends NodeAction {
+public final class SaveAllAction extends NodeAction implements LookupListener {
 
+    private final Lookup.Result<AbstractSavable> lookupSavable;
+    
     public SaveAllAction() {
         super();
-        MainApp.findInstance().saveAllAction = this;
+          
+        // Components can obtain this action by doing:
+        // SaveAllAction saa = (SaveAllAction)SystemAction.get(SaveAllAction.class);
+        
+        // All savables get added to this lookup. We register for updates.
+        lookupSavable = VirtMusLookup.getInstance().lookupResult(AbstractSavable.class);
+        lookupSavable.addLookupListener(this);
     }
     
+    @Override
     protected void performAction(Node[] node) {
         MainApp.findInstance().saveAll();
         SystemAction.get(SaveAllAction.class).setEnabled(false);
     }
-    
-    public void updateEnable() {
-        // TODO: Fix this whole class to use the proper SaveAllAction pattern.
-        // setEnabled should only be called from the event thread !!!
-        if (SwingUtilities.isEventDispatchThread()) {
-            this.setEnabled(MainApp.findInstance().isDirty());
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setEnabled(MainApp.findInstance().isDirty());
-                }
-            });
-        }
-    }
 
+    @Override
     protected boolean enable(Node[] node) {
         return MainApp.findInstance().isDirty();
     }
@@ -61,6 +59,7 @@ public final class SaveAllAction extends NodeAction {
         return true;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SaveAllAction.class, "CTL_SaveAllAction");
     }
@@ -70,6 +69,7 @@ public final class SaveAllAction extends NodeAction {
         return "com/ebixio/virtmus/resources/SaveAllAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -77,6 +77,22 @@ public final class SaveAllAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        final Collection<? extends AbstractSavable> sNodes = lookupSavable.allInstances();
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            this.setEnabled(!sNodes.isEmpty());
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setEnabled(!sNodes.isEmpty());
+                }
+            });
+        }
     }
 
 }

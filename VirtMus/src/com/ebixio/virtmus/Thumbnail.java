@@ -167,7 +167,7 @@ public class Thumbnail extends javax.swing.JPanel {
         this.page = page;
     }
 
-    private class Thumb extends javax.swing.JPanel implements MusicPage.JobRequester {
+    private class Thumb extends javax.swing.JPanel implements Renderer.JobRequester {
         boolean imgRequested = false, imgReturned = false;
         
         @Override
@@ -178,14 +178,14 @@ public class Thumbnail extends javax.swing.JPanel {
                 if (page != null) {
                     if (imgRequested) {
                         if (imgReturned) {
-                            paintMsg(g, "No image.");
+                            paintMsg(g, "No image or OOM");
                         } else {
                             paintMsg(g, "Loading...");
                         }
                     } else {
-                        MusicPage.JobRequest req = new MusicPage.JobRequest(this, 0, 10, this.getSize());
+                        Renderer.JobRequest req = new Renderer.JobRequest(this, 0, 10, this.getSize());
                         req.fillSize = true;
-                        page.requestRendering(req);
+                        Renderer.requestRendering(req, page);
                         imgRequested = true;
                         paintMsg(g, "Loading...");                        
                     }
@@ -206,10 +206,10 @@ public class Thumbnail extends javax.swing.JPanel {
         }
 
         @Override
-        public void renderingComplete(MusicPage mp, MusicPage.JobRequest request) {
-            img = mp.getRenderedImage(this);
+        public void renderingComplete(MusicPage mp, Renderer.JobRequest request) {
+            img = Renderer.getRenderedImage(this);
             imgReturned = true;
-            if (img != null && this.isShowing()) this.repaint();            
+            if (this.isShowing()) this.repaint();            
         }
     }
 }

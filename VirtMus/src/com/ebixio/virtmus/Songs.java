@@ -1,7 +1,7 @@
 /*
  * Songs.java
  *
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,14 +20,15 @@
 
 package com.ebixio.virtmus;
 
-import java.util.Vector;
+import com.ebixio.util.Log;
+import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
-import java.util.logging.Level;
-import org.openide.nodes.Index;
 
 /**
  *
@@ -45,12 +46,12 @@ public class Songs extends Children.Keys<Song> implements ChangeListener
 
     @Override
     protected void addNotify() {
-        MainApp.log("Songs::addNotify", Level.FINEST);
+        Log.log("Songs::addNotify", Level.FINEST);
         setKeys(getKeys());
     }
     
-    private Vector<Song> getKeys() {
-        Vector<Song> songKeys = new Vector<Song>();
+    private ArrayList<Song> getKeys() {
+        ArrayList<Song> songKeys = new ArrayList<Song>();
         synchronized (playList.songs) {
             for (int i = 0; i < playList.songs.size(); i++) {
                 songKeys.add(playList.songs.get(i));
@@ -72,7 +73,7 @@ public class Songs extends Children.Keys<Song> implements ChangeListener
     public void stateChanged(ChangeEvent e) {
         // See comments in PlayLists::stateChanged
         addNotify();
-        Vector<Song> allKeys = getKeys();
+        ArrayList<Song> allKeys = getKeys();
         for (Song s: allKeys) {
             refreshKey(s);
         }

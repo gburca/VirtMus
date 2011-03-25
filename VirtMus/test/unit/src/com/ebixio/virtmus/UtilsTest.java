@@ -7,21 +7,13 @@ package com.ebixio.virtmus;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.Collection;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  *
- * @author GBURCA1
+ * @author GBURCA
  */
 public class UtilsTest {
 
@@ -169,22 +161,32 @@ public class UtilsTest {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-//
-//    /**
-//     * Test of findFileRelative method, of class Utils.
-//     */
-//    @Test
-//    public void testFindFileRelative() {
-//        System.out.println("findFileRelative");
-//        File newSrc = null;
-//        File oldTarget = null;
-//        File expResult = null;
-//        File result = Utils.findFileRelative(newSrc, oldTarget);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+
+    /**
+     * Test of findFileRelative method, of class Utils.
+     */
+    @Test
+    public void testFindFileRelative() {
+        System.out.println("findFileRelative");
+        File newSrc = null;
+        File oldTarget = null;
+        File expResult = null;
+        File result = Utils.findFileRelative(newSrc, oldTarget);
+        assertEquals(expResult, result);
+        
+        newSrc = new File("C:\\Data\\Music\\Sheet\\Choir\\Choir.playlist.xml");
+        oldTarget = new File("D:\\Data\\Music\\Sheet\\Nabucco\\Nabucco.song.xml");
+        expResult = new File("C:\\Data\\Music\\Sheet\\Nabucco\\Nabucco.song.xml");
+        result = Utils.findFileRelative(newSrc, oldTarget);
+        assertEquals(expResult, result);
+        
+        newSrc = new File("C:\\Data\\Music\\Sheet\\Choir\\Choir.playlist.xml");
+        oldTarget = new File("D:\\Data\\Music\\Sheet\\Choir\\Nabucco\\Nabucco.song.xml");
+        expResult = new File("C:\\Data\\Music\\Sheet\\Choir\\Nabucco\\Nabucco.song.xml");
+        result = Utils.findFileRelative(newSrc, oldTarget);
+        assertEquals(expResult, result);
+    }
+
 //    /**
 //     * Test of openURL method, of class Utils.
 //     */

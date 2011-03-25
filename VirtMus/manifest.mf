@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: com.ebixio.virtmus
+OpenIDE-Module-Install: com/ebixio/virtmus/Installer.class
 OpenIDE-Module-Layer: com/ebixio/virtmus/layer.xml
 OpenIDE-Module-Localizing-Bundle: com/ebixio/virtmus/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0

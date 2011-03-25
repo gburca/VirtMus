@@ -20,6 +20,7 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
 import com.sun.opengl.util.j2d.TextRenderer;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureCoords;
@@ -54,7 +55,7 @@ import org.jdesktop.animation.timing.*;
  * @author gburca
  */
 public class LiveWindowJOGL extends javax.swing.JFrame
-        implements GLEventListener, MusicPage.JobRequester {
+        implements GLEventListener, Renderer.JobRequester {
     
     private static final GLU glu = new GLU();
     final com.sun.opengl.util.Animator animator;
@@ -87,7 +88,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
     /** Creates a new instance of LiveWindowJOGL */
     public LiveWindowJOGL() {
         GLCapabilities caps = new GLCapabilities();
-        MainApp.log("JOGL caps: " + caps.toString());
+        Log.log("JOGL caps: " + caps.toString());
 
         GLCanvas canvas = new GLCanvas(caps);
         canvas.addGLEventListener(this);
@@ -193,7 +194,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         }
         
         if (gl.glGetError() != GL.GL_NO_ERROR) {
-            MainApp.log("OpenGL error: " + gl.glGetError());
+            Log.log("OpenGL error: " + gl.glGetError());
         }
         
         displayFPSText(drawable);
@@ -401,7 +402,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         });
     }
     public float getPageShift() { return pageShift; }
-    public void setPageShift(float shift) { this.pageShift = shift; MainApp.log("Shift: " + shift);}
+    public void setPageShift(float shift) { this.pageShift = shift; Log.log("Shift: " + shift);}
     
     // <editor-fold defaultstate="collapsed" desc=" Rendering Cache ">
     private void renderNext() {
@@ -409,22 +410,23 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         if (toBeRendered.size() > 0) {
             int newPage = toBeRendered.remove(0);
             if (newPage < 0 || newPage >= song.pageOrder.size()) return;
-            MusicPage.JobRequest request = new MusicPage.JobRequest(
+            Renderer.JobRequest request = new Renderer.JobRequest(
                     this, newPage, Math.abs(page - newPage),
                     MainApp.screenRot.getSize(windowSize));
             
-            song.pageOrder.get(newPage).requestRendering(request);
+            Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;
         }
     }
 
-    public void renderingComplete(MusicPage mp, MusicPage.JobRequest request) {
+    @Override
+    public void renderingComplete(MusicPage mp, Renderer.JobRequest request) {
             waitingForImage = false;
             if (song == null) return;
             
             if (request.pageNr >= 0 && request.requester == this) {
                 synchronized(pageCache) {
-                    pageCache.put(request.pageNr, new TexturePage(mp.getRenderedImage(this)));
+                    pageCache.put(request.pageNr, new TexturePage(Renderer.getRenderedImage(this)));
                 }
                 //if (request.pageNr == page || !fullyPainted) repaint();
             }
@@ -464,7 +466,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         for (int i = 0; i < currentPage - maxPrevCache; i++) {
             if (pageCache.containsKey(i)) {
                 pageCache.remove(i);
-                MainApp.log("LiveWindow: removed page " + i);
+                Log.log("LiveWindow: removed page " + i);
             }
         }
         for (int i: pageCache.keySet()) {
@@ -473,7 +475,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         for (int i = currentPage + maxNextCache + 1; i < lastPage; i++) {
             if (pageCache.containsKey(i)) {
                 pageCache.remove(i);
-                MainApp.log("LiveWindow: removed page " + i);
+                Log.log("LiveWindow: removed page " + i);
             }
         }
         }

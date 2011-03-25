@@ -1,7 +1,7 @@
 /*
  * MainApp.java
  *
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,35 +20,25 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.virtmus.actions.SaveAllAction;
+import com.ebixio.util.Log;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.LifecycleManager;
 import org.openide.awt.StatusDisplayer;
-import org.openide.explorer.ExplorerManager;
-import java.util.logging.*;
-import javax.swing.SwingUtilities;
 import org.openide.awt.ToolbarPool;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -62,14 +52,10 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     private static MainApp instance;
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
     private transient ExplorerManager manager = new ExplorerManager();
-    private static final Logger logger = Logger.getLogger("com.ebixio.virtmus");
     private static Date lastTime = new Date();
     private transient Set<ChangeListener> plListeners = new HashSet<ChangeListener>();
-    public transient SaveAllAction saveAllAction = null;
     
-    // TODO: Obtain this from OpenIDE-Module-Implementation-Version in manifest.mf
-    public static final String VERSION = "3.00";
-    private static final boolean RELEASED = true;   // Used to disable logging
+    public static final String VERSION = "3.20";
     
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
@@ -162,7 +148,7 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     /** Creates a new instance of MainApp */
     private MainApp() {
         //initLogger();
-        log("MainApp::MainApp start");
+        Log.log("MainApp::MainApp start");
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
         System.getProperties().put("org.icepdf.core.awtFontLoading", "true");
 
@@ -172,12 +158,12 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
         scrollDir = ScrollDir.valueOf( pref.get(OptPageScrollDir, ScrollDir.Horizontal.toString()) );
         
         setupListeners(pref);
-
+        
         ToolbarPool.getDefault().setConfiguration("StandardToolbar");
 
         addAllPlayListsThreaded(pref, false);
         
-        log("MainApp::MainApp finished");
+        Log.log("MainApp::MainApp finished");
     }
 
     private void setupListeners(Preferences pref) {
@@ -185,7 +171,7 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
             @Override
             public void preferenceChange(PreferenceChangeEvent evt) {
                 if (evt.getKey().equals(OptSongDir)) {
-                    log("Preference SongDir changed");
+                    Log.log("Preference SongDir changed");
                     if (MainApp.findInstance().isDirty()) {
                         int returnVal = JOptionPane.showConfirmDialog(null,
                                 "You have unsaved changes. Save all changes before loading new song directory?",
@@ -374,18 +360,20 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     
     @Override
     public void stateChanged(ChangeEvent arg0) {
-        saveAllAction.updateEnable();
+        
     };
     
     public boolean isDirty() {
         synchronized (playLists) {
             for (PlayList pl : playLists) {
                 if (pl.isDirty()) {
+                    Log.log("Dirty PlayList: " + pl.getName());
                     return true;
                 }
                 synchronized (pl.songs) {
                     for (Song s : pl.songs) {
                         if (s.isDirty()) {
+                            Log.log("Dirty Song: " + s.getName());
                             return true;
                         }
                     }
@@ -409,28 +397,6 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
         return manager;
     }
     
-    public static void log(String msg) {
-        log(msg, Level.INFO, false);
-    }
-    public static void log(String msg, Level lev) {
-        log(msg, lev, false);
-    }
-    public static void log(String msg, Level lev, boolean printStackDump) {
-        if (RELEASED) return;
-        //logger.log(lev, getElapsedTime() + " - " + msg);
-        logger.log(lev, msg);
-        if (printStackDump) {
-            logger.log(lev, "{0}\n", getStackTrace());
-        }
-    }
-    public static void log(Throwable t) {
-        log(t.toString());
-        
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        log(pw.toString());
-    }
     public static String getElapsedTime() {
         StringBuilder res = new StringBuilder();
         Date thisTime = new Date();
@@ -441,17 +407,6 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
         res.append(" Elapsed ").append((new Long(elapsed)).toString()).append("ms");
         
         lastTime = thisTime;
-        return res.toString();
-    }
-    
-    public static String getStackTrace() {
-        StringBuilder res = new StringBuilder();
-        StackTraceElement[] ste = (new Throwable()).getStackTrace();
-        for (StackTraceElement e: ste) {
-            res.append("Class: ").append(e.getClassName());
-            res.append(" Method: ").append(e.getMethodName());
-            res.append(" Line: ").append(e.getLineNumber()).append("\n");
-        }
         return res.toString();
     }
     
@@ -489,50 +444,6 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
         ChangeEvent ev = new ChangeEvent(this);
         ChangeListener[] cls = plListeners.toArray(new javax.swing.event.ChangeListener[0]);
         for (ChangeListener cl: cls) cl.stateChanged(ev);
-    }
-
-    
-    /**
-     * Default implementation of the LifecycleManager interface that knows
-     * how to save all modified data and to exit safely.
-     * 
-     * We add this to the default lookup by creating a META-INF/services file.
-     * 
-     * We make sure this is the first one that is found by adding the "#position=10"
-     * option in the META-INF/services file. See:
-     * http://www.netbeans.org/project/www/download/dev/javadoc/org-openide-util/org/openide/util/doc-files/api.html
-     *
-     * @author gburca
-     */
-    public static final class VirtMusLifecycleManager extends LifecycleManager {
-        /** Default constructor for lookup. */
-        public VirtMusLifecycleManager() {}
-        @Override
-        public void saveAll() {
-            MainApp.findInstance().saveAll();
-        }
-        @Override
-        public void exit() {
-            if (MainApp.findInstance().isDirty()) {
-                int returnVal = JOptionPane.showConfirmDialog(null,
-                        "You have unsaved changes. Return to the application to save the changes?",
-                        "Unsaved changes exist.", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (returnVal == JOptionPane.YES_OPTION) return; //saveAll();
-            }
-
-            // Now we defer to the default org.netbeans.core.NbTopManager$NbLifecycleManager
-            //Collection c = Lookup.getDefault().lookup(new Lookup.Template(LifecycleManager.class)).allInstances();
-            Collection c = Lookup.getDefault().lookupAll(LifecycleManager.class);
-            for (Iterator i = c.iterator(); i.hasNext(); ) {
-                LifecycleManager lm = (LifecycleManager) i.next();
-                if (lm != this) {
-                    lm.exit();
-                }
-            }
-            
-            // This line should never execute, unless we couldn't find the default manager above
-            System.exit(0);
-        }
     }
 
 }

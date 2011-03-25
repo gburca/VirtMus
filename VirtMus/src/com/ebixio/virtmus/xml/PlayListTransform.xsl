@@ -22,6 +22,10 @@
             <xsl:if test="Name">
                 <Name><xsl:value-of select="Name"/></Name>
             </xsl:if>
+            
+            <xsl:if test="Tags">
+                <Tags><xsl:value-of select="Tags"/></Tags>
+            </xsl:if>
 
             <xsl:if test="SongFiles">
                 <SongFiles>

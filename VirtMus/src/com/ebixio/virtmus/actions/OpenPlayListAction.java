@@ -25,10 +25,12 @@ import org.openide.util.actions.CallableSystemAction;
 
 public final class OpenPlayListAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         MainApp.findInstance().addPlayList();
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(OpenPlayListAction.class, "CTL_OpenPlayListAction");
     }
@@ -38,6 +40,7 @@ public final class OpenPlayListAction extends CallableSystemAction {
         return "com/ebixio/virtmus/resources/OpenPlayListAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

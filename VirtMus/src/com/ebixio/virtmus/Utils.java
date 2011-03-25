@@ -20,16 +20,8 @@
 
 package com.ebixio.virtmus;
 
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import com.ebixio.util.Log;
+import java.awt.*;
 import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -37,9 +29,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -62,7 +55,7 @@ public class Utils {
     }
 
     public static Dimension[] getScreenSizes() {
-        Vector<Dimension> sizes = new Vector<Dimension>();
+        ArrayList<Dimension> sizes = new ArrayList<Dimension>();
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
         
@@ -144,6 +137,9 @@ public class Utils {
      * moved (along with the song/musicpage files) we try to locate the songs/pages
      * by assuming they reside in the same directory relative to the playlist/song file.
      * 
+     * Since we don't know where the original PlayList resided, we can't compute
+     * the true relative location of the Songs it included, so we use heuristics.
+     * 
      * If original song = /a/b/c/song.xml
      * and original page = /a/b/c/d/page.png
      * And now the song is in /x/y/z/song.xml
@@ -154,6 +150,29 @@ public class Utils {
      * /x/y/z/c/d/page.png
      * /x/y/z/b/c/d/page.png
      * /x/y/z/a/b/c/d/page.png
+     * 
+     * That should account for the use case where the pages are in a subdirectory
+     * of the song.
+     * 
+     * If old song = /a/b/c/song.xml
+     * and old page = /a/b/d/page.png
+     * And now the song is in /x/y/z/song.xml
+     * 
+     * We check for page as follows:
+     * /x/y/d/page.png
+     * /x/y/b/d/page.png
+     * /x/y/a/b/d/page.png
+     * 
+     * /x/d/page.png
+     * /x/b/d/page.png
+     * /x/a/b/d/page.png
+     * 
+     * /d/page.png
+     * /b/d/page.png
+     * /a/b/d/page.png
+     * 
+     * @param newSrc The location of the new PlayList (or Song)
+     * @param oldTarget The location of the old Song (or MusicPage)
      */
     static File findFileRelative(File newSrc, File oldTarget) {
         if (newSrc == null || oldTarget == null) return null;
@@ -164,33 +183,26 @@ public class Utils {
 
         try {
             newSrc = newSrc.getCanonicalFile();
-            String newParentName = newSrc.getParent();
+            String newParentName = newSrc.getParent();  // /x/y/z
             
             oldTarget = oldTarget.getCanonicalFile();
-            String oldFileName = oldTarget.getName();
+            String oldFileName = oldTarget.getName();   // /a/b/d
             String oldParentName = oldTarget.getParent();
             
             // See if the page files are in the same directory as the song file
             File testF = new File(newParentName + File.separator + oldFileName);
             if (testF.exists()) return testF;
             
-            String[] dirs = null;
-            if (File.separator.equals("\\")) {
-                // Double it once to escape from Java and once more to escape from RegEx
-                dirs = oldParentName.split("\\\\");
-            } else {
-                dirs = oldParentName.split(File.separator);
-            }
+            String[] oDirs = splitFile(oldParentName);
+            if (oDirs == null) return null;
             
-            if (dirs == null) return null;
-            
-            if (dirs.length > 0) {
+            if (oDirs.length > 0) {
                 String test = "";
-                for (int i = dirs.length - 1; i >= 0; i--) {
+                for (int i = oDirs.length - 1; i >= 0; i--) {
                     if (test.length() > 0) {
-                        test = dirs[i] + File.separator + test;
+                        test = oDirs[i] + File.separator + test;
                     } else {
-                        test = dirs[i];
+                        test = oDirs[i];
                     }
                     testF = new File(newParentName + File.separator + test + File.separator + oldFileName);
                     if (testF.exists()) return testF;
@@ -200,15 +212,47 @@ public class Utils {
                 if (testF.exists()) return testF;
             }
             
+            // We could also try different roots (drives) on Windows?
+            //File[] roots = File.listRoots();
+            Path oPath = oldTarget.getParentFile().toPath();
+            Path nPath = newSrc.getParentFile().toPath();
+            Path root = nPath.getRoot();
+            for (int i = nPath.getNameCount() - 1; i > 0; i--) {
+                for (int j = oPath.getNameCount() - 1; j >= 0; j--) {
+                    Path oSub = oPath.subpath(j, oPath.getNameCount());
+                    Path test = nPath.subpath(0, i).resolve(oSub);
+                    test = test.resolve(oldFileName);
+                    if (test.toFile().exists()) {
+                        return test.toFile();
+                    } else if (root != null) {
+                        test = root.resolve(test);
+                        if (test.toFile().exists()) {
+                            return test.toFile();
+                        }
+                    }
+                }
+            }
+            
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Log.log(ex);
             return null;
         } catch (PatternSyntaxException ex) {
-            ex.printStackTrace();
+            Log.log(ex);
             return null;
         }
         
         return null;
+    }
+    
+    public static String[] splitFile(String f) {
+        String[] parts;
+        if (File.separator.equals("\\")) {
+            // Double it once to escape from Java and once more to escape from RegEx
+            parts = f.split("\\\\");
+        } else {
+            parts = f.split(File.separator);
+        }
+        return parts;
     }
     
     /** Attempts to launch an external browser to handle a URL.
@@ -311,7 +355,7 @@ public class Utils {
 
     public static Collection<File> listFiles(File directory, FilenameFilter filter, boolean recurse) {
         // List of files / directories
-        Vector<File> files = new Vector<File>();
+        ArrayList<File> files = new ArrayList<File>();
         // Get files / directories in the directory
         File[] entries = directory.listFiles();
 

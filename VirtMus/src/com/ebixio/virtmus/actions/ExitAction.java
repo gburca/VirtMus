@@ -18,15 +18,14 @@
 
 package com.ebixio.virtmus.actions;
 
-import javax.swing.JOptionPane;
 import org.openide.LifecycleManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import com.ebixio.virtmus.MainApp;
 
 public final class ExitAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         // see: http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/LifecycleManager.html#exit()
         
@@ -34,20 +33,24 @@ public final class ExitAction extends CallableSystemAction {
         LifecycleManager.getDefault().exit();
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(ExitAction.class, "CTL_ExitAction");
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
         putValue("noIconInMenu", Boolean.TRUE);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

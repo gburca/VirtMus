@@ -32,9 +32,11 @@
      
     </target>
 
-
-
-    <target name="create-installer-zip" depends="build-zip" description="Creates a ZIP distribution">
+    <!--
+        Run this target to populate dist/virtmus with the same files and config as a full install.
+        The app can then be tested from dist/virtmus without doing an install.
+    -->
+    <target name="build-dist" depends="build-zip" description="Adds VirtMus specific changes">
         <delete dir="dist/${app.name}"/>
         <unzip src="dist/${app.name}.zip" dest="dist"/>
 
@@ -44,7 +46,7 @@
         <!-- Need to modify the app.conf file to allow for more memory -->
         <copy file="${harness.dir}/etc/app.conf" tofile="dist/${app.name}/etc/${app.name}.conf" overwrite="true">
             <filterchain>
-                <replaceregex pattern="\s*default_options.*" replace="default_options=&quot;--branding virtmus -J-Xms24m -J-Xmx512m -J-Dsun.java2d.d3d=false&quot;"/>
+                <replaceregex pattern="\s*default_options.*" replace="default_options=&quot;--branding virtmus -J-Xms128m -J-Xmx512m -J-Dsun.java2d.d3d=false&quot;"/>
                 <!-- replaceregex pattern="^#\s*jdkhome=.*" replace="jdkhome=&quot;/usr/local/jdk1.6.0&quot;"/ -->
             </filterchain>
         </copy>
@@ -58,22 +60,27 @@
                 <exclude name="**/src/**"/>
             </fileset>
         </copy>
+    </target>
 
+    <target name="create-installer-zip" depends="build-dist" description="Creates a ZIP distribution">
         <zip destfile="Installer/${app.distname}-${app.version}.zip">
             <zipfileset dir="dist/${app.name}" prefix="${app.distname}-${app.version}"/>
         </zip>
     </target>
 
 
-    <target name="create-installer-exe" depends="create-installer-zip" description="Creates a Windows exe installer using NSIS">
-          <exec dir="Installer" executable="C:/Program Files/NSIS/makensisw.exe"
-            osfamily="Windows" failonerror="true" timeout="30000">
+    <target name="create-installer-exe" depends="create-installer-zip"
+        description="Creates a Windows exe installer using NSIS">
+        <echo message="Exit NSIS to continue"/>
+        <exec dir="Installer" executable="C:/Program Files (x86)/NSIS/makensisw.exe"
+            osfamily="Windows" failonerror="true">
             <arg line="VirtMus.nsi"/>
         </exec>      
     </target>
 
 
-    <target name="create-installers" depends="create-installer-exe" description="Creates exe and zip application installers">
+    <target name="create-installers" depends="create-installer-exe"
+    description="Creates exe and zip application installers">
 
     </target>
 

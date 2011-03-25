@@ -20,34 +20,24 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
+import com.ebixio.util.NotifyUtil;
 import com.ebixio.virtmus.filefilters.SongFilter;
-import com.ebixio.virtmus.imgsrc.GenericImg;
-import com.ebixio.virtmus.imgsrc.ImgSrc;
-import com.ebixio.virtmus.imgsrc.PdfImg;
-import com.ebixio.virtmus.imgsrc.PdfRender;
+import com.ebixio.virtmus.imgsrc.*;
 import com.ebixio.virtmus.xml.MusicPageConverter;
 import com.ebixio.virtmus.xml.PageOrderConverter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.io.xml.TraxSource;
+import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
+import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
@@ -55,22 +45,16 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import org.openide.ErrorManager;
+import javax.xml.xpath.*;
+import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
@@ -86,7 +70,7 @@ import org.xml.sax.SAXException;
 @XStreamAlias("song")
 public class Song implements Comparable<Song> {
     @XStreamAlias("pages")
-    public final List<MusicPage> pageOrder = Collections.synchronizedList(new Vector<MusicPage>());
+    public final List<MusicPage> pageOrder = Collections.synchronizedList(new ArrayList<MusicPage>());
     public String name = null;
     public String tags = null;
     @XStreamAsAttribute
@@ -94,13 +78,16 @@ public class Song implements Comparable<Song> {
     
     // transients are not initialized when the object is deserialized !!!
     private transient File sourceFile = null;
-    private transient boolean isDirty = true;
     private transient List<PropertyChangeListener> propListeners = Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
     /* We should instantiate each song only once.
      * That way when a page is added/removed from it the change will be reflected in all playlists containing the song. */
     //private transient static HashMap<String, Song> instantiated = Collections.synchronizedMap(new HashMap<String, Song>());
     private transient static HashMap<String, Song> instantiated = new HashMap<String, Song>();
+
+    private static final Icon ICON = ImageUtilities.loadImageIcon(
+            "com/ebixio/virtmus/resources/SongNode.png", false);
+    private transient SongSavable savable = null;
 
     private transient static Transformer songXFormer;
 
@@ -130,26 +117,29 @@ public class Song implements Comparable<Song> {
     private Object readResolve() {
         propListeners = Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
         pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
-        isDirty = false;
+        savable = null;
         version = MainApp.VERSION;
         return this;
     }
     
     public boolean isDirty() {
-        synchronized(pageOrder) {
-            for (MusicPage mp: pageOrder) {
-                if (mp.isDirty) return true;
-            }
-        }
-        return isDirty;
+        return savable != null;
     }
     public void setDirty(boolean isDirty) {
-        if (this.isDirty != isDirty) {
-            this.isDirty = isDirty;
-            notifyListeners();
+       
+        if (isDirty) {
+            if (savable == null) {
+                savable = new SongSavable(this);
+                VirtMusLookup.getInstance().add(savable);
+                notifyListeners();
+            }
+        } else {
+            if (savable != null) {
+                savable.saved();
+                savable = null;
+                notifyListeners();
+            }
         }
-        if (MainApp.findInstance().saveAllAction != null)
-            MainApp.findInstance().saveAllAction.updateEnable();
     }
     
     public boolean addPage() {
@@ -249,9 +239,7 @@ public class Song implements Comparable<Song> {
         }
 
         pageOrder.clear();
-        for (MusicPage s: mp) {
-            pageOrder.add(s);
-        }
+        pageOrder.addAll(Arrays.asList(mp));
         
         setDirty(true);
         notifyListeners();
@@ -370,8 +358,9 @@ public class Song implements Comparable<Song> {
         xs.processAnnotations(Song.class);
         xs.processAnnotations(MusicPageSVG.class);
         xs.processAnnotations(ImgSrc.class);
+        xs.processAnnotations(IcePdfImg.class);
+        xs.processAnnotations(PdfViewImg.class);
         xs.processAnnotations(PdfImg.class);
-        xs.processAnnotations(PdfRender.class);
         xs.processAnnotations(GenericImg.class);
         //xs.addDefaultImplementation(ArrayList.class, List.class);
 
@@ -412,10 +401,10 @@ public class Song implements Comparable<Song> {
 
             //xstream.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            Log.log(ex);
             return false;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Log.log(ex);
             return false;
         }
         
@@ -425,7 +414,7 @@ public class Song implements Comparable<Song> {
                 Song.instantiated.put(toFile.getCanonicalPath(), this);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Log.log(ex);
         }
 
         setDirty(false);
@@ -441,11 +430,12 @@ public class Song implements Comparable<Song> {
 
         Song s;
         
-        String canonicalPath = "";
+        String canonicalPath;
         try {
             canonicalPath = f.getCanonicalPath();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.attachMessage(ex, "No canonical path for " + f.toString());
+            return null;
         }
         
         if (Song.instantiated.containsKey(canonicalPath)) return Song.instantiated.get(canonicalPath);
@@ -474,13 +464,14 @@ public class Song implements Comparable<Song> {
 
             //s = (Song) xs.fromXML(new InputStreamReader(fis, "UTF-8"));
         } catch (FileNotFoundException ex) {
-            //ex.printStackTrace();
             //ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            NotifyUtil.error("Song file not found", canonicalPath, ex);
+            Log.log("Song file not found " + canonicalPath);
             return null;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            MainApp.log("Failed to deserialize " + canonicalPath);
-            ErrorManager.getDefault().notify(ex);
+            //Exceptions.attachMessage(ex, "Failed to deserialize " + canonicalPath);
+            NotifyUtil.error("Failed to read song", canonicalPath, ex);
+            Log.log("Failed to deserialize " + canonicalPath);
             return null;
         } finally {
             if (fis != null) try {
@@ -580,7 +571,7 @@ public class Song implements Comparable<Song> {
                File newFile = Utils.findFileRelative(s.getSourceFile(), f);
                if (newFile != null) {
                    mp.setSourceFile(newFile);
-                   s.isDirty = true;
+                   //s.setDirty(true);
                }
            }
         }
@@ -618,8 +609,72 @@ public class Song implements Comparable<Song> {
         for (int i = 0; i < cls.length; i++) cls[i].stateChanged(new ChangeEvent(this));
     }
 
+    @Override
     public int compareTo(Song other) {
         return getName().compareTo(other.getName());
+    }
+    
+    private class SongSavable extends AbstractSavable implements Icon, SaveAsCapable {
+
+        private final Song s;
+        
+        public SongSavable(Song s) {
+            if (s == null) throw new IllegalArgumentException("Null Song not allowed");
+            this.s = s;
+            register();
+        }
+        
+        @Override
+        protected String findDisplayName() {
+            return s.getName();
+        }
+
+        @Override
+        protected void handleSave() throws IOException {
+            s.save();
+            VirtMusLookup.getInstance().remove(this);
+        }
+        
+        public void saved() {
+            unregister();
+            VirtMusLookup.getInstance().remove(this);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof SongSavable) {
+                SongSavable ss = (SongSavable)other;
+                return s.equals(ss.s);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return s.hashCode();
+        }
+        
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            ICON.paintIcon(c, g, x, y);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return ICON.getIconWidth();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return ICON.getIconHeight();
+        }
+
+        @Override
+        public void saveAs(FileObject folder, String fileName) throws IOException {
+            FileObject newFile = folder.getFileObject(fileName);
+            s.sourceFile = new File(newFile.getNameExt());
+            save();
+        }
     }
 
 }

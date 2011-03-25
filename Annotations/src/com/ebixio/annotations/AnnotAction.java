@@ -35,6 +35,7 @@ public class AnnotAction extends AbstractAction {
         putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(AnnotTopComponent.ICON_PATH, true)));
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         TopComponent win = AnnotTopComponent.findInstance();
         win.open();

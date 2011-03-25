@@ -17,15 +17,10 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Transparency;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import org.apache.batik.ext.awt.RenderingHintsKeyExt;
 
 /**
  *

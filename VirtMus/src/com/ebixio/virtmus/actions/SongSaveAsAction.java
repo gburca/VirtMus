@@ -18,7 +18,8 @@
 
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.*;
+import com.ebixio.util.Log;
+import com.ebixio.virtmus.Song;
 import java.util.Collection;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
@@ -26,11 +27,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.CookieAction;
 
 public final class SongSaveAsAction extends CookieAction {
     
+    @Override
     protected void performAction(Node[] node) {
         Lookup.Result<Song> lr = Utilities.actionsGlobalContext().lookupResult(Song.class);
         Collection c = lr.allInstances();
@@ -43,30 +44,36 @@ public final class SongSaveAsAction extends CookieAction {
                 StatusDisplayer.getDefault().setStatusText("Song was NOT saved!");                
             }
         } else {
-            MainApp.log("Multiple songs selected?");
+            Log.log("Multiple songs selected?");
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SongSaveAsAction.class, "CTL_SongSaveAsAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/document-save-as.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
 
+    @Override
     protected Class<?>[] cookieClasses() {
         return new Class[] {Song.class};
     }

@@ -117,7 +117,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.7</specification-version>
+                        <specification-version>6.40.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -137,6 +137,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.27.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -149,7 +157,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.12</specification-version>
+                        <specification-version>6.43.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -197,16 +205,24 @@
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
-                <test-type>
+                <!-- test-type>
                     <name>qa-functional</name>
-                </test-type>
+                </test-type -->
             </test-dependencies>
             <public-packages>
+                <package>com.ebixio.util</package>
                 <package>com.ebixio.virtmus</package>
                 <package>com.ebixio.virtmus.imgsrc</package>
                 <package>com.ebixio.virtmus.options</package>
                 <package>com.ebixio.virtmus.shapes</package>
             </public-packages>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>Burca</word>
+            <word>deserialized</word>
+            <word>ebixio</word>
+            <word>rasterizer</word>
+            <word>virtmus</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

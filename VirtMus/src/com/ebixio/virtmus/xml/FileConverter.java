@@ -38,6 +38,7 @@ import org.openide.util.Exceptions;
 public class FileConverter implements Converter, ConverterMatcher {
     XStream xs = new XStream();
 
+    @Override
     public void marshal(Object value, HierarchicalStreamWriter writer, MarshallingContext context) {
         File f = (File)value;
         try {
@@ -47,10 +48,12 @@ public class FileConverter implements Converter, ConverterMatcher {
         }
     }
 
+    @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         return new File(reader.getValue());
     }
 
+    @Override
     public boolean canConvert(Class clazz) {
         return File.class.isAssignableFrom(clazz);
     }

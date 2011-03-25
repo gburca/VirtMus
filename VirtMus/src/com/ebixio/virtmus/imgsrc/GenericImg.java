@@ -4,32 +4,20 @@
  */
 package com.ebixio.virtmus.imgsrc;
 
+import com.ebixio.util.Log;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.VirtMusKernel;
 import com.sun.media.jai.codec.FileSeekableStream;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Transparency;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.KernelJAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import org.apache.batik.ext.awt.RenderingHintsKeyExt;
 import org.openide.util.Exceptions;
 
@@ -63,8 +51,8 @@ public class GenericImg extends ImgSrc {
             try {
                 stream = new FileSeekableStream(sourceFile.toString());
             } catch (IOException e) {
-                MainApp.log("MusicPage file: " + sourceFile.toString());
-                MainApp.log(e.toString());
+                Log.log("MusicPage file: " + sourceFile.toString());
+                Log.log(e.toString());
                 closeStream(stream);
                 return new Dimension(1, 1);
             }
@@ -74,7 +62,7 @@ public class GenericImg extends ImgSrc {
                 dimension = srcImg.getBounds().getSize();
                 srcImg.dispose();
             } catch (Exception e) {
-                MainApp.log("Bad file format: " + sourceFile.toString());
+                Log.log("Bad file format: " + sourceFile.toString());
                 closeStream(stream);
                 return new Dimension(1, 1);
             }
@@ -134,7 +122,7 @@ public class GenericImg extends ImgSrc {
                 break;
         }
 
-        FileSeekableStream stream = null;
+        FileSeekableStream stream;
         try {
             stream = new FileSeekableStream(sourceFile.toString());
         } catch (IOException e) {
@@ -143,7 +131,7 @@ public class GenericImg extends ImgSrc {
 
         // Create an operator to decode the image file
         srcImg = JAI.create("stream", stream);
-        float scale = 1;
+        float scale;
 
         try {
             //this.dimension = srcImg.getBounds().getSize();

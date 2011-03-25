@@ -1,7 +1,7 @@
 /*
  * PlayListNode.java
  *
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,15 +20,11 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.virtmus.actions.GoLive;
-import com.ebixio.virtmus.actions.PlayListDelete;
-import com.ebixio.virtmus.actions.PlayListRevertAction;
-import com.ebixio.virtmus.actions.RenameItemAction;
-import com.ebixio.virtmus.actions.SavePlayListAction;
-import com.ebixio.virtmus.actions.SongNewAction;
-import com.ebixio.virtmus.actions.SongOpenAction;
+import com.ebixio.virtmus.actions.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -37,14 +33,10 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
+import org.openide.actions.ReorderAction;
+import org.openide.nodes.*;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -52,7 +44,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author gburca
  */
-public class PlayListNode extends AbstractNode implements ChangeListener {
+public class PlayListNode extends AbstractNode implements PropertyChangeListener, ChangeListener {
     private PlayList playList;
     
     /** Creates a new instance of PlayListNode
@@ -64,6 +56,7 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/PlayListNode.png");
         
+        playList.addPropertyChangeListener(WeakListeners.propertyChange(this, playList));
         playList.addChangeListener(WeakListeners.change(this, playList));
     }
     
@@ -95,15 +88,15 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
             Property nameProp = new PropertySupport.Reflection<String>(pl, String.class, "name"); // get/setName
             Property fileProp = new PropertySupport.Reflection<File>(pl, File.class, "getSourceFile", null); // only getSourceFile
             Property songsProp = new PropertySupport.Reflection<Integer>(pl, Integer.class, "getSongCnt", null);
-            //Property tagsProp = new PropertySupport.Reflection<String>(pl, String.class, "tags"); // get/setTags
+            Property tagsProp = new PropertySupport.Reflection<String>(pl, String.class, "tags"); // get/setTags
             nameProp.setName("Name");
             fileProp.setName("Source File");
             songsProp.setName("Songs");
-            //tagsProp.setName("Tags");
+            tagsProp.setName("Tags");
             set.put(nameProp);
             set.put(fileProp);
             set.put(songsProp);
-            //set.put(tagsProp);
+            set.put(tagsProp);
         } catch (NoSuchMethodException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -117,14 +110,14 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
-        //MainApp.log("PlayListNode::createPasteTypes " + t.toString() + " p:" + playList.getName());
+        //Log.log("PlayListNode::createPasteTypes " + t.toString() + " p:" + playList.getName());
         PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1);
         if (paste != null) s.add(paste);
     }
     
     @Override
     public PasteType getDropType(Transferable t, final int action, int index) {
-        //MainApp.log("PlayListNode::getDropType p:" + playList.getName() + " i:" + Integer.toString(index));
+        //Log.log("PlayListNode::getDropType p:" + playList.getName() + " i:" + Integer.toString(index));
         final Node dropNode = NodeTransfer.node(t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT);
         if (dropNode != null) {
             final Song song = dropNode.getLookup().lookup(Song.class);
@@ -132,8 +125,9 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
             // Prevent a song for being dropped on the source playlist... ?
             //if (song != null && !this.equals(dropNode.getParentNode()) ) {
             if (song != null) {
-                //MainApp.log("PlayListNode::getDropType2 p:" + playList.getName());
+                //Log.log("PlayListNode::getDropType2 p:" + playList.getName());
                 return new PasteType() {
+                    @Override
                     public Transferable paste() throws IOException {
                         if (playList.type != PlayList.Type.AllSongs) {
                             playList.addSong(song);
@@ -191,7 +185,7 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
             name = "<i>" + name + "</i>";
         }
 
-        if (playList.isStale()) {
+        if (playList.isMissingSongs()) {
             name = "<b>" + name + "</b>";
         }
         
@@ -204,8 +198,19 @@ public class PlayListNode extends AbstractNode implements ChangeListener {
     }
 
     // <editor-fold defaultstate="collapsed" desc=" ChangeListener interface ">
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireDisplayNameChange(null, null);
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc=" PropertyChangeListener interface ">
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("nameProp".equals(evt.getPropertyName())) {
+            String newName = (String)evt.getNewValue();
+            this.fireDisplayNameChange(null, newName);
+        }
     }
     // </editor-fold>
 

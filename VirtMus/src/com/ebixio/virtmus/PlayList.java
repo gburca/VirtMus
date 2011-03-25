@@ -1,7 +1,7 @@
 /*
  * PlayList.java
  *
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,27 +20,23 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
+import com.ebixio.util.NotifyUtil;
 import com.ebixio.virtmus.filefilters.PlayListFilter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.io.xml.TraxSource;
+import java.awt.Component;
 import java.awt.Frame;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
+import java.awt.Graphics;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
+import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -52,9 +48,12 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.openide.ErrorManager;
+import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
@@ -66,21 +65,25 @@ import org.openide.windows.WindowManager;
 public class PlayList implements Comparable<PlayList> {
 
     @XStreamAlias("SongFiles")
-    public Vector<File> songFiles = new Vector<File>();
+    public ArrayList<File> songFiles = new ArrayList<File>();
 
     @XStreamAlias("Name")
     private String name = null;
+    
+    @XStreamAlias("Tags")
+    private String tags = null;
 
     @XStreamAsAttribute
     private String version = MainApp.VERSION;   // Used in the XML output
 
     // We don't want to save the "Song", with all it's pages, etc... just the song.xml file name
-    public transient List<Song> songs = Collections.synchronizedList(new Vector<Song>());
-    protected transient boolean isDirty = false;
+    public transient final List<Song> songs = Collections.synchronizedList(new ArrayList<Song>());
     // Some of the songs in this playlist have been found at a different location
     protected transient boolean movedSongs = false;
     // Some of the songs in this playlist could not be found
     protected transient boolean missingSongs = false;
+    private transient List<PropertyChangeListener> propListeners =
+            Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
     
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
@@ -90,6 +93,10 @@ public class PlayList implements Comparable<PlayList> {
     
     public static enum Type { Default, AllSongs, Normal }
     public transient Type type = Type.Normal;
+    
+    private static final Icon ICON = ImageUtilities.loadImageIcon(
+            "com/ebixio/virtmus/resources/PlayListNode.png", false);
+    private transient PlayListSavable savable = null;
 
     private transient static Transformer plXFormer;
 
@@ -112,39 +119,12 @@ public class PlayList implements Comparable<PlayList> {
         this.name = name;
     }
     
-//    /**
-//     * 
-//     * @param other The other playlist to make the current one equal to.
-//     */
-//    public void OpAssignment(PlayList other) {
-//        this.songFiles.clear();
-//        this.songFiles.addAll(other.songFiles);
-//        
-//        this.name = other.name;
-//        synchronized (other.songs) {
-//            synchronized (this.songs) {
-//                this.songs.clear();
-//                this.songs.addAll(other.songs);
-//            }
-//        }
-//        
-//        this.isDirty = other.isDirty;
-//        this.isFullyLoaded = other.isFullyLoaded;
-//        this.sourceFile = other.sourceFile;
-//        
-//        this.listeners.clear();
-//        this.listeners.addAll(other.listeners);
-//
-//        this.type = other.type;
-//    }
-    
     /** This function is executed by the XStream library after an object is
      * deserialized. It needs to initialize the transient fields (which are not
      * serialized/deserialized).
      */
     private Object readResolve() {
-        songs = Collections.synchronizedList(new Vector<Song>());
-        isDirty = false;
+        savable = null;
         listeners = new HashSet<ChangeListener>();
         type = Type.Normal;
         version = MainApp.VERSION;
@@ -177,6 +157,7 @@ public class PlayList implements Comparable<PlayList> {
             }
             
             FilenameFilter filter = new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     return (name != null) ? name.endsWith(".song.xml") : false;
                 }
@@ -197,6 +178,7 @@ public class PlayList implements Comparable<PlayList> {
             notifyListeners();
             
             Runnable r = new Runnable() {
+                @Override
                 public void run() {
                     StatusDisplayer.getDefault().setStatusText("Loaded all songs from " + dir.getPath());
                 }
@@ -307,10 +289,10 @@ public class PlayList implements Comparable<PlayList> {
             }
             //xs.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            Log.log(ex);
             return false;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Log.log(ex);
             return false;
         }
         
@@ -321,7 +303,7 @@ public class PlayList implements Comparable<PlayList> {
     public static PlayList deserialize(final File f) {
         if (f == null || !f.getName().endsWith(".playlist.xml")) return null;
 
-        XStream xs = new XStream();
+        XStream xs = new XStream(new PureJavaReflectionProvider());
         xs.processAnnotations(PlayList.class);
 
         final PlayList pl;
@@ -331,12 +313,12 @@ public class PlayList implements Comparable<PlayList> {
             fis = new FileInputStream(f);
             pl = (PlayList) xs.fromXML(new InputStreamReader(fis, "UTF-8"));
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-            ErrorManager.getDefault().notify(ex);
+            Log.log(ex);
+            NotifyUtil.error("Playlist file not found", f.toString(), ex);
             return null;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            ErrorManager.getDefault().notify(ex);
+            Log.log(ex);
+            NotifyUtil.error("Failed to deserialize", f.toString(), ex);
             return null;            
         } finally {
             if (fis != null) try {
@@ -355,22 +337,28 @@ public class PlayList implements Comparable<PlayList> {
                 pl.movedSongs = false;
                 for (File sf: pl.songFiles) {
                     if (!sf.exists()) {
-                        String msg = "Song file " + sf.getAbsolutePath() +
-                                " in playlist " + pl.sourceFile.getAbsolutePath() +
-                                " doesn't exist.";
+                        String msg = "Playlist " + pl.sourceFile.getAbsolutePath() +
+                                " is missing song " + sf.getAbsolutePath() + ".";
                         sf = Utils.findFileRelative(f, sf);
                         if (sf != null && sf.exists()) {
-                            msg += " Using " + sf.getAbsolutePath() + "instead.";
+                            msg += " Using " + sf.getAbsolutePath() + " instead.";
                             pl.movedSongs = true;
+                            //pl.setDirty(true);
                         } else {
                             msg += " No replacement found.";
                             pl.missingSongs = true;
                         }
-                        MainApp.log(msg, Level.WARNING);
+                        Log.log(msg, Level.WARNING);
                     }
                     Song s = Song.deserialize(sf);
                     if (s != null) pl.songs.add(s);
                 }
+                
+                if (pl.missingSongs) {
+                    NotifyUtil.info(f.toString(), "Some songs are missing." +
+                        " See the log file (menu View->IDE log) for details.");
+                }
+                
                 pl.isFullyLoaded = true;
                 pl.notifyListeners();
             }
@@ -403,9 +391,7 @@ public class PlayList implements Comparable<PlayList> {
         }
 
         songs.clear();
-        for (Song s: ss) {
-            songs.add(s);
-        }
+        songs.addAll(Arrays.asList(ss));
         
         setDirty(true);
         notifyListeners();
@@ -436,22 +422,50 @@ public class PlayList implements Comparable<PlayList> {
             return;
         }
         
+        String oldName = this.name;
         this.name = name;
+        fire("nameProp", oldName, name);
+        setDirty(true);
+        notifyListeners();
+    }
+    
+    public String getTags() {
+        return tags;
+    }
+    
+    public void setTags(String tags) {
+        if (tags == null) {
+            if (this.tags == null) return;
+        } else if (tags.equals(this.tags)) {
+            return;
+        }
+        
+        String oldTags = this.tags;
+        this.tags = tags;
+        fire("tagsProp", oldTags, tags);
         setDirty(true);
         notifyListeners();
     }
 
     public boolean isDirty() {
-        if (type == Type.Normal) return isDirty;
-        return false;
+        return type == Type.Normal ? savable != null : false;
     }
     public void setDirty(boolean isDirty) {
-        if (this.isDirty != isDirty) {
-            this.isDirty = isDirty;
-            notifyListeners();
+        if (type != Type.Normal) return;
+        
+        if (isDirty) {
+            if (savable == null) {
+                savable = new PlayListSavable(this);
+                VirtMusLookup.getInstance().add(savable);
+                notifyListeners();
+            }
+        } else {
+            if (savable != null) {
+                savable.saved();
+                savable = null;
+                notifyListeners();
+            }
         }
-        if (MainApp.findInstance().saveAllAction != null)
-            MainApp.findInstance().saveAllAction.updateEnable();
     }
 
     /** The playlist contents do not match the disk contents.
@@ -461,6 +475,25 @@ public class PlayList implements Comparable<PlayList> {
         return movedSongs || missingSongs;
     }
     
+    public boolean isMissingSongs() {
+        return missingSongs;
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc=" Listeners ">
+    public void addPropertyChangeListener (PropertyChangeListener pcl) {
+        propListeners.add(pcl);
+    }
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propListeners.remove(pcl);
+    }
+    public void fire(String propertyName, Object old, Object nue) {
+        // Passing 0 below on purpose, so you only synchronize for one atomic call
+        PropertyChangeListener[] pcls = propListeners.toArray(new PropertyChangeListener[0]);
+        for (int i = 0; i < pcls.length; i++) {
+            pcls[i].propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
+        }
+    }
+
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
@@ -468,14 +501,15 @@ public class PlayList implements Comparable<PlayList> {
         listeners.remove(listener);
     }
     public void notifyListeners() {
-        //MainApp.log("PlayList::notifyListeners thread: " + Thread.currentThread().getName());
-        //MainApp.log("PlayList::notifyListeners: " + this.toString() + " " + getName());
+        //Log.log("PlayList::notifyListeners thread: " + Thread.currentThread().getName());
+        //Log.log("PlayList::notifyListeners: " + this.toString() + " " + getName());
         ChangeEvent ev = new ChangeEvent(this);
         ChangeListener[] cls = listeners.toArray(new javax.swing.event.ChangeListener[0]);
         for (ChangeListener cl: cls) {
             cl.stateChanged(ev);
         }
     }
+    // </editor-fold>
 
     /**
      * Implements Comparable
@@ -483,12 +517,81 @@ public class PlayList implements Comparable<PlayList> {
      * @param other
      * @return -1, 0, 1
      */
+    @Override
     public int compareTo(PlayList other) {
         int typeComp = type.compareTo(other.type);
         if (typeComp != 0) {
             return typeComp;
         } else {
             return getName().compareTo(other.getName());
+        }
+    }
+
+    private class PlayListSavable extends AbstractSavable implements Icon, SaveAsCapable {
+
+        private final PlayList pl;
+
+        public PlayListSavable(PlayList pl) {
+            if (pl == null) {
+                throw new IllegalArgumentException("Null PlayList not allowed");
+            }
+            this.pl = pl;
+            register();
+        }
+
+        @Override
+        protected String findDisplayName() {
+            return pl.getName();
+        }
+
+        @Override
+        protected void handleSave() throws IOException {
+            pl.save();
+            VirtMusLookup.getInstance().remove(this);
+        }
+
+        /**
+         *
+         */
+        public void saved() {
+            unregister();
+            VirtMusLookup.getInstance().remove(this);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof PlayListSavable) {
+                PlayListSavable pls = (PlayListSavable) other;
+                return pl.equals(pls.pl);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return pl.hashCode();
+        }
+        
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            ICON.paintIcon(c, g, x, y);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return ICON.getIconWidth();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return ICON.getIconHeight();
+        }
+
+        @Override
+        public void saveAs(FileObject folder, String fileName) throws IOException {
+            FileObject newFile = folder.getFileObject(fileName);
+            pl.sourceFile = new File(newFile.getNameExt());
+            save();
         }
     }
 

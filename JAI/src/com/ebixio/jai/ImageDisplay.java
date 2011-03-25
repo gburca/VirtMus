@@ -45,14 +45,15 @@
 
 package com.ebixio.jai;
 
-import com.ebixio.virtmus.MainApp;
+import com.ebixio.util.Log;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.geom.*;
 import java.util.logging.Level;
-import javax.media.jai.*;
-import javax.swing.*;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RasterFactory;
+import javax.swing.JComponent;
+import javax.swing.SwingWorker;
 
 /**
  * An output widget for a PlanarImage.  ImageDisplay subclasses
@@ -112,8 +113,8 @@ public class ImageDisplay extends JComponent {
     private synchronized void initialize() {
         if ( source == null ) return;
 
-        //MainApp.log("ImageDisplay", Level.INFO, true);
-        MainApp.log("ImageDisplay", Level.FINEST);
+        //Log.log("ImageDisplay", Level.INFO, true);
+        Log.log("ImageDisplay", Level.FINEST);
         try {
             componentWidth  = source.getWidth();
             componentHeight = source.getHeight();
@@ -121,7 +122,7 @@ public class ImageDisplay extends JComponent {
             // Invalid image file
             return;
         }
-        MainApp.log("ImageDisplay::initialize Init 2", Level.FINEST);
+        Log.log("ImageDisplay::initialize Init 2", Level.FINEST);
 
         setPreferredSize(new Dimension(componentWidth, componentHeight));
 
@@ -225,7 +226,7 @@ public class ImageDisplay extends JComponent {
         source = im;
         
         if (imgLoader != null && !imgLoader.isDone()) {
-            //MainApp.log("ImageDisplay::set cancel thread");
+            //Log.log("ImageDisplay::set cancel thread");
              imgLoader.cancel(true);
         }
         
@@ -308,27 +309,27 @@ public class ImageDisplay extends JComponent {
         super.setLocation(x, y);
     }
 
-    private final int XtoTileX(int x) {
+    private int XtoTileX(int x) {
         return (int) Math.floor((double) (x - tileGridXOffset)/tileWidth);
     }
 
-    private final int YtoTileY(int y) {
+    private int YtoTileY(int y) {
         return (int) Math.floor((double) (y - tileGridYOffset)/tileHeight);
     }
 
-    private final int TileXtoX(int tx) {
+    private int TileXtoX(int tx) {
         return tx*tileWidth + tileGridXOffset;
     }
 
-    private final int TileYtoY(int ty) {
+    private int TileYtoY(int ty) {
         return ty*tileHeight + tileGridYOffset;
     }
 
-    private static final void debug(String msg) {
+    private static void debug(String msg) {
         System.out.println(msg);
     }
 
-    private final byte clampByte(int v) {
+    private byte clampByte(int v) {
         if ( v > 255 ) {
             return (byte)255;
         } else if ( v < 0 ) {
@@ -338,7 +339,7 @@ public class ImageDisplay extends JComponent {
         }
     }
 
-    private final void setBrightnessEnabled(boolean v) {
+    private void setBrightnessEnabled(boolean v) {
         brightnessEnabled = v;
 
         if ( brightnessEnabled == true ) {
@@ -393,7 +394,7 @@ public class ImageDisplay extends JComponent {
     @Override
     public synchronized void paintComponent(Graphics g) {
 
-        Graphics2D g2D = null;
+        Graphics2D g2D;
         if (g instanceof Graphics2D) {
             g2D = (Graphics2D)g;
         } else {

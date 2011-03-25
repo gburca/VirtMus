@@ -37,13 +37,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.actions.*;
-import org.openide.actions.NewAction;
-import org.openide.actions.PasteAction;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
+import org.openide.nodes.*;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -134,7 +128,7 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
-        //MainApp.log("SongNode::createPasteTypes " + t.toString() + " s:" + song.getName());
+        //Log.log("SongNode::createPasteTypes " + t.toString() + " s:" + song.getName());
         PasteType paste = getDropType( t, DnDConstants.ACTION_COPY, -1);
         if (paste != null) s.add(paste);
     }
@@ -144,7 +138,7 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
     @Override
     public PasteType getDropType(Transferable t, final int action, int index) {
         if (index != -1) {
-            //MainApp.log("SongNode::getDropType " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
+            //Log.log("SongNode::getDropType " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
         }
         // dropNode is the node about to be dropped on this SongNode
         final Node dropNode = NodeTransfer.node(t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT);
@@ -153,7 +147,7 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
             // We only accept a MusicPage to be dropped on this SongNode
             if (mp != null) {
                 
-                //MainApp.log("SongNode::getDropType2 " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
+                //Log.log("SongNode::getDropType2 " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
                 return new PasteType() {
                     public Transferable paste() throws IOException {
                         //song.addPage(new MusicPage(song, mp.getSourceFile()));
@@ -172,6 +166,7 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc=" PropertyChangeListener interface ">
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("nameProp".equals(evt.getPropertyName())) {
             String newName = (String)evt.getNewValue();

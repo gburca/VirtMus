@@ -14,6 +14,7 @@
     <xsd:complexType>
         <xsd:sequence>
             <xsd:element name="Name" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="Tags" minOccurs="0" maxOccurs="1" type="xsd:string"/>
             <xsd:element name="SongFiles" minOccurs="0" maxOccurs="1" type="SongFilesType"/>
         </xsd:sequence>
         <xsd:attribute name="version" type="xsd:string"/>

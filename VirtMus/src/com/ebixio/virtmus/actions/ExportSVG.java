@@ -22,6 +22,7 @@
 
 package com.ebixio.virtmus.actions;
 
+import com.ebixio.util.Log;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageSVG;
@@ -38,6 +39,7 @@ import org.openide.util.actions.CookieAction;
  */
 public final class ExportSVG extends CookieAction {
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         MusicPageSVG mp = (MusicPageSVG)activatedNodes[0].getLookup().lookup(MusicPage.class);
 
@@ -45,8 +47,7 @@ public final class ExportSVG extends CookieAction {
         String svgEditor = NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, "");
         File editor = new File(svgEditor);
         if (!editor.canExecute()) {
-            MainApp.log("Could not execute SVG editor: " + svgEditor);
-            return;
+            Log.log("Could not execute SVG editor: " + svgEditor);
         } else {
 //            EditWorker worker = new EditWorker();
 //            worker.mp = mp;
@@ -67,14 +68,17 @@ public final class ExportSVG extends CookieAction {
 
     }
     
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ExportSVG.class, "CTL_ExportSVG");
     }
 
+    @Override
     protected Class[] cookieClasses() {
         return new Class[]{MusicPage.class};
     }
@@ -84,6 +88,7 @@ public final class ExportSVG extends CookieAction {
         return "com/ebixio/virtmus/resources/EditAnnotations.png";
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

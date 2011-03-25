@@ -27,3 +27,13 @@ hs_err_pid*.log
 
 Installer/VirtMus-*.exe
 Installer/VirtMus-*.zip
+
+Installer/VirtMusPortable/App/VirtMus
+Installer/VirtMusPortable/VirtMusPortable.exe
+Installer/VirtMusPortable_*.exe
+
+Docs/publish
+Docs/sitemap.xml
+Docs/urllist.txt
+/ICEpdf/nbproject/private/
+/ICEpdf-Wrapper/nbproject/private/

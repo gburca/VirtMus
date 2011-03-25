@@ -31,6 +31,16 @@
 
         <file name="System_hidden"/>
 
+        <folder name="Tools">
+            <file name="com-ebixio-virtmus-actions-ScrollAmountAction.instance"/>
+            <!-- file name="com-ebixio-virtmus-actions-ScrollAmount.instance">
+                <attr name="delegate" newvalue="com.ebixio.virtmus.actions.ScrollAmount"/>
+                <attr name="displayName" bundlevalue="com.ebixio.virtmus.actions.Bundle#CTL_ScrollAmount"/>
+                <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/CloneMusicPage.gif"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file -->
+        </folder>
         <folder name="VirtMusSystem">
             <!-- If we don't hide the original set of "System" actions, we end up
             with all kinds of undesirable menu entries, etc... so we just pick the
@@ -291,6 +301,7 @@
     </folder>
 
     <folder name="Toolbars">
+        <!-- The StandardToolbar.xml file controls the order of the toolbars -->
         <file name="StandardToolbar.xml" url="StandardToolbar.xml"/>
 
         <folder name="General">
@@ -306,6 +317,10 @@
             <file name="SaveAllAction.shadow">
                 <attr name="position" intvalue="300"/>
                 <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
+            </file>
+            <file name="com-ebixio-virtmus-actions-ScrollAmount.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/com-ebixio-virtmus-actions-ScrollAmountAction.instance"/>
+                <attr name="position" intvalue="150"/>
             </file>
         </folder>
         
@@ -370,15 +385,18 @@
         </folder>
 
         <folder name="File_hidden"/>
-        <folder name="UndoRedo"/>
+
+        <folder name="UndoRedo">
+            <attr name="position" intvalue="190"/>
+        </folder>
 
         <folder name="Clipboard">
             <attr name="position" intvalue="200"/>
         </folder>
 
         <folder name="Memory">
+            <attr name="displayName" bundlevalue="org.netbeans.core.ui.resources.Bundle#Toolbars/Memory"/>
             <attr name="position" intvalue="600"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-GarbageCollectAction.shadow_hidden"/>
             <file name="org-openide-actions-GarbageCollectAction-VirtMus.shadow">
                 <attr name="originalFile" stringvalue="Actions/VirtMusSystem/org-openide-actions-GarbageCollectAction.instance"/>

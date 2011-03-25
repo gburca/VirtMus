@@ -111,7 +111,7 @@ public final class AnnotTopComponent extends TopComponent
     private void initComponents() {
 
         jToolBar = new javax.swing.JToolBar();
-        toolChooser = new javax.swing.JComboBox();
+        toolChooser = new javax.swing.JComboBox<DrawingTool>();
         jSeparator6 = new javax.swing.JToolBar.Separator();
         jLabel1 = new javax.swing.JLabel();
         colorChooser = new net.java.dev.colorchooser.ColorChooser();
@@ -356,7 +356,7 @@ public final class AnnotTopComponent extends TopComponent
     private javax.swing.JSlider jsBrushSize;
     private javax.swing.JSlider jsZoom;
     private com.ebixio.jai.Panner panner;
-    private javax.swing.JComboBox toolChooser;
+    private javax.swing.JComboBox<DrawingTool> toolChooser;
     // End of variables declaration//GEN-END:variables
     
     // <editor-fold defaultstate="collapsed" desc=" Singleton ">
@@ -597,8 +597,8 @@ public final class AnnotTopComponent extends TopComponent
      * The list of drawing tools we will use with the toolChooser JComboBox
      * @return
      */
-    public ComboBoxModel getTools() {
-        DefaultComboBoxModel cbm = new DefaultComboBoxModel();
+    public ComboBoxModel<DrawingTool> getTools() {
+        DefaultComboBoxModel<DrawingTool> cbm = new DefaultComboBoxModel<DrawingTool>();
         cbm.addElement(new ToolRect(canvas));
         cbm.addElement(new ToolLine(canvas));
         cbm.addElement(new ToolFreehand(canvas));

@@ -35,6 +35,7 @@ public class PlayListAction extends AbstractAction {
         putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(PlayListTopComponent.ICON_PATH, true)));
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         TopComponent win = PlayListTopComponent.findInstance();
         win.open();

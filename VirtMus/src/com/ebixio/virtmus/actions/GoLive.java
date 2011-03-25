@@ -18,8 +18,8 @@
 
 package com.ebixio.virtmus.actions;
 
+import com.ebixio.util.Log;
 import com.ebixio.virtmus.*;
-import java.awt.BufferCapabilities;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -34,15 +34,14 @@ public final class GoLive extends CookieAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         LiveWindowJOGL lw = null;
-        //MainApp.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
+        //Log.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
         Boolean openGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false"));
         
         if (openGL) {
             try {
                 lw = doLiveWindowJOGL(activatedNodes);
             } catch (UnsatisfiedLinkError e) {
-                e.printStackTrace();
-                MainApp.log(e.toString());
+                Log.log(e);
                 
                 if (lw != null) { lw.dispose(); }
                 doLiveWindow(activatedNodes);
@@ -57,7 +56,7 @@ public final class GoLive extends CookieAction {
         MusicPage mp = (MusicPage) activatedNodes[0].getLookup().lookup(MusicPage.class);
         Song s = (Song) activatedNodes[0].getLookup().lookup(Song.class);
         PlayList pl = (PlayList) activatedNodes[0].getLookup().lookup(PlayList.class);
-        LiveWindowJOGL lw = null;
+        LiveWindowJOGL lw;
 
         //LiveWindowJOGL.main(null);    // Only when created form a thread other than EDT
         lw = new LiveWindowJOGL();
@@ -88,8 +87,8 @@ public final class GoLive extends CookieAction {
         GraphicsConfiguration graphicConf = graphDevice.getDefaultConfiguration();
 
         //BufferCapabilities bufCap = graphicConf.getBufferCapabilities();
-        //MainApp.log("Graphics buffering: isPageFlipping() = " + bufCap.isPageFlipping());
-        //MainApp.log("Graphics buffering: isFullScreenRequired() = " + bufCap.isFullScreenRequired());
+        //Log.log("Graphics buffering: isPageFlipping() = " + bufCap.isPageFlipping());
+        //Log.log("Graphics buffering: isFullScreenRequired() = " + bufCap.isFullScreenRequired());
 
         LiveWindow lw = new LiveWindow(graphicConf);
         lw.setVisible(true);

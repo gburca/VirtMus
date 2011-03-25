@@ -7,6 +7,7 @@
         <Toolbar name="PlayList" />
         <Toolbar name="Song" />
         <Toolbar name="MusicPage" />
+        <Toolbar name="UndoRedo" />
         <Toolbar name="Clipboard" />
         <Toolbar name="Memory" />
     </Row>

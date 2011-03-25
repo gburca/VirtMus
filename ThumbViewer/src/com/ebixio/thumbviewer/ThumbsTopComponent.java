@@ -1,7 +1,7 @@
 /*
  * ThumbsTopComponent.java
  * 
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,23 +20,10 @@
 
 package com.ebixio.thumbviewer;
 
-import com.ebixio.virtmus.DraggableThumbnail;
-import com.ebixio.virtmus.MainApp;
-import com.ebixio.virtmus.MusicPage;
-import com.ebixio.virtmus.MusicPageNode;
-import com.ebixio.virtmus.Song;
-import com.ebixio.virtmus.SongNode;
-import com.ebixio.virtmus.Thumbnail;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
+import com.ebixio.virtmus.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,17 +35,14 @@ import net.java.swingfx.jdraggable.DraggableManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
  */
-final class ThumbsTopComponent extends TopComponent implements MouseListener {
+final class ThumbsTopComponent extends TopComponent implements LookupListener, MouseListener {
     
     private static ThumbsTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -70,16 +54,9 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     private DraggableManager draggableManager;
     private int hgap = 25, vgap = 25;
     private SongNode songNode = null;
-
-    transient private final PropertyChangeListener eListener = new PropertyChangeListener() {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                //Node[] selectedNodes = (Node[]) evt.getNewValue();
-                updateSelection();
-            }
-        }
-    };
+    
+    final Lookup.Result<SongNode> lookupSongs;
+    final Lookup.Result<MusicPageNode> lookupPages;
 
     /**
      * We want to know when the song pages have been marked "dirty" so we can update
@@ -119,6 +96,11 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
         // 1 wheel scroll = 3 clicks on the scoll bar arrow
         jScrollPane.getVerticalScrollBar().setUnitIncrement((MusicPage.thumbH + vgap) / 3);
         layoutThumbs();
+        
+        lookupSongs = Utilities.actionsGlobalContext().lookupResult(SongNode.class);
+        lookupPages = Utilities.actionsGlobalContext().lookupResult(MusicPageNode.class);
+        lookupSongs.addLookupListener(this);
+        lookupPages.addLookupListener(this);
     }
   
     private void layoutThumbs() {
@@ -226,48 +208,36 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     }
     
     @Override
-    public void addNotify() {
-        getExplorerManager().addPropertyChangeListener(eListener);
-        super.addNotify();
-    }
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        getExplorerManager().removePropertyChangeListener(eListener);
-    }
-    
-    /** This function gets called every time the ExplorerManager selection changes */
-    private void updateSelection() {
-        Node[] nodes = getExplorerManager().getSelectedNodes();
-        if (nodes.length > 0) {
-            Lookup l = nodes[0].getLookup();
-            if (nodes[0] instanceof SongNode) {
-                songNode = (SongNode) nodes[0];
-            } else if (nodes[0] instanceof MusicPageNode) {
-                MusicPageNode mpn = (MusicPageNode) nodes[0];
-                if (mpn.getParentNode() instanceof SongNode) {
-                    songNode = (SongNode) mpn.getParentNode();
-                }
+    public void resultChanged(LookupEvent ev) {
+        Collection<? extends SongNode> sNodes = lookupSongs.allInstances();
+        Collection<? extends MusicPageNode> mNodes = lookupPages.allInstances();
+        SongNode sNode = null;
+        MusicPageNode mNode = null;
+        if (!sNodes.isEmpty()) {
+            sNode = sNodes.iterator().next();
+        } else if (!mNodes.isEmpty()) {
+            mNode = mNodes.iterator().next();
+            if (mNode.getParentNode() instanceof SongNode) {
+                sNode = (SongNode) mNode.getParentNode();
             }
+        }
 
-            Collection songs = l.lookupResult(Song.class).allInstances();
-            if (!songs.isEmpty()) {
-                Song s = (Song) songs.iterator().next();
-                if (loadedSong != s) this.loadSong(s);
-            }
-            
-            Collection pages = l.lookupResult(MusicPage.class).allInstances();
-            if (!pages.isEmpty()) {
-                MusicPage mp = (MusicPage) pages.iterator().next();
-                for (MusicPage m: loadedSong.pageOrder) {
-                    if (m == mp) {
-                        m.getThumbnail().setSelected(true);
-                    } else {
-                        m.getThumbnail().setSelected(false);
-                    }
+        if (sNode != null) {
+            songNode = sNode;
+            Song s = songNode.getSong();
+            if (loadedSong != s) this.loadSong(s);
+        }
+
+        if (mNode != null) {
+            MusicPage mp = mNode.getPage();
+            for (MusicPage m : loadedSong.pageOrder) {
+                if (m == mp) {
+                    m.getThumbnail().setSelected(true);
+                } else {
+                    m.getThumbnail().setSelected(false);
                 }
             }
-        }        
+        }
     }
 
     /** replaces this in object stream */
@@ -296,6 +266,9 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
                             getExplorerManager().setSelectedNodes(new Node[]{mpn});
                         }
                     }
+                }
+                for (MusicPage m : loadedSong.pageOrder) {
+                    m.getThumbnail().setSelected(m == mp);
                 }
             } catch (PropertyVetoException ex) {
                 Exceptions.printStackTrace(ex);
@@ -326,7 +299,7 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
     } // </editor-fold>
-    
+
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
@@ -364,7 +337,7 @@ final class ThumbsTopComponent extends TopComponent implements MouseListener {
 
     void reorderThumbs() {
         ArrayList<MusicPage> newOrder = new ArrayList<MusicPage>();
-        Thumbnail selectedThumb = null, otherThumb = null;
+        Thumbnail selectedThumb = null, otherThumb;
         int components = jPanel.getComponentCount();
         int selectedIdx = 0, insertBefore = components;
         boolean changed = false;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- vi:ai:tabstop=2:shiftwidth=2:softtabstop=2
+<!-- vi:ai:tabstop=4:shiftwidth=4:softtabstop=4
 -->
 
 <!--
@@ -42,7 +42,6 @@
 </xsl:template>
 
 
-
 <xsl:template match="page">
 	<page>
 		<xsl:if test="name">
@@ -53,11 +52,30 @@
 
 		<xsl:apply-templates select="rotation"/>
 
-		<xsl:if test="annotationSVG">
-			<annotationSVG><xsl:value-of select="annotationSVG"/></annotationSVG>
-		</xsl:if>
+		<xsl:apply-templates select="annotationSVG"/>
+
 	</page>
 </xsl:template>
+
+<xsl:template match="annotationSVG">
+    <xsl:copy-of select="@* | ."/>
+</xsl:template>
+
+<!--xsl:template match="annotationSVG">
+    <xsl:element name="annotationSVG">
+        <xsl:if test="@width">
+            <xsl:attribute name="width">
+                <xsl:value-of select="@width"/>
+            </xsl:attribute>
+        </xsl:if>
+        <xsl:if test="@height">
+            <xsl:attribute name="height">
+                <xsl:value-of select="@height"/>
+            </xsl:attribute>
+        </xsl:if>
+        <xsl:value-of select="node()"/>
+    </xsl:element>
+</xsl:template-->
 
 <xsl:template match="sourceFile">
     <xsl:element name="sourceFile">

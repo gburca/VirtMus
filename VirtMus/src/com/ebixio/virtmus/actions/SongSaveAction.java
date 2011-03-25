@@ -59,7 +59,7 @@ public final class SongSaveAction extends NodeAction {
 //                StatusDisplayer.getDefault().setStatusText("Song was NOT saved!");                
 //            }
 //        } else {
-//            MainApp.log("Multiple songs selected?");
+//            Log.log("Multiple songs selected?");
 //        }
 //    }
     

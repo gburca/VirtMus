@@ -526,12 +526,27 @@ For full details and a complete list of options, see: http://java.sun.com/javase
 
 Sections 3.1.3 through 3.1.5 are particularly relevant for the Windows OS.</pre>
 </div>
-<div title="ChangeLog" modifier="GabrielBurca" modified="201103210508" created="200701272322" tags="Publish" changecount="41">
-<pre>! Version 3.00
+<div title="ChangeLog" modifier="GabrielBurca" modified="201205190533" created="200701272322" tags="Publish" changecount="46">
+<pre>! Version 3.20
+* Features added:
+** When closing the application, the user now has the choice of saving some or all of the modified contents.
+** PlayLists can now be tagged (from the &quot;Properties&quot; window)
+** New toolbar button allows the user to quickly toggle the scrolling amount from 100% (a full page) to 50% (half a page at a time). This comes in handy when one image contains two music pages side-by-side (ex. when copied from a book). Toggling the scroll amount to 50% results in music pages being scrolled one at a time instead of two at a time.
+** A secondary PDF renderer was added and is now being used for some types of PDF files that used to show gibberish with the original renderer.
+
+* Improvements or bugs fixed:
+** Better handling when the music repository is moved to a different drive or different location on the same drive.
+** Upgraded to ~NetBeans 7.1.2
+** Upgraded some of the external libraries used by VirtMus
+** Errors and notifications are now shown in the bottom right corner of the application window
+** In some cases, adding new annotations to a page already containing some, and then saving the song, would make the new annotations disappear (even though the file on disk contained the new annotations). This should be fixed now.
+
+! Version 3.00
 * Features added:
 ** Added the ability to undo annotations.
 ** A double-click, or a right-click on the thumbnails now displays them in the annotation window.
 ** Multi-threaded some operations to speed things up.
+** A portable version of the app is now available. See http://portableapps.com for more details, and download the &quot;VirtMus Portable&quot; installer from http://sourceforge.net/projects/virtmus/files/ by looking for the file that ends in *.pdf.exe.
 
 * Improvements or bugs fixed:
 ** ~PDFs that have different resolutions in the X and Y direction are now handled properly.
@@ -690,10 +705,10 @@ VirtMusGettingStarted</pre>
 * Cross platform
 ** You should be able to use this software (and any associated software) on the platform of your choice.</pre>
 </div>
-<div title="DeveloperInfo" modifier="GabrielBurca" modified="201103210524" created="200701160406" tags="Publish" changecount="14">
+<div title="DeveloperInfo" modifier="GabrielBurca" modified="201205190537" created="200701160406" tags="Publish" changecount="15">
 <pre>If you want to help, see the ToDo list.
 
-This application was built using the [[NetBeans 6.9.1|http://netbeans.org]] platform which can be downloaded from http://netbeans.org/
+This application was built using the [[NetBeans 7.1.2|http://netbeans.org]] platform which can be downloaded from http://netbeans.org/
 
 It uses the JavaAdvancedImaging library for most of the image manipulations. Follow the link for setup/installation details.
 
@@ -1806,7 +1821,7 @@ http://usb.brando.com/ sells 2 and 3 button foot switches:
 * http://usb.brando.com/usb-double-foot-switch_p01364c046d015.html
 * http://usb.brando.com/usb-triple-foot-switch_p01365c046d015.html</pre>
 </div>
-<div title="FrequentlyAskedQuestions" modifier="GabrielBurca" modified="200812060933" created="200711021434" tags="Publish" changecount="9">
+<div title="FrequentlyAskedQuestions" modifier="GabrielBurca" modified="201205190535" created="200711021434" tags="Publish" changecount="10">
 <pre>* How do I speed up VirtMus?
 &lt;&lt;&lt;
 Follow some of the tips in MusicPages and/or the AcceleratedGraphics tips.
@@ -1818,7 +1833,7 @@ Click on the ''~PlayList Window'' tab, open the ''All Songs'' playlist, and just
 &lt;&lt;&lt;
 * How do I remove or modify a single annotation?
 &lt;&lt;&lt;
-Install Inkscape (see the VirtMusInstall info) and click on the ''Edit Annotation'' toolbar button. Inkscape provides a full-blown editing environment for doing annotation editing.
+Install [[Inkscape|http://www.inkscape.org/]] (see the VirtMusInstall info) and click on the ''Edit Annotation'' toolbar button. Inkscape provides a full-blown editing environment for doing annotation editing.
 &lt;&lt;&lt;
 * Where are the settings saved?
 &lt;&lt;&lt;
@@ -3327,7 +3342,7 @@ ScreenShots
 &lt;script type=&quot;text/javascript&quot; src=&quot;http://www.ohloh.net/p/16985/widgets/project_cocomo.js&quot;&gt;&lt;/script&gt;
 &lt;/html&gt;</pre>
 </div>
-<div title="MenuOptions" modifier="GabrielBurca" modified="200711020246" created="200701132155" tags="Publish" changecount="4">
+<div title="MenuOptions" modifier="GabrielBurca" modified="201205190548" created="200701132155" tags="Publish" changecount="6">
 <pre>Some of the menu options (and toolbar buttons) are context sensitive and are only activated if an appropriate item is selected in the [[PlayList|PlayLists]] window. For example, the &quot;Clone Music Page&quot; menu option is only available when a page is selected and remains disabled otherwise, &quot;Save Song&quot; is available if a song, or page is selected, but is not available if a play list is selected.
 
 * ''File'' menu
@@ -3356,6 +3371,7 @@ ScreenShots
 ** ''Open ~PlayList Window'': Opens the window/tab that shows the available playlists, songs, and song pages. Select a song to view thumbnails of its pages. Select a page to see it in the Annotations tab in full-size.
 ** ''Open Thumbs Window'': This window allows the user to see thumbnails of the pages making up the song and, most importantly, allows the user to re-order the pages by dragging them around.
 ** ''Open Annot Window'': This window allows the user to view the music page at full size. The window can be scrolled around by dragging the rectangle in the upper right corner thumbnail to the region of interest.
+** ''Properties'': This windows shows the properties of the currently selected Song or Playlist. Some of them are read-only, and others can be modified by the user. This is a good place to see the full path to the file on disk, or to modify the tags attached to the songs or playlists.
 </pre>
 </div>
 <div title="MusicPageAnnotations" modifier="GabrielBurca" modified="201006021641" created="200711020145" tags="Publish" changecount="20">
@@ -5056,8 +5072,8 @@ config.macros.upload.UploadLog.prototype.endUpload = function() {};
 //}}}
 </pre>
 </div>
-<div title="VirtMus" modifier="GabrielBurca" modified="201103210510" created="200701130656" tags="Publish" changecount="13">
-<pre>Latest version is v3.00. See the ChangeLog for details.
+<div title="VirtMus" modifier="GabrielBurca" modified="201205190538" created="200701130656" tags="Publish" changecount="15">
+<pre>Latest version is v3.20. See the ChangeLog for details.
 
 ! Summary:
 VirtMus (virtual music) is a free application that allows the user to display sheet music and turn pages without removing the hands (or feet) from the instrument the music is performed on. This feature is very useful during concerts and practice sessions as it allows the musician to focus on performing the music without interruption. The software also allows the users to store and organize their entire sheet music collection on a laptop, making it fully portable and available at a click of a button. See the ScreenShots if you want to see how it looks, or have a look at the DesignPrinciples to see some of the distinguishing features.
@@ -5071,7 +5087,7 @@ This software allows the user to create &quot;[[songs|SongLists]]&quot; out of s
 
 See the ToDo list for a number of non-critical issues and features under development.
 
-If you're looking for similar software but with a commercial or shareware license, see the websites for http://www.estandmusic.com/ and http://www.virtualmusicstand.com/
+If you're looking for similar software but with a commercial or shareware license, see http://www.estandmusic.com/ .
 
 This software was written and is being maintained by [[Gabriel Burca|GabrielBurca]]. Developers who wish to contribute should contact the author at gburca dash virtmus at ebixio dot com or by using the ~SourceForge system at http://sourceforge.net/users/gburca/
 
@@ -5103,7 +5119,7 @@ VirtMus is Copyright (C) 2006-2011 Gabriel Burca and released under the [[GPL|ht
 * Use the left/right mouse buttons or Page Down/Up to advance through the pages, or use a FootSwitch. See the LiveWindowKeyboardShortcuts section for a list of available keyboard shortcuts.
 * Also, see ''Tools''-&gt;''Options'' and the VirtMusOptions section for various settings that can be used to customize the display orientation, scroll amount and scroll direction.</pre>
 </div>
-<div title="VirtMusInstall" modifier="GabrielBurca" modified="201011130419" created="200701131904" tags="Publish" changecount="21">
+<div title="VirtMusInstall" modifier="GabrielBurca" modified="201103251814" created="200701131904" tags="Publish" changecount="34">
 <pre>! Install the Requirements:
 The only &quot;hard&quot; requirement is the Java Runtime Environment (JRE) 6 SE which you might already have. If not, it can be obtained from:
 * Windows/Linux/Solaris: http://java.sun.com/javase/downloads/index.jsp
@@ -5115,15 +5131,14 @@ All of the optional requirements are available for Unix/Linux, Windows and OSX.
 * [[ImageMagic|http://www.imagemagick.org/]] is a useful tool to convert graphics files between every imaginable format. Most notably, it allows you to ConvertFromPdf to image formats that can be used by VirtMus if for some reason you don't want to use the PDF file directly. Download the latest binary release for your platform from http://www.imagemagick.org/script/binary-releases.php
 
 ! Download the application
-* Download the latest release from http://sourceforge.net/project/showfiles.php?group_id=186670
+* Download the latest release from http://sourceforge.net/projects/virtmus/files/VirtMus/
 * Subscribe with SourceForge.net to be notified of new releases by monitoring the [[Open Discussion|http://sourceforge.net/projects/virtmus/forums]] forum.
 
 ! Install
-To &quot;install&quot; the zip distribution on Windows/Linux/Solaris, simply unzip the downloaded file in a convenient place.
-
-To install on Windows, you can download and execute the &quot;exe&quot; installer.
-
-To &quot;install&quot; on Mac... you're on your own, but you'll want to start with the zip distribution.
+* To install on Windows, you can download and execute the &quot;{{{VirtMus-v.vv.exe}}}&quot; installer (where v.vv is the version number).
+* To &quot;install&quot; the zip distribution on Windows/Linux/Solaris, simply unzip the downloaded file in a convenient place.
+* To &quot;install&quot; on Mac... you're on your own, but you'll want to start with the zip distribution.
+* If you're interested in the version designed to be launched with the http://portableapps.com launcher, download the &quot;{{{VirtMusPortable_v.vv.paf.exe}}}&quot; file from the [[VirtMus For PortableApps|http://sourceforge.net/projects/virtmus/files/VirtMus%20For%20PortableApps/]] folder and install it by following the instructions at http://portableapps.com.
 
 ! Run
 * On Windows: if you used the &quot;zip&quot; distribution, go to the directory you unzipped the file and execute the {{{virtmus.exe}}} file from the {{{bin}}} subdirectory. If you used the &quot;exe&quot; distribution, you should already have shortcuts to VirtMus in your Start menu.

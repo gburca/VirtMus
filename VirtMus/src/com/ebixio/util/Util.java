@@ -34,7 +34,7 @@ public class Util {
             return "";
         }
         Iterator<String> iter = s.iterator();
-        StringBuffer buffer = new StringBuffer(iter.next());
+        StringBuilder buffer = new StringBuilder(iter.next());
         while (iter.hasNext()) {
             buffer.append(delimiter).append(iter.next());
         }

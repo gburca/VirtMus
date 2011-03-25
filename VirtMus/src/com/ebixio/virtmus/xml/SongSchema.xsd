@@ -31,7 +31,7 @@
         <xsd:element name="name" type="xsd:string" minOccurs="0"/>
         <xsd:element name="sourceFile" type="sourceFileType"/>
         <xsd:element name="rotation" type="rotationType"/>
-        <xsd:element name="annotationSVG" type="xsd:string" minOccurs="0"/>
+        <xsd:element name="annotationSVG" type="annotationSvgType" minOccurs="0"/>
     </xsd:sequence>
 </xsd:complexType>
 
@@ -51,5 +51,14 @@
         <xsd:enumeration value="Clockwise_270"/>
     </xsd:restriction>
 </xsd:simpleType>
+
+<xsd:complexType name="annotationSvgType">
+    <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+            <xsd:attribute name="width" type="xsd:int" />
+            <xsd:attribute name="height" type="xsd:int" />
+        </xsd:extension>
+    </xsd:simpleContent>
+</xsd:complexType>
 
 </xsd:schema>

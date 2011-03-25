@@ -15,14 +15,12 @@ import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.PathIterator;
 
 /**
  *
- * @author gburca1
+ * @author gburca
  */
 public class ShapeLine extends VmShape {
     protected GeneralPath path = new GeneralPath();
@@ -36,6 +34,7 @@ public class ShapeLine extends VmShape {
         path.lineTo(end.x, end.y);
     }
 
+    @Override
     public void paint(Graphics2D g) {
         Composite origComposite = g.getComposite();
         

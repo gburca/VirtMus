@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.java.swingfx.waitwithstyle.PerformanceInfiniteProgressPanel;
@@ -50,7 +49,7 @@ import org.openide.util.NbPreferences;
  *
  * @author  gburca
  */
-public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobRequester {
+public class LiveWindow extends javax.swing.JFrame implements Renderer.JobRequester {
 
     Rectangle displaySize = new Rectangle(Utils.getScreenSize());
     PerformanceInfiniteProgressPanel glasspane = new PerformanceInfiniteProgressPanel();
@@ -89,8 +88,8 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
      */
     final private boolean renderSequentially = true;
 
-    private static final Object pageCacheLock = new Object();
-    Map<Integer, BufferedImage> pageCache = Collections.synchronizedMap(new HashMap<Integer, BufferedImage>(3));
+    final Map<Integer, BufferedImage> pageCache = Collections.synchronizedMap(new HashMap<Integer, BufferedImage>(3));
+    final ArrayList<Integer> renderFailed = new ArrayList<Integer>();
     ArrayList<Integer> toBeRendered = new ArrayList<Integer>(3);
     boolean waitingForImage = false;
     final int separatorSize = 3;
@@ -109,7 +108,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
 //        glasspane.setForeground(Color.GREEN);
 //        glasspane.setSize(displaySize.getSize());
 //        glasspane.setDoubleBuffered(true);
-//        glasspane.setText(NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow"));
+//        glasspane.setText(NbBundle.getMessage(LiveWindow.class, "LW_Loading"));
         this.setGlassPane(glasspane);
 
         addMouseListener(new MouseAdapter() {
@@ -189,11 +188,13 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
                     showFirstPage();
                     break;
                 case KeyEvent.VK_PAGE_UP:
-                    showPrevPage();
+                    //showPrevPage();
+                    showPrevSection();
                     break;
                 case KeyEvent.VK_PAGE_DOWN:
                 case KeyEvent.VK_SPACE:
-                    showNextPage();
+                    //showNextPage();
+                    showNextSection();
                     break;
                 default:
                     showNextSection();
@@ -213,11 +214,11 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         this.song = song;
         page = song.pageOrder.indexOf(startingPage);
         pageShift = page;
-        synchronized (pageCacheLock) {
+        synchronized (pageCache) {
             this.pageCache.clear();
         }
         this.toBeRendered.clear();
-        MusicPage.cancelRendering(this);
+        Renderer.cancelRendering(this);
 
         showPage(page);
     }
@@ -337,7 +338,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
      * Paints during animation, using a double buffering scheme.
      */
     protected void animPaint() {
-        //MainApp.log("animPaint " + pageShift);
+        //Log.log("animPaint " + pageShift);
         graph2D = (Graphics2D)bufferStrategy.getDrawGraphics();
         paintDispatch();
         graph2D.dispose();
@@ -357,17 +358,22 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, d.width, d.height);
 
-        if (img == null) {
-            // Image is not yet ready to be displayed. Tell the user we're working on it...
-            //glasspane.setVisible(true);
-            g.setColor(Color.WHITE);
-            String msg = NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow");
-            int msgW = g.getFontMetrics().stringWidth(msg);
-            g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
-        } else {
+        if (img != null) {
             Point p = Utils.centerItem(new Rectangle(d), new Rectangle(img.getWidth(), img.getHeight()));
             g.drawImage(img, p.x, p.y, img.getWidth(), img.getHeight(), this);
             glasspane.setVisible(false);
+        } else if (renderFailed.contains(page)) {
+            g.setColor(Color.WHITE);
+            String msg = NbBundle.getMessage(LiveWindow.class, "LW_LoadingFailed");
+            int msgW = g.getFontMetrics().stringWidth(msg);
+            g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
+        } else {
+            // Image is not yet ready to be displayed. Tell the user we're working on it...
+            //glasspane.setVisible(true);
+            g.setColor(Color.WHITE);
+            String msg = NbBundle.getMessage(LiveWindow.class, "LW_Loading");
+            int msgW = g.getFontMetrics().stringWidth(msg);
+            g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         }
 
         g.setTransform(origXform);
@@ -414,10 +420,15 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             g.setColor(pageShiftColor);
             g.fillRect(0, (int) (img1.getHeight() * pageIncrement), 15, 3);
             g.fillRect(d.width - 15, (int) (img1.getHeight() * pageIncrement), 15, 3);
+        } else if (renderFailed.contains(page)) {
+            g.setColor(Color.WHITE);
+            String msg = NbBundle.getMessage(LiveWindow.class, "LW_LoadingFailed");
+            int msgW = g.getFontMetrics().stringWidth(msg);
+            g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         } else {
             //glasspane.setVisible(true);
             g.setColor(Color.WHITE);
-            String msg = NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow");
+            String msg = NbBundle.getMessage(LiveWindow.class, "LW_Loading");
             int msgW = g.getFontMetrics().stringWidth(msg);
             g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         }
@@ -468,10 +479,15 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             g.setColor(pageShiftColor);
             g.fillRect((int) (img1.getWidth() * pageIncrement), 0, 3, 15);
             g.fillRect((int) (img1.getWidth() * pageIncrement), d.height - 15, 3, 15);
+        } else if (renderFailed.contains(page)) {
+            g.setColor(Color.WHITE);
+            String msg = NbBundle.getMessage(LiveWindow.class, "LW_LoadingFailed");
+            int msgW = g.getFontMetrics().stringWidth(msg);
+            g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         } else {
             //glasspane.setVisible(true);
             g.setColor(Color.WHITE);
-            String msg = NbBundle.getMessage(LiveWindow.class, "LOADING_LiveWindow");
+            String msg = NbBundle.getMessage(LiveWindow.class, "LW_Loading");
             int msgW = g.getFontMetrics().stringWidth(msg);
             g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         }
@@ -493,7 +509,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
      */
     private void cleanCache(int currentPage) {
         HashSet<Integer> toKeep = new HashSet<Integer>(getPagesToCache(currentPage));
-        synchronized (pageCacheLock) {
+        synchronized (pageCache) {
             // Must create new set. keySet() gives us a reference to the set and
             // we'll get access exceptions for modifying while iterating.
             Set<Integer> cache = new HashSet<Integer>(pageCache.keySet());
@@ -512,7 +528,7 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             return;
         }
         toBeRendered.clear();
-        synchronized (pageCacheLock) {
+        synchronized (pageCache) {
             for (Integer i: getPagesToCache(page)) {
                 if (!pageCache.containsKey(i)) toBeRendered.add(i);
             }
@@ -567,22 +583,28 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
     }
 
     /**
-     * A callback that is used by the image renderer (MusicPage) to notify us
+     * A callback that is used by the image renderer (MusicPageRemderer) to notify us
      * that the requested page has been rendered.
      * @param mp The page that has been rendered (which is also the page performing the rendering)
      * @param jr The job request that was used to request the rendering.
      */
     @Override
-    public void renderingComplete(MusicPage mp, MusicPage.JobRequest jr) {
+    public void renderingComplete(MusicPage mp, Renderer.JobRequest jr) {
         waitingForImage = false;
         if (song == null) {
             return;
         }
 
         if (jr.pageNr >= 0 && jr.requester == this) {
-            BufferedImage img = mp.getRenderedImage(this);
-            synchronized (pageCacheLock) {
-                pageCache.put(jr.pageNr, img);
+            BufferedImage img = Renderer.getRenderedImage(this);
+            if (img != null) {
+                synchronized (pageCache) {
+                    pageCache.put(jr.pageNr, img);
+                }
+            } else {
+                synchronized (renderFailed) {
+                    renderFailed.add(jr.pageNr);
+                }
             }
             if (jr.pageNr == page || !fullyPainted) {
                 try {
@@ -599,16 +621,16 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             return;
         }
 
-        MusicPage.cancelRendering(this);
+        Renderer.cancelRendering(this);
         int priority = 0;
 
         for (int newPage : toBeRendered) {
             if (newPage < 0 || newPage >= song.pageOrder.size()) {
                 continue;
             }
-            MusicPage.JobRequest request = new MusicPage.JobRequest(this, newPage, priority++, MainApp.screenRot.getSize(displaySize.getSize()));
-
-            song.pageOrder.get(newPage).requestRendering(request);
+            renderFailed.remove(new Integer(newPage));
+            Renderer.JobRequest request = new Renderer.JobRequest(this, newPage, priority++, MainApp.screenRot.getSize(displaySize.getSize()));
+            Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;
         }
         toBeRendered.clear();
@@ -623,9 +645,9 @@ public class LiveWindow extends javax.swing.JFrame implements MusicPage.JobReque
             if (newPage < 0 || newPage >= song.pageOrder.size()) {
                 return;
             }
-            MusicPage.JobRequest request = new MusicPage.JobRequest(this, newPage, Math.abs(page - newPage), MainApp.screenRot.getSize(displaySize.getSize()));
-
-            song.pageOrder.get(newPage).requestRendering(request);
+            renderFailed.remove(new Integer(newPage));
+            Renderer.JobRequest request = new Renderer.JobRequest(this, newPage, Math.abs(page - newPage), MainApp.screenRot.getSize(displaySize.getSize()));
+            Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;
         }
     }

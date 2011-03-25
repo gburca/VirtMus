@@ -29,7 +29,7 @@ import java.awt.RenderingHints;
 
 /**
  *
- * @author gburca1
+ * @author gburca
  */
 public class ShapePoint extends VmShape {
     Point p;

@@ -25,7 +25,6 @@ import com.ebixio.virtmus.actions.SongSaveAction;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
-import com.ebixio.virtmus.imgsrc.PdfRender;
 import com.ebixio.virtmus.shapes.VmShape;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Dimension;
@@ -39,19 +38,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import javax.imageio.ImageIO;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.swing.event.ChangeListener;
-import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -64,30 +55,7 @@ public abstract class MusicPage {
     private String name = null;
     public static int thumbW = 130, thumbH = 200;
     public volatile ImgSrc imgSrc;
-    
-
-    private static transient PriorityBlockingQueue<JobRequest> renderQ = new PriorityBlockingQueue<JobRequest>();
-    private static transient Map<JobRequester, BufferedImage> renderResults = 
-            Collections.synchronizedMap( new HashMap<JobRequester, BufferedImage>() );
-    private static transient RenderThread renderThread = null;
-    // Heap space must be increased proportional to the thread pool size
-    private static transient ExecutorService execSvc;
-    static {
-        int numProcessors = Runtime.getRuntime().availableProcessors();
-        execSvc = Executors.newFixedThreadPool(numProcessors, new NamedThreadFactory("PageRenderers"));
-    }
-
-    public static class NamedThreadFactory implements ThreadFactory {
-        private final String poolName;
-        public NamedThreadFactory(String poolName) {
-            this.poolName = poolName;
-        }
-        @Override
-        public Thread newThread(Runnable runnable) {
-            return new Thread(runnable, poolName);
-        }
-    }
-    
+   
     private transient DraggableThumbnail thumbnail;
     public transient Song song;
     public transient boolean isDirty = false;
@@ -116,7 +84,8 @@ public abstract class MusicPage {
         if (sourceFile.getName().toLowerCase().endsWith(".pdf")) {
             int page = (Integer)opt;
             imgSrc = new PdfImg(sourceFile, page);
-            //imgSrc = new PdfRender(sourceFile, page);
+            //imgSrc = new IcePdfImg(sourceFile, page);
+            //imgSrc = new PdfViewImg(sourceFile, page);
         } else {
             imgSrc = new GenericImg(sourceFile);
         }
@@ -141,11 +110,12 @@ public abstract class MusicPage {
         if (this.isDirty == isDirty) return;
         
         //song.fire("pageSetDirty", this.isDirty, isDirty);
+        if (isDirty) song.setDirty(true);
 
         this.isDirty = isDirty;
         // If this change is not done by a NodeAction, we need to enable the actions here.
-        SystemAction.get(SaveAllAction.class).setEnabled(true);
-        SystemAction.get(SongSaveAction.class).setEnabled(true);
+//        SystemAction.get(SaveAllAction.class).setEnabled(true);
+//        SystemAction.get(SongSaveAction.class).setEnabled(true);
     }
     
     public boolean isDirty() {
@@ -264,130 +234,4 @@ public abstract class MusicPage {
         }
     }
 
-    public BufferedImage getRenderedImage(JobRequester requester) {
-        return renderResults.remove(requester);
-    }
-    
-    public boolean requestRendering1(JobRequest request) {
-        // TODO: Consider switching to org.openide.util.RequestProcessor
-        request.page = this;
-        cancelRendering(request.requester);
-        MusicPage.renderQ.add(request);
-
-        // TODO: Allow multiple threads
-        if (renderThread == null || !renderThread.isAlive()) {
-            renderThread = new RenderThread();
-            renderThread.setName("MusicPage render");
-            renderThread.start();
-        }
-        
-        return true;
-    }
-    public static void cancelRendering(JobRequester requester) {
-        // Remove all previous jobs requested by this same requester
-        for (JobRequest j: renderQ.toArray(new JobRequest[0])) {
-            if (j.requester == requester) renderQ.remove(j);
-        }        
-    }
-
-    public boolean requestRendering(JobRequest request) {
-        request.page = this;
-        execSvc.execute(new RenderRunnable(request));
-        return true;
-    }
-    
-    public interface JobRequester {
-        public void renderingComplete(MusicPage mp, JobRequest jr);
-    }
-    
-    public static class JobRequest implements Comparable {
-        public static final int MAX_PRIORITY = 10;
-        /** This is needed because all job requests get dumped into a static
-         * render queue and when retrieved from the queue we need to know which
-         * page should be asked to do the rendering. */
-        public MusicPage page;
-        public int pageNr;
-        public JobRequester requester;
-        public Integer priority;
-        public Dimension dim;
-        public MainApp.Rotation rotation = MainApp.Rotation.Clockwise_0;
-        public boolean fillSize = false;
-
-        /**
-         * Creates a new job request to render an image.
-         * @param requester Entity to be notified when the image is ready
-         * @param pageNr The page number to render
-         * @param priority The priority with which to render (0 .. MAX_PRIORITY). 0 = fastest.
-         * @param dim The dimension to render at
-         */
-        public JobRequest(JobRequester requester, int pageNr, int priority, Dimension dim) {
-            this.requester = requester;
-            this.pageNr = pageNr;
-            this.priority = priority < 0 ? 0 : Math.min(priority, MAX_PRIORITY);
-            this.dim = dim;
-        }
-
-        @Override
-        public int compareTo(Object other) {
-            return this.priority.compareTo( ((JobRequest)other).priority);
-        }
-    }
-    
-    /** Using a single thread to handle all the page rendering so that we don't
-     * have to worry about making getImage thread safe or synchronized and so that
-     * we can prioritize the renderings in one place. */
-    private class RenderThread extends Thread {
-        @Override
-        public void run() {
-            while (!renderQ.isEmpty()) {
-                JobRequest j = renderQ.poll();
-                this.setName("Rendering " + j.page.getName());
-                
-                int maxPriority = this.getThreadGroup().getMaxPriority();
-                float relativePriority = 1.0F - (j.priority / JobRequest.MAX_PRIORITY);
-                relativePriority = maxPriority * relativePriority;
-                relativePriority = Math.max(Math.round(relativePriority), Thread.MIN_PRIORITY);
-                relativePriority = Math.min(relativePriority, Thread.MAX_PRIORITY);
-                this.setPriority((int)relativePriority);
-                
-                renderResults.put(j.requester, j.page.getImage(j.dim, j.rotation, j.fillSize));
-                j.requester.renderingComplete(j.page, j);
-            }
-            this.setName("MusicPage render");
-        }
-    }
-
-    private class RenderRunnable implements Runnable {
-        JobRequest j;
-        public RenderRunnable(JobRequest jr) {
-            j = jr;
-        }
-
-        @Override
-        public void run() {
-            BufferedImage img = null;
-
-            for (int i= 0; i < 3; i++) {
-                try {
-                    img = j.page.getImage(j.dim, j.rotation, j.fillSize);
-                    break;
-                } catch (Throwable e) {
-                    if (!(e instanceof OutOfMemoryError)) {
-                        MainApp.log(e);
-                        break;
-                    }
-                    MainApp.log("Caught OOM !!!!! " + j.pageNr + " in file " + j.page.imgSrc.sourceFile);
-                    try {
-                        this.wait(250); // Wait a little for some memory to hopefully free up
-                    } catch (InterruptedException ex) { }
-                }
-            }
-
-            if (img != null) {
-                renderResults.put(j.requester, img);
-                j.requester.renderingComplete(j.page, j);
-            }
-        }
-
-    }
 }
