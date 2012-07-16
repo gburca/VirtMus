@@ -21,14 +21,10 @@
 package com.ebixio.virtmus;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 

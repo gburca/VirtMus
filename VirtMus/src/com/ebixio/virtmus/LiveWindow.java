@@ -19,29 +19,19 @@
  */
 package com.ebixio.virtmus;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import net.java.swingfx.waitwithstyle.PerformanceInfiniteProgressPanel;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
 import org.jdesktop.animation.timing.interpolation.SplineInterpolator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -97,6 +87,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     final Color pageShiftColor = Color.BLUE;
     Animator anim = null;
     Graphics2D graph2D;
+    
+    Thread noScreenSaver;
 
     /** Creates new form LiveWindow */
     public LiveWindow(GraphicsConfiguration gConfig) {
@@ -130,13 +122,40 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         }
 
         this.setCursor(Utils.getInvisibleCursor());
+        
+        noScreenSaver = new Thread(new Runnable() {
 
+            @Override
+            public void run() {
+                try {
+                    Robot robot = new Robot();
+                    while (true) {
+                        // KeyEvent.VK_SHIFT
+                        //robot.keyPress(KeyEvent.VK_PAUSE);
+                        //robot.keyRelease(KeyEvent.VK_PAUSE);
+                        robot.mouseMove((int)(Math.random() * 100),
+                                        (int)(Math.random() * 100));
+                        try {
+                            Thread.sleep(1 * 60 * 1000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+                } catch (AWTException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }, "NoScreenSaver");
+        
         //glasspane.setVisible(true);   // Causes strange behavior.
     }
 
     @Override
     public void setVisible(boolean vis) {
         super.setVisible(vis);
+
+        noScreenSaver.start();
 
         // Double-buffering (can only do this after component is added to container)
         this.createBufferStrategy(2);
@@ -178,6 +197,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            noScreenSaver.interrupt();
             System.gc();
             this.dispose();
         } else {
