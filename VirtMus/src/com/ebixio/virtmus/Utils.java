@@ -185,7 +185,14 @@ public class Utils {
             newSrc = newSrc.getCanonicalFile();
             String newParentName = newSrc.getParent();  // /x/y/z
             
-            oldTarget = oldTarget.getCanonicalFile();
+            try {
+                // Canonical name can not be computed if drive is not mounted.
+                // Ex: oldTarget = "D:\etc..." but there's no "D:" and songs
+                // have been moved to "C:" instead.
+                oldTarget = oldTarget.getCanonicalFile();
+            } catch (IOException ex) {
+                Log.log(ex);
+            }
             String oldFileName = oldTarget.getName();   // /a/b/d
             String oldParentName = oldTarget.getParent();
             
