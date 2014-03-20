@@ -24,6 +24,7 @@
     <target name="clean" depends="projectized-common.clean">
         <echo message="Cleaning ${original.project.dir}"/>
         <ant dir="${original.project.dir}" usenativebasedir="true"
+            antfile="nbbuild.xml"
             target="clean" inheritall="false" inheritrefs="false"/>
         <echo message="Done cleaning ${original.project.dir}"/>
     </target>

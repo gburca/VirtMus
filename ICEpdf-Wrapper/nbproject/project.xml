@@ -7,13 +7,13 @@
             <suite-component/>
             <module-dependencies/>
             <public-packages>
-                <package>apple.dts.samplecode.osxadapter</package>
                 <package>org.icepdf.core</package>
                 <package>org.icepdf.core.application</package>
                 <package>org.icepdf.core.events</package>
                 <package>org.icepdf.core.exceptions</package>
                 <package>org.icepdf.core.io</package>
                 <package>org.icepdf.core.pobjects</package>
+                <package>org.icepdf.core.pobjects.acroform</package>
                 <package>org.icepdf.core.pobjects.actions</package>
                 <package>org.icepdf.core.pobjects.annotations</package>
                 <package>org.icepdf.core.pobjects.filters</package>
@@ -24,22 +24,15 @@
                 <package>org.icepdf.core.pobjects.graphics</package>
                 <package>org.icepdf.core.pobjects.graphics.batik.ext.awt</package>
                 <package>org.icepdf.core.pobjects.graphics.batik.ext.awt.image</package>
+                <package>org.icepdf.core.pobjects.graphics.commands</package>
                 <package>org.icepdf.core.pobjects.graphics.text</package>
                 <package>org.icepdf.core.pobjects.security</package>
                 <package>org.icepdf.core.search</package>
                 <package>org.icepdf.core.tag</package>
                 <package>org.icepdf.core.tag.query</package>
                 <package>org.icepdf.core.util</package>
-                <package>org.icepdf.core.views</package>
-                <package>org.icepdf.core.views.common</package>
-                <package>org.icepdf.core.views.swing</package>
-                <package>org.icepdf.ri.common</package>
-                <package>org.icepdf.ri.common.annotation</package>
-                <package>org.icepdf.ri.common.search</package>
-                <package>org.icepdf.ri.common.views</package>
-                <package>org.icepdf.ri.images</package>
-                <package>org.icepdf.ri.util</package>
-                <package>org.icepdf.ri.viewer</package>
+                <package>org.icepdf.core.util.content</package>
+                <package>org.icepdf.core.util.loggers</package>
                 <package>org.jpedal.jbig2</package>
                 <package>org.jpedal.jbig2.decoders</package>
                 <package>org.jpedal.jbig2.examples.jai</package>

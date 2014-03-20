@@ -70,4 +70,27 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+    <target name="-do-compile" description="NOP. Compilation will be done when the -do-jar target is called."/>
+
+    <target name="-do-jar" description="Defer to the icepdf build script.">
+        <!-- See also "subant" ... -->
+        <ant dir="./icepdf" usenativebasedir="true"
+            antfile="build.xml"
+             target="build.jars" inheritall="false" inheritrefs="false">
+            <property file="./icepdf/build.properties"/>
+        </ant>
+        <echo message="Done building icepdf"/>
+    </target>
+
+    <target name="-post-jar">
+        <copy file="./icepdf/lib/icepdf-core.jar" tofile="${dist.jar}" overwrite="true"/>
+    </target>
+
+    <target name="-post-clean">
+        <ant dir="./icepdf" usenativebasedir="true"
+            antfile="build.xml"
+            target="clean" inheritall="false" inheritrefs="false"/>
+
+    </target>
 </project>
