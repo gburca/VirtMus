@@ -79,7 +79,7 @@ public class IcePdfImg extends PdfImg {
         if (dimension == null) {
             Document doc = getDocument();
             if (doc == null) return new Dimension(1, 1);
-            Page page = doc.getPageTree().getPage(pageNum, this);
+            Page page = doc.getPageTree().getPage(pageNum);
 
             float rot = page.getTotalRotation(0);
             // When rot == 270, the "i" in the image has its dot to the left (o-)
@@ -98,8 +98,6 @@ public class IcePdfImg extends PdfImg {
 
             // This is the page size after cropping was applied
             //PDimension pageDim = page.getSize(0);
-
-            doc.getPageTree().releasePage(page, this);
 
             Image img = getPageImage(doc);
             if (img != null) {
@@ -286,11 +284,10 @@ public class IcePdfImg extends PdfImg {
         try {
             int pages = doc.getNumberOfPages();
             PageTree pageTree = doc.getCatalog().getPageTree();
-            Page pg = pageTree.getPage(pageNum, this);
+            Page pg = pageTree.getPage(pageNum);
             if (pg != null) {
                 PageText pgTxt = pg.getText();
             }
-            doc.getCatalog().getPageTree().releasePage(pg, this);
             // Next line causes VirtMus to crash with some PDF files.
             // ex: Mendelssohn - Wedding March - Pipe Orgam
             // No exception is thrown. The program just terminates.
