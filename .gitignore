@@ -1,30 +1,17 @@
-Annotations/build/
-Annotations/nbproject/private/
-JAI/build/
-JAI/nbproject/private/
-JOGL-Win/build/
-ThumbViewer/build/
-TimingFramework/build/
-VirtMus/build/
-VirtMus/nbproject/private/
-XStream/build/
-XStream/nbproject/private/
-batik/build/
-build/
-dist/
-Installer/VirtMus_*.exe
-colorchooser/build/
-jai_java/build/
-jai_linux/build/
-jai_windows/build/
+*/nbproject/private/
 nbproject/private/
-swingfx/build/
-ThumbViewer/nbproject/private
+
+*/build
+build
+
+dist
+
 hs_err_pid*.log
 
 # VIM swap files
 .*.swp
 
+Installer/VirtMus_*.exe
 Installer/VirtMus-*.exe
 Installer/VirtMus-*.zip
 
@@ -35,5 +22,3 @@ Installer/VirtMusPortable_*.exe
 Docs/publish
 Docs/sitemap.xml
 Docs/urllist.txt
-/ICEpdf/nbproject/private/
-/ICEpdf-Wrapper/nbproject/private/
