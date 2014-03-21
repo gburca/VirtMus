@@ -21,6 +21,9 @@ package com.ebixio.virtmus.actions;
 import com.ebixio.util.Log;
 import com.ebixio.virtmus.Song;
 import java.util.Collection;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -29,6 +32,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.SongSaveAsAction", category = "Song")
+@ActionRegistration(displayName = "CTL_SongSaveAsAction", lazy = false)
+@ActionReference(path = "Toolbars/Song", name = "SaveAsAction", position = 500)
 public final class SongSaveAsAction extends CookieAction {
     
     @Override

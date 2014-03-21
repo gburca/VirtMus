@@ -7,12 +7,18 @@ package com.ebixio.virtmus.actions;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
 import org.netbeans.api.project.Project;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.PlayListRevertAction", category = "PlayList")
+@ActionRegistration(displayName = "CTL_PlayListRevertAction", lazy = false)
+@ActionReference(path = "Menu/PlayList", position = 400)
 public final class PlayListRevertAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) {

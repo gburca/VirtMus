@@ -22,6 +22,7 @@
     <folder name="Menu">
         <folder name="GoTo_hidden"/>
         <folder name="Window">
+            <attr name="position" intvalue="700"/>
             <!--
             This is the menu order we want:
                 PlayList

@@ -24,6 +24,10 @@ import com.ebixio.virtmus.PlayListNode;
 import com.ebixio.virtmus.Song;
 import java.beans.PropertyVetoException;
 import javax.swing.Action;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -33,6 +37,12 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.SongOpenAction", category = "Song")
+@ActionRegistration(displayName = "CTL_SongOpenAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/Song"),
+    @ActionReference(path = "Shortcuts", name = "D-O"),
+    @ActionReference(path = "Toolbars/Song", name = "SongOpenAction", position = 200)})
 public final class SongOpenAction extends CallableSystemAction {
     
     public void performAction() {

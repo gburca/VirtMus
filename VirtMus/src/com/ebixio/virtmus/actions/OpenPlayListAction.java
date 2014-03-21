@@ -19,10 +19,19 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.MainApp;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.OpenPlayListAction", category = "PlayList")
+@ActionRegistration(displayName = "CTL_OpenPlayListAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "DO-O"),
+    @ActionReference(path = "Toolbars/PlayList", name = "OpenPlayListAction", position = 200)})
 public final class OpenPlayListAction extends CallableSystemAction {
     
     @Override

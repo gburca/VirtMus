@@ -22,10 +22,16 @@ import com.ebixio.virtmus.About;
 import java.awt.Dialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.AboutAction", category = "Help")
+@ActionRegistration(displayName = "CTL_HelpAboutAction", lazy = false)
+@ActionReference(path = "Menu/Help", position = 102)
 public final class AboutAction extends CallableSystemAction {
     
     public void performAction() {

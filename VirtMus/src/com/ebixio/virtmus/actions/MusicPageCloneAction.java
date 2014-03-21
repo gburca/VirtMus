@@ -21,6 +21,10 @@ package com.ebixio.virtmus.actions;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageNode;
 import com.ebixio.virtmus.Song;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -28,6 +32,11 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.MusicPageCloneAction", category = "MusicPage")
+@ActionRegistration(displayName = "CTL_MusicPageCloneAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/MusicPage", position = 200),
+    @ActionReference(path = "Toolbars/MusicPage", name = "MusicPageCloneAction", position = 200)})
 public final class MusicPageCloneAction extends NodeAction {
     
     public void performAction(Node[] activatedNodes) {

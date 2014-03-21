@@ -19,12 +19,18 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.MusicPageRemoveAction", category = "MusicPage")
+@ActionRegistration(displayName = "CTL_MusicPageRemoveAction", lazy = false)
+@ActionReference(path = "Toolbars/MusicPage", name = "RemovePagesAction", position = 300)
 public final class MusicPageRemoveAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {

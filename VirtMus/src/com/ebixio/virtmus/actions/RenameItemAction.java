@@ -22,11 +22,20 @@ import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.Song;
 import org.openide.actions.RenameAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.RenameItemAction", category = "VirtMus")
+@ActionRegistration(displayName = "CTL_RenameItemAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/Tools", position = 101),
+    @ActionReference(path = "Toolbars/General", name = "RenameItemAction", position = 200)})
 public final class RenameItemAction extends RenameAction {
     
     @Override

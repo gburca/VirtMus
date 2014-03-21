@@ -4,11 +4,17 @@ import com.ebixio.virtmus.Utils;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JOptionPane;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.HelpAction", category = "Help")
+@ActionRegistration(displayName = "CTL_HelpContentsAction", lazy = false)
+@ActionReference(path = "Menu/Help", position = 101)
 public final class HelpAction extends CallableSystemAction {
     
     @Override

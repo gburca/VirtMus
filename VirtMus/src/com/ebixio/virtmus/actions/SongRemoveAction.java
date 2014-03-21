@@ -23,6 +23,10 @@ import com.ebixio.virtmus.PlayListNode;
 import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.SongNode;
 import javax.swing.Action;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,6 +34,11 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.SongRemoveAction", category = "Song")
+@ActionRegistration(displayName = "CTL_SongRemoveAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/Song"),
+    @ActionReference(path = "Toolbars/Song", name = "SongRemoveAction", position = 300)})
 public final class SongRemoveAction extends NodeAction {
     
     public void performAction(Node[] activatedNodes) {

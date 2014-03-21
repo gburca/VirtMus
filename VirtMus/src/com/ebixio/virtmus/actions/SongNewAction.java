@@ -22,6 +22,10 @@ import com.ebixio.virtmus.*;
 import java.awt.Frame;
 import java.io.File;
 import javax.swing.JFileChooser;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -29,6 +33,11 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.WindowManager;
 
+@ActionID(id = "com.ebixio.virtmus.actions.SongNewAction", category = "Song")
+@ActionRegistration(displayName = "CTL_SongNewAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "D-N"),
+    @ActionReference(path = "Toolbars/Song", name = "NewSongAction", position = 100)})
 public final class SongNewAction extends CallableSystemAction {
     
     public void performAction() {

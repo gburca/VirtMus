@@ -5,11 +5,17 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.MainApp;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.CallableSystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.RefreshAction", category = "VirtMus")
+@ActionRegistration(displayName = "CTL_RefreshAction", lazy = false)
+@ActionReference(path = "Menu/File", position = 150)
 public final class RefreshAction extends CallableSystemAction {
 
     public void performAction() {

@@ -28,6 +28,10 @@ import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageSVG;
 import java.io.File;
 import javax.swing.SwingWorker;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -37,6 +41,11 @@ import org.openide.util.actions.CookieAction;
 /**
  * @author gburca
  */
+@ActionID(id = "com.ebixio.virtmus.actions.ExportSVG", category = "MusicPage")
+@ActionRegistration(displayName = "CTL_ExportSVG", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/MusicPage", position = 1100),
+    @ActionReference(path = "Toolbars/MusicPage", position = 400)})
 public final class ExportSVG extends CookieAction {
 
     @Override

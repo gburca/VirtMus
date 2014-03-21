@@ -23,12 +23,22 @@ import com.ebixio.virtmus.*;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.CookieAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.GoLive", category = "VirtMus")
+@ActionRegistration(displayName = "CTL_GoLive", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "F5"),
+    @ActionReference(path = "Menu/View", position = 100),
+    @ActionReference(path = "Toolbars/General", name = "GoLive", position = 100)})
 public final class GoLive extends CookieAction {
     
     @Override

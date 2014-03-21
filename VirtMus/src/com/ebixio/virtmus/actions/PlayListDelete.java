@@ -9,11 +9,17 @@ import com.ebixio.virtmus.PlayList;
 import java.io.File;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.PlayListDelete", category = "PlayList")
+@ActionRegistration(displayName = "CTL_PlayListDelete", lazy = false)
+@ActionReference(path = "Menu/PlayList", position = 500)
 public final class PlayListDelete extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
