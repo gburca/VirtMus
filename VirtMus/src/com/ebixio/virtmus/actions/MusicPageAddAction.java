@@ -29,7 +29,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.MusicPageAddAction", category = "MusicPage")
-@ActionRegistration(displayName = "CTL_MusicPageAddAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_MusicPageAddAction", lazy = false)
 @ActionReference(path = "Toolbars/MusicPage", name = "AddPagesAction", position = 100)
 public final class MusicPageAddAction extends CookieAction {
     

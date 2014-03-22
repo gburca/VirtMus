@@ -38,7 +38,7 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongOpenAction", category = "Song")
-@ActionRegistration(displayName = "CTL_SongOpenAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_SongOpenAction", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Menu/Song"),
     @ActionReference(path = "Shortcuts", name = "D-O"),

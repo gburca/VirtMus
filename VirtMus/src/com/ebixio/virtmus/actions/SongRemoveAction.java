@@ -35,7 +35,7 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongRemoveAction", category = "Song")
-@ActionRegistration(displayName = "CTL_SongRemoveAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_SongRemoveAction", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Menu/Song"),
     @ActionReference(path = "Toolbars/Song", name = "SongRemoveAction", position = 300)})

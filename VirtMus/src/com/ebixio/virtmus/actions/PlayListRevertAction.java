@@ -17,7 +17,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.PlayListRevertAction", category = "PlayList")
-@ActionRegistration(displayName = "CTL_PlayListRevertAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_PlayListRevertAction", lazy = false)
 @ActionReference(path = "Menu/PlayList", position = 400)
 public final class PlayListRevertAction extends NodeAction {
 

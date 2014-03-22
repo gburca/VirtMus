@@ -33,7 +33,7 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.MusicPageCloneAction", category = "MusicPage")
-@ActionRegistration(displayName = "CTL_MusicPageCloneAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_MusicPageCloneAction", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Menu/MusicPage", position = 200),
     @ActionReference(path = "Toolbars/MusicPage", name = "MusicPageCloneAction", position = 200)})

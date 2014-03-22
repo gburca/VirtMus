@@ -13,7 +13,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.HelpAction", category = "Help")
-@ActionRegistration(displayName = "CTL_HelpContentsAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_HelpContentsAction", lazy = false)
 @ActionReference(path = "Menu/Help", position = 101)
 public final class HelpAction extends CallableSystemAction {
     

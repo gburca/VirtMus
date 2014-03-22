@@ -32,7 +32,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.RenameItemAction", category = "VirtMus")
-@ActionRegistration(displayName = "CTL_RenameItemAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_RenameItemAction", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Menu/Tools", position = 101),
     @ActionReference(path = "Toolbars/General", name = "RenameItemAction", position = 200)})

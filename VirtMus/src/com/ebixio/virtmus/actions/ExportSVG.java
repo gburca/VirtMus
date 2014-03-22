@@ -42,7 +42,7 @@ import org.openide.util.actions.CookieAction;
  * @author gburca
  */
 @ActionID(id = "com.ebixio.virtmus.actions.ExportSVG", category = "MusicPage")
-@ActionRegistration(displayName = "CTL_ExportSVG", lazy = false)
+@ActionRegistration(displayName = "#CTL_ExportSVG", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Menu/MusicPage", position = 1100),
     @ActionReference(path = "Toolbars/MusicPage", position = 400)})

@@ -28,7 +28,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SavePlayListAction", category = "PlayList")
-@ActionRegistration(displayName = "CTL_SavePlayListAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_SavePlayListAction", lazy = false)
 @ActionReference(path = "Toolbars/PlayList", name = "SavePlayListAction", position = 300)
 public final class SavePlayListAction extends NodeAction {
     

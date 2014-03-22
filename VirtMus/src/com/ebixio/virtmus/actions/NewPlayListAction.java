@@ -28,7 +28,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.NewPlayListAction", category = "PlayList")
-@ActionRegistration(displayName = "CTL_NewPlayListAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_NewPlayListAction", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Shortcuts", name = "D-S-N"),
     @ActionReference(path = "Toolbars/PlayList", name = "NewPlayListAction", position = 100)})

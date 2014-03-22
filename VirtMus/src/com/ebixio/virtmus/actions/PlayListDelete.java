@@ -18,7 +18,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.PlayListDelete", category = "PlayList")
-@ActionRegistration(displayName = "CTL_PlayListDelete", lazy = false)
+@ActionRegistration(displayName = "#CTL_PlayListDelete", lazy = false)
 @ActionReference(path = "Menu/PlayList", position = 500)
 public final class PlayListDelete extends CookieAction {
 

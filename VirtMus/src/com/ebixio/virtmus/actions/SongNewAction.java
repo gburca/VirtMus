@@ -34,7 +34,7 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.WindowManager;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongNewAction", category = "Song")
-@ActionRegistration(displayName = "CTL_SongNewAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_SongNewAction", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Shortcuts", name = "D-N"),
     @ActionReference(path = "Toolbars/Song", name = "NewSongAction", position = 100)})

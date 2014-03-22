@@ -33,7 +33,7 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongSaveAsAction", category = "Song")
-@ActionRegistration(displayName = "CTL_SongSaveAsAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_SongSaveAsAction", lazy = false)
 @ActionReference(path = "Toolbars/Song", name = "SaveAsAction", position = 500)
 public final class SongSaveAsAction extends CookieAction {
     

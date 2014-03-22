@@ -34,7 +34,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.actions.CookieAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.GoLive", category = "VirtMus")
-@ActionRegistration(displayName = "CTL_GoLive", lazy = false)
+@ActionRegistration(displayName = "#CTL_GoLive", lazy = false)
 @ActionReferences(value = {
     @ActionReference(path = "Shortcuts", name = "F5"),
     @ActionReference(path = "Menu/View", position = 100),

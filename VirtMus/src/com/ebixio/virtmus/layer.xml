@@ -49,6 +49,15 @@
                 <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/PlayListTopComponent.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file -->
+            <file name="org-netbeans-core-windows-actions-CloneDocumentAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-CollapseTabGroupAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-MoveWindowLeftAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-NewTabGroupAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-RecentDocumentListAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-RecentViewListAction.instance_hidden"/>
+            <file name="org-netbeans-core-windows-actions-ShowEditorOnlyAction.instance_hidden"/>
         </folder>
         <folder name="Edit">
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance_hidden"/>
@@ -107,6 +116,7 @@
 
         <folder name="View">
             <attr name="position" intvalue="225"/>
+            <file name="ShowEditorOnlyAction.shadow_hidden"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
         </folder>
 
@@ -130,9 +140,6 @@
             <attr name="position" intvalue="251"/>
             <file name="com-ebixio-virtmus-actions-SongNewAction.instance">
                 <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
-            </file>
-            <file name="com-ebixio-virtmus-actions-SongOpenAction.instance">
-                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongOpenAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SongSaveAction.instance">
                 <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAction.instance"/>
@@ -169,6 +176,7 @@
         
         <folder name="Window">
             <attr name="position" intvalue="700"/>
+            <file name="GroupsMenuAction.shadow_hidden"/>
             <file name="PlayListAction.shadow">
                 <attr name="position" intvalue="100"/>
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-PlayListAction.instance"/>

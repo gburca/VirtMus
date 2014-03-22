@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongSaveAction", category = "Song")
-@ActionRegistration(displayName = "CTL_SongSaveAction", lazy = false)
+@ActionRegistration(displayName = "#CTL_SongSaveAction", lazy = false)
 @ActionReference(path = "Toolbars/Song", name = "SongSaveAction", position = 400)
 public final class SongSaveAction extends NodeAction {
 
