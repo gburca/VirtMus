@@ -40,6 +40,7 @@ import org.openide.windows.WindowManager;
     @ActionReference(path = "Toolbars/Song", name = "NewSongAction", position = 100)})
 public final class SongNewAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         Song s = new Song();
         if (s.saveAs()) {
@@ -57,6 +58,7 @@ public final class SongNewAction extends CallableSystemAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SongNewAction.class, "CTL_SongNewAction");
     }
@@ -66,6 +68,7 @@ public final class SongNewAction extends CallableSystemAction {
         return "com/ebixio/virtmus/resources/NewSongAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

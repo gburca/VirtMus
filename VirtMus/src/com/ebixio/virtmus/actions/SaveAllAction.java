@@ -23,11 +23,21 @@ import com.ebixio.virtmus.VirtMusLookup;
 import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.SaveAllAction", category = "VirtMus")
+@ActionRegistration(displayName = "#CTL_SaveAllAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "D-S"),
+    @ActionReference(path = "Menu/File", name = "SaveAllAction", position = 100),
+    @ActionReference(path = "Toolbars/General", name = "SaveAllAction", position = 300)})
 public final class SaveAllAction extends NodeAction implements LookupListener {
 
     private final Lookup.Result<AbstractSavable> lookupSavable;

@@ -29,17 +29,7 @@
         <folder name="View">
             <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
         </folder>
-        <folder name="VirtMus">
-            <file name="com-ebixio-virtmus-actions-SaveAllAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-ExitAction.instance"/>
-            <file name="com-ebixio-virtmus-actions-OpenMusicDir.instance">
-                <attr name="delegate" newvalue="com.ebixio.virtmus.actions.OpenMusicDir"/>
-                <attr name="displayName" bundlevalue="com.ebixio.virtmus.actions.Bundle#CTL_OpenMusicDir"/>
-                <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/OpenPlayListAction.gif"/>
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="noIconInMenu" boolvalue="false"/>
-            </file>
-        </folder>
+        <folder name="VirtMus"/>
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
             <!-- file name="com-ebixio-virtmus-TagsAction.instance">
@@ -76,21 +66,9 @@
     <folder name="Menu">
         <folder name="File">
             <attr name="position" intvalue="100"/>
-            <file name="com-ebixio-virtmus-actions-OpenMusicDir.shadow">
-                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-OpenMusicDir.instance"/>
-                <attr name="position" intvalue="0"/>
-            </file>
-            <file name="SaveAllAction.shadow">
-                <attr name="position" intvalue="100"/>
-                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
-            </file>
             <file name="JSeparator.instance">
                 <attr name="position" intvalue="200"/>
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <file name="ExitAction.shadow">
-                <attr name="position" intvalue="300"/>
-                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-ExitAction.instance"/>
             </file>
             
             <file name="org-netbeans-core-actions-SystemExit.instance_hidden"/>
@@ -217,12 +195,6 @@
     
     <folder name="Shortcuts">
         <file name="D-I.shadow_hidden"/>
-        <file name="D-S.shadow">
-            <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
-        </file>
-        <file name="O-F4.shadow">
-            <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-ExitAction.instance"/>
-        </file>
         <file name="D-C.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
         </file>
@@ -243,10 +215,6 @@
 
         <folder name="General">
             <attr name="position" intvalue="100"/>
-            <file name="SaveAllAction.shadow">
-                <attr name="position" intvalue="300"/>
-                <attr name="originalFile" stringvalue="Actions/VirtMus/com-ebixio-virtmus-actions-SaveAllAction.instance"/>
-            </file>
             <file name="com-ebixio-virtmus-actions-ScrollAmount.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/com-ebixio-virtmus-actions-ScrollAmountAction.instance"/>
                 <attr name="position" intvalue="150"/>

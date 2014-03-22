@@ -19,10 +19,19 @@
 package com.ebixio.virtmus.actions;
 
 import org.openide.LifecycleManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
+@ActionID(id = "com.ebixio.virtmus.actions.ExitAction", category = "VirtMus")
+@ActionRegistration(displayName = "#CTL_ExitAction", lazy = false)
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "O-F4"),
+    @ActionReference(path = "Menu/File", name = "ExitAction", position = 300)})
 public final class ExitAction extends CallableSystemAction {
     
     @Override
