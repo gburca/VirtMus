@@ -23,7 +23,8 @@ import java.lang.reflect.Constructor;
  * xs.registerConverter(new DefaultConstructorConverter1(xs.getMapper(), xs.getReflectionProvider()));
  *</code>
  * 
- * @see http://www.blogs.uni-osnabrueck.de/rotapken/2010/08/20/let-xstream-call-the-default-constructor-where-possible/
+ * @see <a href="http://www.blogs.uni-osnabrueck.de/rotapken/2010/08/20/let-xstream-call-the-default-constructor-where-possible/">
+ * Additional documentation.</a>
  */
 public class DefaultConstructorConverter extends ReflectionConverter {
     public DefaultConstructorConverter(Mapper mapper, ReflectionProvider reflectionProvider) {

@@ -19,17 +19,14 @@
  */
 package com.ebixio.util;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.awt.NotificationDisplayer;
 
 /**
  *
- * @author Gabriel Burca <gburca at ebixio dot com>
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class Log {
     private static final Logger logger = Logger.getLogger("com.ebixio.virtmus");

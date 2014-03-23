@@ -15,7 +15,7 @@ import java.awt.Paint;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public abstract class VmShape {
     protected Paint paint = Color.BLUE;

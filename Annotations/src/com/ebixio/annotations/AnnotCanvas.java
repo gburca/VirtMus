@@ -42,7 +42,7 @@ import javax.swing.undo.UndoableEdit;
 import org.openide.awt.UndoRedo;
 
 /**
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class AnnotCanvas extends ImageDisplay implements Serializable,
         MouseListener, MouseMotionListener {

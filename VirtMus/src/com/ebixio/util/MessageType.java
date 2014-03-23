@@ -1,6 +1,5 @@
 package com.ebixio.util;
 
-import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.openide.NotifyDescriptor;

@@ -23,7 +23,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class SongTest {
 

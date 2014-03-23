@@ -30,13 +30,13 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PlayLists extends Children.Keys<Integer> implements ChangeListener {
     
     /**
      * Creates a new instance of PlayLists
-     * @param ma 
+     * @param ma The main application
      */
     public PlayLists(MainApp ma) {
 //        Log.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
@@ -70,8 +70,8 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
     /**
      * This method will get called with one of the items passed to setKeys in 
      * addNotify above.
-     * @param key
-     * @return 
+     * @param key A key to create the node for
+     * @return A node corresponding to the key
      */
     @Override
     protected Node[] createNodes(Integer key) {

@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca
  */
 public class Util {
 

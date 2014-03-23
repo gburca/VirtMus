@@ -22,8 +22,8 @@ public class MessageUtil {
     /**
     * Show a message of the specified type
     *
-    * @param message
-    * @param messageType As in {@link NotifyDescription} message type constants.
+    * @param message The message to display
+    * @param messageType As in {@link org.openide.NotifyDescriptor#NotifyDescriptor(java.lang.Object, java.lang.String, int, int, java.lang.Object[], java.lang.Object) } message type constants.
     */
     public static void show(String message, MessageType messageType) {
         getDialogDisplayer().notify(new NotifyDescriptor.Message(message,
@@ -33,8 +33,8 @@ public class MessageUtil {
     /**
     * Show an exception message dialog
     *
-    * @param message
-    * @param exception
+    * @param message The message to display
+    * @param exception The exception to display
     */
     public static void showException(String message, Throwable exception) {
         getDialogDisplayer().notify(
@@ -45,7 +45,7 @@ public class MessageUtil {
 
     /**
     * Show an information dialog
-    * @param message
+    * @param message The message to display
     */
     public static void info(String message) {
         show(message, MessageType.INFO);
@@ -53,7 +53,7 @@ public class MessageUtil {
 
     /**
     * Show an error dialog
-    * @param message
+    * @param message The message to display
     */
     public static void error(String message) {
         show(message, MessageType.ERROR);
@@ -61,8 +61,8 @@ public class MessageUtil {
 
     /**
     * Show an error dialog for an exception
-    * @param message
-    * @param exception
+    * @param message The message to display
+    * @param exception The exception to display
     */
     public static void error(String message, Throwable exception) {
         showException(message, exception);
@@ -70,7 +70,7 @@ public class MessageUtil {
 
     /**
     * Show an question dialog
-    * @param message
+    * @param message The message to display
     */
     public static void question(String message) {
         show(message, MessageType.QUESTION);
@@ -78,7 +78,7 @@ public class MessageUtil {
 
     /**
     * Show an warning dialog
-    * @param message
+    * @param message The message to display
     */
     public static void warn(String message) {
         show(message, MessageType.WARNING);
@@ -86,7 +86,7 @@ public class MessageUtil {
 
     /**
     * Show an plain dialog
-    * @param message
+    * @param message The message to display
     */
     public static void plain(String message) {
         show(message, MessageType.PLAIN);

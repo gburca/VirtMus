@@ -19,14 +19,27 @@
  */
 package com.ebixio.virtmus;
 
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import net.java.swingfx.waitwithstyle.PerformanceInfiniteProgressPanel;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
@@ -37,7 +50,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author  gburca
+ * @author  Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class LiveWindow extends javax.swing.JFrame implements Renderer.JobRequester {
 
@@ -69,7 +82,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
     /** Maximum number of "next" pages to keep cached. For example, if the user is
     playing page 8, a value of "4" means we want to keep cached pages 9,10,11,12 so that
-    if the user presses "PgDn" we can display them quickly. This number should be >=
+    if the user presses "PgDn" we can display them quickly. This number should be &gt;=
     number of pages visible on the screen at a time. */
     final int maxNextCache = 5;
 
@@ -90,7 +103,9 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     
     Thread noScreenSaver;
 
-    /** Creates new form LiveWindow */
+    /** Creates new form LiveWindow
+     * @param gConfig A graphics configuration
+     */
     public LiveWindow(GraphicsConfiguration gConfig) {
         super(gConfig);
         initComponents();
@@ -367,7 +382,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
     /**
      * Used to paint when no page shift is needed. Paints only one page.
-     * @param g
+     * @param g Graphics object to paint on
      */
     public void paintRegular(Graphics2D g) {
         BufferedImage img = pageCache.get(page);
@@ -399,8 +414,12 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         g.setTransform(origXform);
     }
 
-    /** This function paints page 2 below page 1 and so on. It is typically used when the
-    display is in portrait mode. */
+    /**
+     * This function paints page 2 below page 1 and so on. It is typically used
+     * when the display is in portrait mode.
+     *
+     * @param g The graphics context to paint on
+     */
     public void paintShiftedVertical(Graphics2D g) {
         int heightPainted = 0;
         BufferedImage img1 = pageCache.get(page);
@@ -680,8 +699,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
     /**
      * The page transition animation
-     * @param from
-     * @param to
+     * @param from Starting location
+     * @param to Final location
      */
     public void startShift(final double from, final double to) {
         final SplineInterpolator si = new SplineInterpolator(0.0f, 0.8f, 1.0f, 0.8f);

@@ -33,7 +33,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  *
  * A MusicPage renderer.
  */

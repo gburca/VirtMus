@@ -22,6 +22,7 @@ import org.openide.util.actions.CookieAction;
 @ActionReference(path = "Menu/PlayList", position = 500)
 public final class PlayListDelete extends CookieAction {
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         HashMap<File, String> toDelete = new HashMap<File, String>();
         
@@ -51,14 +52,17 @@ public final class PlayListDelete extends CookieAction {
         MainApp.findInstance().refresh();
     }
 
+    @Override
     protected int mode() {
         return CookieAction.MODE_ALL;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(PlayListDelete.class, "CTL_PlayListDelete");
     }
 
+    @Override
     protected Class[] cookieClasses() {
         return new Class[]{PlayList.class};
     }
@@ -75,6 +79,7 @@ public final class PlayListDelete extends CookieAction {
         //putValue("noIconInMenu", Boolean.TRUE);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -20,8 +20,6 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.virtmus.actions.SaveAllAction;
-import com.ebixio.virtmus.actions.SongSaveAction;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
@@ -43,11 +41,10 @@ import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.swing.event.ChangeListener;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @XStreamAlias("page")
 public abstract class MusicPage {
@@ -76,8 +73,8 @@ public abstract class MusicPage {
 
     /** Creates a new instance of MusicPage 
      * @param song The song that this music page belongs to.
-     * @param sourceFile
-     * @param opt
+     * @param sourceFile The file this music page came from
+     * @param opt The page number (in the case of a multi-page file)
      */
     public MusicPage(Song song, File sourceFile, Object opt) {
         this.song = song;

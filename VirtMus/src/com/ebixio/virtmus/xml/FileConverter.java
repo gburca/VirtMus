@@ -33,7 +33,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class FileConverter implements Converter, ConverterMatcher {
     XStream xs = new XStream();

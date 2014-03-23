@@ -20,7 +20,6 @@
 
 package com.ebixio.virtmus.imgsrc;
 
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MainApp.Rotation;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
@@ -52,7 +51,7 @@ import org.apache.batik.ext.awt.RenderingHintsKeyExt;
  * A proxy class for PDF image sources. Some PDF pages render better with
  * org.icepdf, others with com.sun.pdfview. This class will try to defer to
  * one of these two implementations.
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @XStreamAlias("pdfImg")
 public class PdfImg extends ImgSrc {
@@ -74,7 +73,7 @@ public class PdfImg extends ImgSrc {
     // Used by Thumbs and Live display
     @Override
     public BufferedImage getImage(Dimension containerSize, Rotation rotation, boolean fillSize, MusicPage page) {
-        RenderedOp srcImg, destImg = null;
+        RenderedOp srcImg, destImg;
         Rectangle destSize;
 
         // Acquiring the current Graphics Device and Graphics Configuration

@@ -45,6 +45,7 @@ import org.openide.util.actions.SystemAction;
     @ActionReference(path = "Toolbars/Song", name = "SongOpenAction", position = 200)})
 public final class SongOpenAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         Song s = Song.open();
         
@@ -61,7 +62,7 @@ public final class SongOpenAction extends CallableSystemAction {
             
             // Needed to enable SavePlayListAction without changing the selected node
             Action a = SystemAction.get(SavePlayListAction.class);
-            if (pl.type == PlayList.Type.Normal) {
+            if ((pl != null) && (pl.type == PlayList.Type.Normal)) {
                 a.setEnabled(true);
             } else {
                 a.setEnabled(false);
@@ -82,6 +83,7 @@ public final class SongOpenAction extends CallableSystemAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SongOpenAction.class, "CTL_SongOpenAction");
     }
@@ -91,6 +93,7 @@ public final class SongOpenAction extends CallableSystemAction {
         return "com/ebixio/virtmus/resources/SongOpenAction.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -18,7 +18,10 @@
 
 package com.ebixio.annotations;
 
-import com.ebixio.annotations.tools.*;
+import com.ebixio.annotations.tools.DrawingTool;
+import com.ebixio.annotations.tools.ToolFreehand;
+import com.ebixio.annotations.tools.ToolLine;
+import com.ebixio.annotations.tools.ToolRect;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import java.awt.Color;
@@ -595,7 +598,7 @@ public final class AnnotTopComponent extends TopComponent
 
     /**
      * The list of drawing tools we will use with the toolChooser JComboBox
-     * @return
+     * @return A set of drawing tools
      */
     public ComboBoxModel<DrawingTool> getTools() {
         DefaultComboBoxModel<DrawingTool> cbm = new DefaultComboBoxModel<DrawingTool>();
@@ -634,7 +637,7 @@ public final class AnnotTopComponent extends TopComponent
     }
 
     /** replaces this in object stream 
-     * @return
+     * @return Something or another.
      */
     @Override
     public Object writeReplace() {

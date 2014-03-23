@@ -33,6 +33,7 @@ import org.openide.util.actions.SystemAction;
 @ActionReference(path = "Toolbars/MusicPage", name = "RemovePagesAction", position = 300)
 public final class MusicPageRemoveAction extends CookieAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         //DataObject dataObject = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
         for (Node n: activatedNodes) {
@@ -43,14 +44,17 @@ public final class MusicPageRemoveAction extends CookieAction {
         }
     }
     
+    @Override
     protected int mode() {
         return CookieAction.MODE_ALL;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(MusicPageRemoveAction.class, "CTL_MusicPageRemoveAction");
     }
     
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] {
             MusicPage.class
@@ -62,6 +66,7 @@ public final class MusicPageRemoveAction extends CookieAction {
         return "com/ebixio/virtmus/resources/RemovePagesAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

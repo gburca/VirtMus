@@ -38,7 +38,7 @@ import java.util.Vector;
 /**
  * TODO: Handle sourceFile references in the song file, or modify the xsl to
  * get rid of them.
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PageOrderConverter implements Converter, ConverterMatcher {
     XStream xs;

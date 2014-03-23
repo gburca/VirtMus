@@ -80,8 +80,46 @@
 
 
     <target name="create-installers" depends="create-installer-exe"
-    description="Creates exe and zip application installers">
+        description="Creates exe and zip application installers">
+    </target>
 
+    <target name="javadoc-all" depends="-init" description="Build javadoc for several modules in the suite.">
+        <property name="platformjars" value="${nbplatform.active.dir}/platform/modules/*;${nbplatform.active.dir}/platform/lib/*;${nbplatform.active.dir}/ide/modules/*;${nbplatform.active.dir}/apisupport/modules/*"/>
+        <javadoc destdir="JavaDoc/" packagenames="com.ebixio.*,org.icepdf.*" encoding="UTF-8"
+            classpath="${platformjars};${netbeans.dynamic.classpath}">
+            <doctitle>
+                <![CDATA[<h1>VirtMus JavaDoc</h1>]]>
+            </doctitle>
+
+            <classpath>
+                <path path="${javac.classpath}"/>
+                <path path="ICEpdf/dist/ICEpdf.jar"/>
+                <path path="PDFRenderer/release/modules/ext/*"/>
+                <path path="jai_java/release/modules/ext/*"/>
+                <path path="XStream/release/modules/ext/*"/>
+                <path path="TimingFramework/release/modules/ext/*"/>
+                <path path="JOGL-Win/release/modules/ext/*"/>
+                <path path="colorchooser/release/modules/ext/*"/>
+                <path path="swingfx/release/modules/ext/*"/>
+                <path path="batik/release/modules/ext/*"/>
+            </classpath>
+
+            <group title="VirtMus Module" packages="com.ebixio.virtmus*"/>
+            <group title="Annotations Module" packages="com.ebixio.annotations*"/>
+            <group title="Thumbnail Viewer Module" packages="com.ebixio.thumbviewer*"/>
+            <group title="ICEpdf" packages="org.icepdf.*"/>
+
+            <sourcepath location="Annotations/src"/>
+            <sourcepath location="ThumbViewer/src"/>
+            <sourcepath location="VirtMus/src"/>
+            <sourcepath location="ICEpdf/icepdf/core"/>
+            <sourcepath location="JAI/src"/>
+
+            <header>VirtMus Java Docs</header>
+            <bottom><![CDATA[<i>Copyright &#169; 2006-2014 Gabriel Burca. All Rights Reserved.</i>]]></bottom>
+
+        </javadoc>
+        <nbbrowse file="JavaDoc/index.html"/>
     </target>
 
     

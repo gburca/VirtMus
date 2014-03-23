@@ -26,7 +26,7 @@ import net.java.swingfx.jdraggable.Draggable;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class DraggableThumbnail extends Thumbnail implements Draggable {
     

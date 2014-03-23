@@ -20,7 +20,7 @@ import java.awt.geom.GeneralPath;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class ShapeLine extends VmShape {
     protected GeneralPath path = new GeneralPath();

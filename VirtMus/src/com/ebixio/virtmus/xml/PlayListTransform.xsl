@@ -3,7 +3,7 @@
 <!--
     Document   : PlayListTransform.xsl
     Created on : April 27, 2009, 10:22 PM
-    Author     : gburca
+    Author     : Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
     Description:
         For easy validation, we want to make sure the sequence is:
             <Name/>

@@ -15,7 +15,7 @@ import java.awt.RenderingHints;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class ShapeRect extends VmShape {
     Point start, end;

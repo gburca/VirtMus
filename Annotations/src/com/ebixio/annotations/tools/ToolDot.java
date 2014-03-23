@@ -25,7 +25,7 @@ import java.awt.event.MouseEvent;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class ToolDot extends DrawingTool {
     public ToolDot(AnnotCanvas canvas) {

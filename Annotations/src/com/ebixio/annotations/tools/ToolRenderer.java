@@ -18,7 +18,7 @@ import javax.swing.ListCellRenderer;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class ToolRenderer extends Canvas implements ListCellRenderer {
 

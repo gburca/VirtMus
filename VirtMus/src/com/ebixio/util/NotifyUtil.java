@@ -14,6 +14,10 @@ public class NotifyUtil {
 
     /**
     * Show message with the specified type and action listener
+    * @param title Notification title
+    * @param message Notification message
+    * @param type Notification type
+    * @param actionListener An action listener
     */
     public static void show(String title, String message, MessageType type, ActionListener actionListener) {
         NotificationDisplayer.getDefault().notify(title, type.getIcon(), message, actionListener);
@@ -22,6 +26,9 @@ public class NotifyUtil {
     /**
     * Show message with the specified type and a default action which displays the
     * message using {@link MessageUtil} with the same message type
+    * @param title Notification title
+    * @param message Notification message
+    * @param type Notification type
     */
     public static void show(String title, final String message, final MessageType type) {
         ActionListener actionListener = new ActionListener() {
@@ -36,7 +43,8 @@ public class NotifyUtil {
 
     /**
     * Show an information notification
-    * @param message
+    * @param title Notification title
+    * @param message Notification message
     */
     public static void info(String title, String message) {
         show(title, message, MessageType.INFO);
@@ -44,7 +52,8 @@ public class NotifyUtil {
 
     /**
     * Show an error notification
-    * @param message
+    * @param title Notification title
+    * @param message Notification message
     */
     public static void error(String title, String message) {
         show(title, message, MessageType.ERROR);
@@ -52,8 +61,9 @@ public class NotifyUtil {
 
     /**
     * Show an error notification for an exception
-    * @param message
-    * @param exception
+    * @param title Notification title
+    * @param message Notification message
+    * @param exception Exception
     */
     public static void error(String title, final String message, final Throwable exception) {
         ActionListener actionListener = new ActionListener() {
@@ -69,7 +79,8 @@ public class NotifyUtil {
 
     /**
     * Show an warning notification
-    * @param message
+    * @param title Notification title
+    * @param message Notification message
     */
     public static void warn(String title, String message) {
         show(title, message, MessageType.WARNING);
@@ -77,7 +88,8 @@ public class NotifyUtil {
 
     /**
     * Show an plain notification
-    * @param message
+    * @param title Notification title
+    * @param message Notification message
     */
     public static void plain(String title, String message) {
         show(title, message, MessageType.PLAIN);

@@ -22,7 +22,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Gabriel Burca <gburca dash virtmus at ebixio dot com>
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class VirtMusLookup extends AbstractLookup {
     

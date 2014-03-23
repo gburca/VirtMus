@@ -46,9 +46,22 @@
 package com.ebixio.jai;
 
 import com.ebixio.util.Log;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import java.awt.image.*;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ByteLookupTable;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.LookupOp;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.util.logging.Level;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RasterFactory;
@@ -257,7 +270,10 @@ public class ImageDisplay extends JComponent {
         return source;
     }
 
-    /** Provides panning */
+    /** Provides panning
+     * @param x The X coordinate
+     * @param y The Y coordinate
+     */
     public final void setOrigin(int x, int y) {
         // shift to box origin
         originX = -x;
@@ -273,7 +289,12 @@ public class ImageDisplay extends JComponent {
         return originY;
     }
 
-    /** Records a new size.  Called by the AWT. */
+    /** Records a new size.  Called by the AWT.
+     * @param x X
+     * @param y Y
+     * @param width Width
+     * @param height Height
+     */
     @Override
     public void setBounds(int x, int y, int width, int height) {
         Insets insets = getInsets();

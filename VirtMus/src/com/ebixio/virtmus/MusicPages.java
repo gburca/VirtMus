@@ -30,13 +30,13 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class MusicPages extends Children.Keys<MusicPage> implements ChangeListener {
     private Song song;
     
     /** Creates a new instance of MusicPages
-     * @param song 
+     * @param song The song to create the pages for.
      */
     public MusicPages(Song song) {
         this.song = song;

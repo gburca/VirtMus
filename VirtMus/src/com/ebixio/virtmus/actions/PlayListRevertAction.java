@@ -21,6 +21,7 @@ import org.openide.util.actions.NodeAction;
 @ActionReference(path = "Menu/PlayList", position = 400)
 public final class PlayListRevertAction extends NodeAction {
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
@@ -29,6 +30,7 @@ public final class PlayListRevertAction extends NodeAction {
         }
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(PlayListRevertAction.class, "CTL_PlayListRevertAction");
     }
@@ -38,6 +40,7 @@ public final class PlayListRevertAction extends NodeAction {
         return "com/ebixio/virtmus/resources/EditUndo.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

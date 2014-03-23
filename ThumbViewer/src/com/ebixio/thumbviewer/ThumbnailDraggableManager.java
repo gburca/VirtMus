@@ -26,13 +26,17 @@ import java.awt.Point;
 import java.awt.event.ContainerEvent;
 import java.util.HashSet;
 import java.util.Set;
-import net.java.swingfx.jdraggable.*;
+import net.java.swingfx.jdraggable.DragPolicy;
+import net.java.swingfx.jdraggable.Draggable;
+import net.java.swingfx.jdraggable.DraggableListener;
+import net.java.swingfx.jdraggable.DraggableManager;
+import net.java.swingfx.jdraggable.DraggableMask;
 
 /**
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  * Needed to implement DraggableManager (instead of just extending DefaultDraggableManager)
  * because the default manager did not remove the mouse listeners from the component when
- * the componenet was removed from the container.
+ * the component was removed from the container.
  */
 public class ThumbnailDraggableManager implements DraggableManager {
     /**
@@ -53,7 +57,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      */
     private byte draggableState;
     /**
-     * the {@link DragPolicy} to obide by
+     * the {@link DragPolicy} to abide by
      */
     private DragPolicy dragPolicy;
     /**
@@ -65,7 +69,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * maintains a {@link java.util.Set} of the components
      * which have had a {@link DraggableListener} added to them.
      * This is only used for "cleanup".
-     * This implementation stores the hash code's of each component.
+     * This implementation stores the hash code of each component.
      */
     private Set<Integer> hearingComponents;
     /**
@@ -82,8 +86,8 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * Creates a new {@link DraggableManager} with no "Draggable Container"
      * registered
      *
-     * @see #DefaultDraggableManager(Container)
-     * @see #registerDraggableContainer(Container)
+     * @see net.java.swingfx.jdraggable.DefaultDraggableManager#DefaultDraggableManager(Container)
+     * @see net.java.swingfx.jdraggable.DefaultDraggableManager#registerDraggableContainer(Container)
      */
     public ThumbnailDraggableManager() {
     }
@@ -97,8 +101,8 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * @throws IllegalArgumentException	if <code>draggableContainer</code> is
      * 									<code>null</code>
      *
-     * @see #DefaultDraggableManager()
-     * @see #registerDraggableContainer(Container)
+     * @see net.java.swingfx.jdraggable.DefaultDraggableManager#DefaultDraggableManager()
+     * @see net.java.swingfx.jdraggable.DefaultDraggableManager#registerDraggableContainer(Container)
      */
     public ThumbnailDraggableManager(Container draggableContainer) {
         if (draggableContainer == null) {
@@ -110,6 +114,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see com.codecraig.jdraggable.DraggableManager#setNullifyLayout(boolean)
      */
+    @Override
     public void setNullifyLayout(boolean nullifyLayout) {
         this.nullifyLayout = nullifyLayout;
     }
@@ -117,6 +122,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see com.codecraig.jdraggable.DraggableManager#shouldNullifyLayout()
      */
+    @Override
     public boolean shouldNullifyLayout() {
         return nullifyLayout;
     }
@@ -124,6 +130,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see com.codecraig.jdraggable.DraggableManager#startDrag(java.awt.Component)
      */
+    @Override
     public boolean startDrag(Component componentToDrag) {
         if (isDraggableContainerRegistered()) {
             if (getDragPolicy().isDraggable(componentToDrag)) {
@@ -139,6 +146,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see com.codecraig.jdraggable.DraggableManager#dragging()
      */
+    @Override
     public boolean dragging() {
         if (isDraggableContainerRegistered()) {
             if (hitDraggable != null) {
@@ -152,6 +160,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see com.codecraig.jdraggable.DraggableManager#stopDrag()
      */
+    @Override
     public boolean stopDrag() {
         if (isDraggableContainerRegistered()) {
             // Only reorder thumbs if they've been moved by a significant amount
@@ -178,6 +187,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * 			<code>Container</code> has been registered as the
      * 			"Draggable Container"
      */
+    @Override
     public Container getDraggableContainer() {
         return draggableContainer;
     }
@@ -199,11 +209,12 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * Returns the state of the current {@link Draggable} component which this
      * manager is handling
      *
-     * @param draggableComponent 
+     * @param draggableComponent The draggable component.
      * @return the state of the current <code>Draggable</code> component
      *
      * @see net.java.swingfx.jdraggable.DraggableManager#getState(net.java.swingfx.jdraggable.Draggable)
      */
+    @Override
     public byte getState(Draggable draggableComponent) {
         return draggableState;
     }
@@ -219,6 +230,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * @throws IllegalArgumentException	if a <code>Container</code> has already
      * 									been registered
      */
+    @Override
     public void registerDraggableContainer(Container draggableContainer) {
         if (this.draggableContainer == null) {
             this.draggableContainer = draggableContainer;
@@ -242,6 +254,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * 									as the already registered container
      * @throws IllegalStateException	if no container is currently registered
      */
+    @Override
     public void unregisterDraggableContainer(Container draggableContainer) {
         if (this.draggableContainer == null) {
             throw new IllegalStateException("Failed to unregister draggable container," +
@@ -284,6 +297,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
      * @see #setDragPolicy(DragPolicy)
      * @see DragPolicy#DEFAULT
      */
+    @Override
     public DragPolicy getDragPolicy() {
         if (dragPolicy == null) {
             setDragPolicy(DragPolicy.DEFAULT);
@@ -294,6 +308,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see com.codecraig.jdraggable.DraggableManager#setDragPolicy(com.codecraig.jdraggable.DragPolicy)
      */
+    @Override
     public void setDragPolicy(DragPolicy dragPolicy) {
         this.dragPolicy = dragPolicy;
     }
@@ -301,6 +316,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see java.awt.event.ContainerListener#componentAdded(java.awt.event.ContainerEvent)
      */
+    @Override
     public void componentAdded(ContainerEvent e) {
         if (dragListener == null || isDraggableContainerRegistered() == false) {
             // this should not occur, since we listening to a container in the first place
@@ -318,6 +334,7 @@ public class ThumbnailDraggableManager implements DraggableManager {
     /* (non-Javadoc)
      * @see java.awt.event.ContainerListener#componentRemoved(java.awt.event.ContainerEvent)
      */
+    @Override
     public void componentRemoved(ContainerEvent e) {
         Component c = e.getChild();
         Integer code = new Integer(c.hashCode());

@@ -43,13 +43,16 @@ package com.ebixio.jai;
  * $Date: 2005/02/11 04:40:47 $
  * $State: Exp $
  */
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import javax.media.jai.*;
-import javax.media.jai.operator.*;
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import javax.media.jai.InterpolationBilinear;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.operator.ScaleDescriptor;
+import javax.swing.Icon;
 
 /**
  * A class to create icons from Planar Images
@@ -68,7 +71,7 @@ public class Iconizer implements Icon {
     }
 
    /**
-     * @param source a PlanarImage to be displayed.
+     * @param image a PlanarImage to be displayed.
      * @param width is the icon width
      * @param height is the icon height
      */
@@ -79,10 +82,12 @@ public class Iconizer implements Icon {
         icon = iconify(image);
     }
 
+    @Override
     public int getIconWidth() {
         return width;
     }
 
+    @Override
     public int getIconHeight() {
         return height;
     }
@@ -90,9 +95,10 @@ public class Iconizer implements Icon {
     /**
      * Paint the icon
      */
+    @Override
     public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
 
-        Graphics2D g2D = null;
+        Graphics2D g2D;
         if (g instanceof Graphics2D) {
             g2D = (Graphics2D)g;
         } else {
@@ -104,7 +110,7 @@ public class Iconizer implements Icon {
     }
 
     private BufferedImage iconify(PlanarImage image) {
-        float scale = 1.0F;
+        float scale;
 
         float s1 = (float)width / (float)image.getWidth();
         float s2 = (float)height / (float)image.getHeight();

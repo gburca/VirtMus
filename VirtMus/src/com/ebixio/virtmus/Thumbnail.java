@@ -30,7 +30,7 @@ import javax.swing.border.Border;
 
 /**
  *
- * @author  gburca
+ * @author  Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class Thumbnail extends javax.swing.JPanel {
     private boolean selected = false;    // Show a different border when the thumbnail is selected

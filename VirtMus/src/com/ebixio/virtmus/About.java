@@ -26,7 +26,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author  gburca
+ * @author  Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class About extends javax.swing.JPanel {
     Image splash;

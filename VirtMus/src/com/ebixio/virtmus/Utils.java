@@ -21,7 +21,16 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -37,7 +46,7 @@ import java.util.regex.PatternSyntaxException;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class Utils {
     private static Cursor invisibleCursor = null;
@@ -304,6 +313,7 @@ public class Utils {
      * when the application was deployed using a ZIP file.
      * 
      * This method is not guaranteed to work on all JVMs but works on Sun JVMs.
+     * @return The path to the top level application folder.
      */
     public static File getAppPath() {
         CodeSource source = MainApp.findInstance().getClass().getProtectionDomain().getCodeSource();
@@ -330,7 +340,9 @@ public class Utils {
         return codeLoc;
     }
     
-    /** Doesn't work on Windows or Linux */
+    /** Doesn't work on Windows or Linux
+     * @return The path to the top level application folder.
+     */
     public static File getAppPath1() {
         File appPath = new File(System.getProperty("java.class.path"));
         try {
@@ -342,7 +354,9 @@ public class Utils {
         return appPath;
     }
     
-    /** Works on windows, but not on Linux */
+    /** Works on windows, but not on Linux
+     * @return The path to the top level application folder.
+     */
     public static File getAppPath2() {
         File appPath = new File(".");
         try {

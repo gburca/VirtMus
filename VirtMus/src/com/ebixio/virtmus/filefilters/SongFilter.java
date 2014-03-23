@@ -25,9 +25,10 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class SongFilter extends FileFilter {
+    @Override
     public boolean accept(File f) {
         if (f.isFile() && f.toString().endsWith(".song.xml")) {
             return true;
@@ -38,6 +39,7 @@ public class SongFilter extends FileFilter {
         }
     }
 
+    @Override
     public String getDescription() {
         return "Song files";
     }

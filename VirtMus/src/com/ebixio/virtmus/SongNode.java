@@ -36,8 +36,17 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.actions.*;
-import org.openide.nodes.*;
+import org.openide.actions.CutAction;
+import org.openide.actions.MoveDownAction;
+import org.openide.actions.MoveUpAction;
+import org.openide.actions.NewAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ReorderAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -45,15 +54,15 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class SongNode extends AbstractNode implements PropertyChangeListener, ChangeListener {
     private Song song;
     
     /** Creates a new instance of SongNode
-     * @param playList
-     * @param song
-     * @param children
+     * @param playList The playlist the song belongs to
+     * @param song The song represented by this node
+     * @param children The music pages belonging to this song
      */
     public SongNode(PlayList playList, Song song, MusicPages children) {
         super(children, Lookups.fixed(new Object[]{playList, song, children.getIndex()}));

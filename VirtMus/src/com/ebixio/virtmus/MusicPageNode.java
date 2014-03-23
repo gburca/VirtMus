@@ -27,8 +27,8 @@ import com.ebixio.virtmus.actions.SongSaveAction;
 import com.ebixio.virtmus.imgsrc.PdfImg;
 import java.io.File;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
 import javax.swing.Action;
+import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.MoveDownAction;
@@ -42,13 +42,13 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class MusicPageNode extends AbstractNode {
     private MusicPage page;
     
     /** Creates a new instance of MusicPageNode
-     * @param page
+     * @param page The MusicPage represented by this node.
      */
     public MusicPageNode(MusicPage page) {
         super(Children.LEAF, Lookups.fixed(new Object[]{page.song, page,

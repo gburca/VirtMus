@@ -23,7 +23,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca
  */
 public class GenericImg extends ImgSrc {
 

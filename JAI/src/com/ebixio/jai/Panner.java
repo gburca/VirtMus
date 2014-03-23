@@ -44,16 +44,37 @@
  */
 package com.ebixio.jai;
 
-import java.awt.*;
-import java.awt.color.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import javax.media.jai.*;
-import javax.media.jai.operator.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
+import javax.media.jai.InterpolationBilinear;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.TiledImage;
+import javax.media.jai.operator.ScaleDescriptor;
+import javax.media.jai.operator.SubsampleAverageDescriptor;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
 
 /**
  * An output widget used for panning.  Panner subclasses
@@ -247,6 +268,8 @@ public final class Panner extends JComponent
 
     /**
      * Constructs a Panner with no image
+     * @param panner_width Width
+     * @param panner_height Height
      */
     public Panner(int panner_width, int panner_height) {
         super();
@@ -259,6 +282,9 @@ public final class Panner extends JComponent
 
     /**
      * Construct a Panner with a pre-scaled image
+     * @param item Swing object to be controlled.
+     * @param image a PlanarImage to be displayed.
+     * @param thumb a thumbnail image
      */
     public Panner(JComponent item, PlanarImage image, PlanarImage thumb) {
         super();
@@ -274,7 +300,10 @@ public final class Panner extends JComponent
         initialize(item, image, thumb, maxSize);
     }
 
-    /** Changes the pannerImage image to a new PlanarImage. */
+    /** Changes the pannerImage image to a new PlanarImage.
+     * @param item Swing object to be controlled.
+     * @param image A PlanarImage to be displayed.
+     * @param maxSize Max width or height for scaled image. */
     public synchronized void set(JComponent item, PlanarImage image, int maxSize) {
         if (item == null) {
             return;
@@ -308,7 +337,9 @@ public final class Panner extends JComponent
         scrollObject = o;
     }
 
-    /** Provides panning (moves slider box center location) */
+    /** Provides panning (moves slider box center location)
+     * @param x X
+     * @param y Y */
     public final void setSliderLocation(int x, int y) {
         mouseDragStart.move(sliderWidth/2, sliderHeight/2);
         moveit(x, y);

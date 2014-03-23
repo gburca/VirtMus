@@ -45,7 +45,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     

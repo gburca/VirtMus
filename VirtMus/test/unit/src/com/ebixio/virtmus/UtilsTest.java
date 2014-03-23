@@ -13,7 +13,7 @@ import org.junit.*;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class UtilsTest {
 

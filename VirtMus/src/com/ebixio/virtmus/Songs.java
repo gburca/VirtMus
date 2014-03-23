@@ -32,13 +32,14 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class Songs extends Children.Keys<Song> implements ChangeListener
 {
     private PlayList playList;
     
-    /** Creates a new instance of Songs */
+    /** Creates a new instance of Songs
+     * @param playList The playlist this song belongs to. */
     public Songs(PlayList playList) {
         this.playList = playList;
         playList.addChangeListener(WeakListeners.change(this, playList));
@@ -53,8 +54,8 @@ public class Songs extends Children.Keys<Song> implements ChangeListener
     private ArrayList<Song> getKeys() {
         ArrayList<Song> songKeys = new ArrayList<Song>();
         synchronized (playList.songs) {
-            for (int i = 0; i < playList.songs.size(); i++) {
-                songKeys.add(playList.songs.get(i));
+            for (Song song : playList.songs) {
+                songKeys.add(song);
             }
         }
         return songKeys;

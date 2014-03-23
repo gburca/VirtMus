@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca
  * 
  */
 public class NamedThreadFactory implements ThreadFactory {

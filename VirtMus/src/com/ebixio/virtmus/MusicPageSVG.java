@@ -30,7 +30,15 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.Dimension2D;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -50,12 +58,17 @@ import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.openide.util.Exceptions;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGDocument;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @XStreamAlias("page")
 public class MusicPageSVG extends MusicPage {
@@ -208,7 +221,7 @@ public class MusicPageSVG extends MusicPage {
     
     /**
      * Generates an SVG document that can be edited with external SVG editors.
-     * @return 
+     * @return An SVG document.
      */
     public String export2SvgStr() {
         String svg;
@@ -330,7 +343,7 @@ public class MusicPageSVG extends MusicPage {
      * Checks to see if there are any annotations available (visible on the page).
      * The annotations could come from the SVG in the song.xml file, or from
      * drawings done by the user on the page/canvas.
-     * @return 
+     * @return <code>true</code> if the page contains any annotations.
      */
     public boolean hasAnnotations() {
         return !(svgDocument == null && shapes.isEmpty());

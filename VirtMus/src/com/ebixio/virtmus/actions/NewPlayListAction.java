@@ -34,6 +34,7 @@ import org.openide.util.actions.CallableSystemAction;
     @ActionReference(path = "Toolbars/PlayList", name = "NewPlayListAction", position = 100)})
 public final class NewPlayListAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         PlayList pl = new PlayList();
         if (pl.saveAs()) {
@@ -42,18 +43,22 @@ public final class NewPlayListAction extends CallableSystemAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(NewPlayListAction.class, "CTL_NewPlayListAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/NewPlayListAction.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

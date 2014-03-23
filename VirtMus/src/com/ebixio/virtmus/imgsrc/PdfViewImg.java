@@ -30,7 +30,7 @@ import org.openide.util.Exceptions;
 
 /**
  * A class that uses com.sun.pdfview to rasterize PDFs.
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @XStreamAlias("pdfImg")
 public class PdfViewImg extends PdfImg {

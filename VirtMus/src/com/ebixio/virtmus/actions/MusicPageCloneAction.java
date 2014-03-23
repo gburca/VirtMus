@@ -39,6 +39,7 @@ import org.openide.util.actions.SystemAction;
     @ActionReference(path = "Toolbars/MusicPage", name = "MusicPageCloneAction", position = 200)})
 public final class MusicPageCloneAction extends NodeAction {
     
+    @Override
     public void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             Song song = (Song) n.getLookup().lookup(Song.class);
@@ -51,6 +52,7 @@ public final class MusicPageCloneAction extends NodeAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(MusicPageCloneAction.class, "CTL_MusicPageCloneAction");
     }
@@ -60,6 +62,7 @@ public final class MusicPageCloneAction extends NodeAction {
         return "com/ebixio/virtmus/resources/CloneMusicPage.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -69,6 +72,7 @@ public final class MusicPageCloneAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for (Node n: nodes) {
             MusicPage mp = (MusicPage) n.getLookup().lookup(MusicPage.class);

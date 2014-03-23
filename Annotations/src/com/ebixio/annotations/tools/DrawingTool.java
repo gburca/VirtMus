@@ -27,7 +27,7 @@ import java.awt.Point;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public abstract class DrawingTool implements MouseListener, MouseMotionListener {
 //    protected Paint paint = Color.BLUE;

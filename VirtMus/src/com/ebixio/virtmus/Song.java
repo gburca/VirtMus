@@ -23,7 +23,11 @@ package com.ebixio.virtmus;
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
 import com.ebixio.virtmus.filefilters.SongFilter;
-import com.ebixio.virtmus.imgsrc.*;
+import com.ebixio.virtmus.imgsrc.GenericImg;
+import com.ebixio.virtmus.imgsrc.IcePdfImg;
+import com.ebixio.virtmus.imgsrc.ImgSrc;
+import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.imgsrc.PdfViewImg;
 import com.ebixio.virtmus.xml.MusicPageConverter;
 import com.ebixio.virtmus.xml.PageOrderConverter;
 import com.thoughtworks.xstream.XStream;
@@ -35,8 +39,21 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -45,11 +62,20 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.SaveAsCapable;
@@ -65,7 +91,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @XStreamAlias("song")
 public class Song implements Comparable<Song> {
@@ -106,7 +132,7 @@ public class Song implements Comparable<Song> {
     public Song() {}
     
     /** Creates a new instance of Song from a file, or a directory of files
-     * @param f
+     * @param f The file/directory to create the song from.
      */
     public Song(File f) {
         addPage(f);

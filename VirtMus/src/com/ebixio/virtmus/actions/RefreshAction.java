@@ -18,10 +18,12 @@ import org.openide.util.actions.CallableSystemAction;
 @ActionReference(path = "Menu/File", position = 150)
 public final class RefreshAction extends CallableSystemAction {
 
+    @Override
     public void performAction() {
         MainApp.findInstance().refresh();
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(RefreshAction.class, "CTL_RefreshAction");
     }
@@ -31,6 +33,7 @@ public final class RefreshAction extends CallableSystemAction {
         return "com/ebixio/virtmus/resources/RefreshAction.png";
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -52,7 +52,7 @@ import org.jdesktop.animation.timing.*;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class LiveWindowJOGL extends javax.swing.JFrame
         implements GLEventListener, Renderer.JobRequester {

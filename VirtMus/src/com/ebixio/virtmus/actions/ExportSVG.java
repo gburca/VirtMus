@@ -39,7 +39,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.actions.CookieAction;
 
 /**
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @ActionID(id = "com.ebixio.virtmus.actions.ExportSVG", category = "MusicPage")
 @ActionRegistration(displayName = "#CTL_ExportSVG", lazy = false)

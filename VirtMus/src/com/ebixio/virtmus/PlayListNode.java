@@ -20,7 +20,13 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.virtmus.actions.*;
+import com.ebixio.virtmus.actions.GoLive;
+import com.ebixio.virtmus.actions.PlayListDelete;
+import com.ebixio.virtmus.actions.PlayListRevertAction;
+import com.ebixio.virtmus.actions.RenameItemAction;
+import com.ebixio.virtmus.actions.SavePlayListAction;
+import com.ebixio.virtmus.actions.SongNewAction;
+import com.ebixio.virtmus.actions.SongOpenAction;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
@@ -34,7 +40,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.actions.ReorderAction;
-import org.openide.nodes.*;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -42,13 +52,14 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PlayListNode extends AbstractNode implements PropertyChangeListener, ChangeListener {
     private PlayList playList;
     
     /** Creates a new instance of PlayListNode
-     * @param playList 
+     * @param playList The PlayList represented by this node.
+     * @param children The Songs in this node's PlayList.
      */
     public PlayListNode(PlayList playList, Songs children) {
         super (children, Lookups.fixed(new Object[]{playList, children.getIndex()}));

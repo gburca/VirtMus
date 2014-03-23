@@ -36,7 +36,7 @@ import org.openide.util.Exceptions;
 
 /**
  * Renders PDF pages using the original IcePdf library.
- * @author GBURCA
+ * @author Gabriel Burca
  */
 @XStreamAlias("pdfImg")
 public class IcePdfImg extends PdfImg {
@@ -326,9 +326,9 @@ public class IcePdfImg extends PdfImg {
             if (getPageImage(doc) != null) {
                 result = true;
             }
+            doc.dispose();
         }
 
-        doc.dispose();
         return result;
     }
 

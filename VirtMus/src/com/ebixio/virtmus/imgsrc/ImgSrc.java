@@ -24,7 +24,7 @@ import javax.media.jai.PlanarImage;
 
 /**
  *
- * @author GBURCA
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public abstract class ImgSrc {
     transient protected Dimension dimension = null;

@@ -5,7 +5,7 @@
 <!--
     Document   : SongTransform.xsl
     Created on : April 11, 2009, 1:31 PM
-    Author     : gburca
+    Author     : Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
     Description:
         Purpose of transformation is to convert version 2.0 of the *.song.xml file which
         contains a lot of "extras", such as mutexes, Synchronized collections, etc...,
