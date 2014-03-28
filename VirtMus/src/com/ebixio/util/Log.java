@@ -25,7 +25,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Log various operational info to var/log/messages.log in the user's
+ * .virtmus directory.
+ * 
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class Log {

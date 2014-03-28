@@ -27,15 +27,29 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.*;
-import java.util.logging.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.MemoryHandler;
+import java.util.logging.SimpleFormatter;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.uihandler.api.Controller;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.ToolbarPool;
 import org.openide.explorer.ExplorerManager;
@@ -53,7 +67,7 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
     private transient ExplorerManager manager = new ExplorerManager();
     private static Date lastTime = new Date();
-    private transient Set<ChangeListener> plListeners = new HashSet<ChangeListener>();
+    private final transient Set<ChangeListener> plListeners = new HashSet<ChangeListener>();
     
     public static final String VERSION = "3.20";
     
@@ -149,8 +163,12 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     private MainApp() {
         //initLogger();
         Log.log("MainApp::MainApp start");
+        testLogs();
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
         System.getProperties().put("org.icepdf.core.awtFontLoading", "true");
+        
+        System.setProperty("nb.show.statistics.ui", "true");
+        System.getProperties().put("nb.show.statistics.ui", "true");
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
@@ -226,7 +244,42 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
         });
 
     }
-    
+
+    private void testLogs() {
+        Logger logger = Logger.getLogger("com.ebixio.virtmus");
+        //Logger logger = Logger.getLogger("org.netbeans.ui.virtmus");
+        LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_START");
+        rec.setParameters(new Object[] {"somedate", "sometime", "platform", "jvm"});
+        //rec.setLoggerName(logger.getName());
+
+        // This is what matters...
+        rec.setLoggerName("com.ebixio.virtmus.ui.metrics");
+
+        //rec.setResourceBundle(NbBundle.getBundle(MainApp.class));
+        //rec.setResourceBundleName(MainApp.class.getPackage().getName() + ".Bundle");
+        // Startup duration, #songs, #playlists
+
+        logger.log(rec);
+        //Logger.getLogger("org.netbeans.ui").log(rec);
+        //Logger.getLogger("com.ebixio.virtmus.ui.metrics").log(rec);
+        //Logger.getLogger("org.myapplication.ui.metrics").log(rec);
+        //final Controller ctrlr = Controller.getDefault();
+        Log.log("IsEventDispatchThread1 = " + SwingUtilities.isEventDispatchThread());
+        
+        (new sw()).execute();
+    }
+
+    class sw extends SwingWorker<String, Object> {
+        public String doInBackground() {
+            Log.log("IsEventDispatchThread3 = " + SwingUtilities.isEventDispatchThread());
+            Controller ctrlr = Controller.getDefault();
+            Log.log("RecCnt = " + ctrlr.getLogRecordsCount());
+            ctrlr.submit();
+            return "";
+        }
+        protected void done() {}
+    };
+
     public static void initLogger() {
         String[] loggers = {"org.netbeans.modules.options.OptionsDisplayerImpl",
                             "org.netbeans.core.windows.services.NbPresenter"};
