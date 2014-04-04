@@ -9,12 +9,13 @@ import com.ebixio.util.Util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.xml.validation.Validator;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.openide.util.Exceptions;
 
 /**
@@ -22,12 +23,19 @@ import org.openide.util.Exceptions;
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PlayListTest {
+    static Validator xsdValidator = null;
 
     public PlayListTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String schema = "/com/ebixio/virtmus/xml/PlayListSchema.xsd";
+        InputStream xsd = Song.class.getResourceAsStream(schema);
+        xsdValidator = Util.getValidator(xsd);
+        if (xsdValidator == null) {
+            throw new Exception("XSD Validator creation failed");
+        }
     }
 
     @AfterClass
@@ -141,8 +149,7 @@ public class PlayListTest {
     @Test
     public void testSerialize_File() {
         System.out.println("serialize");
-        File toFile = null;
-        String schema = "/com/ebixio/virtmus/xml/PlayListSchema.xsd";
+        File toFile;
 
         try {
             toFile = File.createTempFile("VirtMusJUnit", ".playlist.xml");
@@ -154,14 +161,12 @@ public class PlayListTest {
             assertEquals(true, result);
 
             // Default (empty) playlist
-            InputStream xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             // Adding name (but no songs)
             instance.setName("Some playlist name");
             instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);   // xsd.reset() not supported
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             Song song = new Song();
             song.setSourceFile(new File("SomeFile.song.xml"));
@@ -169,20 +174,17 @@ public class PlayListTest {
             // With 1 song
             instance.addSong(song);
             instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             // With 2 songs
             instance.addSong(song);
             instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             // With no name
             instance.setName(null);
             instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } finally {

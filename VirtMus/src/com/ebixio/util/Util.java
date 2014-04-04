@@ -41,12 +41,29 @@ public class Util {
         return buffer.toString();
     }
 
-    public static boolean validateXml(File xml, InputStream xsd) {
+    public static Validator getValidator(InputStream xsd) {
+        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        Schema schema;
+        Validator validator = null;
+        
         try {
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(xsd));
-            Validator validator = schema.newValidator();
-
+            schema = factory.newSchema(new StreamSource(xsd));
+            validator = schema.newValidator();
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return validator;
+    }
+    
+    public static boolean validateXml(File xml, InputStream xsd) {
+        return validateXml(xml, getValidator(xsd));
+    }
+    
+    public static boolean validateXml(File xml, Validator validator) {
+        if (validator == null) return false;
+        
+        try {
             DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = parser.parse(xml);
             validator.validate(new DOMSource(document));

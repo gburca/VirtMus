@@ -12,13 +12,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.event.ChangeListener;
+import javax.xml.validation.Validator;
 import org.apache.fop.pdf.PDFFileSpec;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.openide.util.Exceptions;
 
 /**
@@ -26,12 +27,19 @@ import org.openide.util.Exceptions;
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class SongTest {
-
+    static Validator xsdValidator = null;
+    
     public SongTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String schema = "/com/ebixio/virtmus/xml/SongSchema.xsd";
+        InputStream xsd = Song.class.getResourceAsStream(schema);
+        xsdValidator = Util.getValidator(xsd);
+        if (xsdValidator == null) {
+            throw new Exception("XSD Validator creation failed");
+        }
     }
 
     @AfterClass
@@ -53,12 +61,12 @@ public class SongTest {
     public void testIsDirty() {
         System.out.println("isDirty");
         Song instance = new Song();
-        boolean expResult = true;
+        boolean expResult = false;
         boolean result = instance.isDirty();
         assertEquals(expResult, result);
 
-        instance.setDirty(false);
-        expResult = false;
+        instance.setDirty(true);
+        expResult = true;
         result = instance.isDirty();
         assertEquals(expResult, result);
 
@@ -285,8 +293,6 @@ public class SongTest {
     @Test
     public void testSerialize_File() {
         File toFile = null;
-        boolean result = false;
-        String schema = "/com/ebixio/virtmus/xml/SongSchema.xsd";
 
         try {
             toFile = File.createTempFile("VirtMusJUnit", ".song.xml");
@@ -295,50 +301,41 @@ public class SongTest {
 
             Song instance = new Song();
             instance.setSourceFile(toFile);
-            result = instance.serialize(toFile);
-            assertEquals(true, result);
-
-            InputStream xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             instance.setName("Some song name");
-            instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             instance.addPage(toFile);
-            instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             File pdfFile = new File("SomePdfFile.pdf");
             instance.addPage(new MusicPageSVG(instance, pdfFile, 3));
             instance.addPage(new MusicPageSVG(instance, pdfFile, 24));
-            instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             instance.setName(null);
-            instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             instance.pageOrder.get(0).rotation = Rotation.Clockwise_90;
-            instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             instance.addPage(instance.pageOrder.get(0).clone());
             instance.addPage(instance.pageOrder.get(0).clone());
-            instance.serialize(toFile);
-            xsd = Song.class.getResourceAsStream(schema);
-            assertEquals(true, Util.validateXml(toFile, xsd));
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
             
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
-            if (result) {
-                result = toFile.delete();
+            if (toFile != null) {
+                toFile.delete();
             }
         }
 
