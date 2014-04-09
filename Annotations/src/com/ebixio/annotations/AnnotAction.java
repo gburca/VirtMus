@@ -21,13 +21,19 @@ package com.ebixio.annotations;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
- * Action which shows Annot component.
+ * Action which shows the Annotation window component.
  */
+@ActionID(id = "com.ebixio.annotations.AnnotAction", category = "Window")
+@ActionRegistration(lazy = false, displayName = "#CTL_AnnotAction")
+@ActionReference(path = "Menu/Window", name = "AnnotAction")
 public class AnnotAction extends AbstractAction {
     
     public AnnotAction() {

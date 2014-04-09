@@ -19,7 +19,6 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.MusicPage;
-import com.ebixio.virtmus.MusicPageNode;
 import com.ebixio.virtmus.Song;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -28,7 +27,6 @@ import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 

@@ -34,6 +34,7 @@ import org.openide.util.actions.CallableSystemAction;
 @ActionReference(path = "Menu/Help", position = 102)
 public final class AboutAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         DialogDescriptor dd = new DialogDescriptor(new About(), "About VirtMus", true, null);
         dd.setOptions(new Object[] {"OK"});
@@ -41,6 +42,7 @@ public final class AboutAction extends CallableSystemAction {
         d.setVisible(true);
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(AboutAction.class, "CTL_AboutAction");
     }
@@ -52,6 +54,7 @@ public final class AboutAction extends CallableSystemAction {
         putValue("noIconInMenu", Boolean.TRUE);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
