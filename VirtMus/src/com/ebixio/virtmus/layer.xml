@@ -7,7 +7,6 @@
         <folder name="PlayList"/>
 
         <file name="System_hidden"/>
-
         <folder name="Tools">
             <file name="com-ebixio-virtmus-actions-ScrollAmountAction.instance"/>
             <!-- file name="com-ebixio-virtmus-actions-ScrollAmount.instance">

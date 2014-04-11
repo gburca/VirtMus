@@ -260,6 +260,19 @@ public class Utils {
         return null;
     }
     
+    /** Get the file extension (if present).
+     * @param f A file object.
+     * @return The file extension, or an empty string. */
+    public static String getFileExtension(File f) {
+        String s = f.getName();
+        int i = s.lastIndexOf('.');
+        if (i > 0 && i < s.length() - 1) {
+            return s.substring(i + 1);
+        } else {
+            return "";
+        }
+    }
+    
     public static String[] splitFile(String f) {
         String[] parts;
         if (File.separator.equals("\\")) {
@@ -376,7 +389,7 @@ public class Utils {
 
     public static Collection<File> listFiles(File directory, FilenameFilter filter, boolean recurse) {
         // List of files / directories
-        ArrayList<File> files = new ArrayList<File>();
+        ArrayList<File> files = new ArrayList<>();
         // Get files / directories in the directory
         File[] entries = directory.listFiles();
 

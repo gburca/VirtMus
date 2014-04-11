@@ -45,11 +45,13 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -79,7 +81,7 @@ import org.openide.windows.WindowManager;
 public class PlayList implements Comparable<PlayList> {
 
     @XStreamAlias("SongFiles")
-    public ArrayList<File> songFiles = new ArrayList<File>();
+    public ArrayList<File> songFiles = new ArrayList<>();
 
     @XStreamAlias("Name")
     private String name = null;
@@ -103,7 +105,7 @@ public class PlayList implements Comparable<PlayList> {
     // the thread has finished loading all the songs.
     public transient boolean isFullyLoaded = true;
     private transient File sourceFile = null;
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>();
+    private transient Set<ChangeListener> listeners = new HashSet<>();
     
     public static enum Type { Default, AllSongs, Normal }
     public transient Type type = Type.Normal;
@@ -188,16 +190,34 @@ public class PlayList implements Comparable<PlayList> {
                 }
             }
             
+            // Compute some simple stats (what kind of music pages are being used)
+            HashMap<String, Integer> hm = new HashMap<>();
+            for (Song s: songs) {
+                for (MusicPage mp: s.pageOrder) {
+                    String ext = Utils.getFileExtension(mp.imgSrc.sourceFile).toLowerCase();
+                    if (hm.containsKey(ext)) {
+                        hm.put(ext, hm.get(ext) + 1);
+                    } else {
+                        hm.put(ext, 1);
+                    }
+                }
+            }
+            
+            // Log the page stats
+            LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_SONGS");
+            Object[] params = new Object[1 + hm.size() * 2];
+            params[0] = songs.size();
+            int idx = 1;
+            for (String k: hm.keySet()) {
+                params[idx++] = k;
+                params[idx++] = hm.get(k);
+            }
+            rec.setParameters(params);
+            Log.uiLog(rec);
+
             isFullyLoaded = true;
             notifyListeners();
-            
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    StatusDisplayer.getDefault().setStatusText("Loaded all songs from " + dir.getPath());
-                }
-            };
-            SwingUtilities.invokeLater(r);
+            MainApp.setStatusText("Loaded all songs from " + dir.getPath());
         }
     }
 
