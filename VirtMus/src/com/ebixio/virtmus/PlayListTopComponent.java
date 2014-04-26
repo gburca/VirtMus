@@ -27,7 +27,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -36,7 +35,7 @@ import org.openide.windows.WindowManager;
  * Top component which displays something.
  */
 final class PlayListTopComponent extends TopComponent
-        implements ExplorerManager.Provider, Lookup.Provider {
+        implements ExplorerManager.Provider {
     
     private static PlayListTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -50,7 +49,7 @@ final class PlayListTopComponent extends TopComponent
         setToolTipText(NbBundle.getMessage(PlayListTopComponent.class, "HINT_PlayListTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
-        ExplorerManager manager = MainApp.findInstance().getExplorerManager();
+        ExplorerManager manager = CommonExplorers.MainExplorerManager;
         ActionMap map = this.getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
@@ -67,7 +66,6 @@ final class PlayListTopComponent extends TopComponent
         manager.getRootContext().setDisplayName("Playlists");
         this.beanTreeView1.setRootVisible(false);
     }
-
      
     /** This method is called from within the constructor to
      * initialize the form.
@@ -78,6 +76,8 @@ final class PlayListTopComponent extends TopComponent
     private void initComponents() {
 
         beanTreeView1 = new org.openide.explorer.view.BeanTreeView();
+
+        setOpaque(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -134,8 +134,7 @@ final class PlayListTopComponent extends TopComponent
     
     @Override
     protected void componentActivated() {
-        ExplorerManager manager = MainApp.findInstance().getExplorerManager();
-        ExplorerUtils.activateActions(manager, true);
+        ExplorerUtils.activateActions(getExplorerManager(), true);
 
         // See StandardToolbar.xml and http://wiki.netbeans.org/DevFaqHideShowToolbar
         
@@ -147,10 +146,15 @@ final class PlayListTopComponent extends TopComponent
     
     @Override
     protected void componentDeactivated() {
-        ExplorerManager manager = MainApp.findInstance().getExplorerManager();
-        ExplorerUtils.activateActions(manager, false);
+        ExplorerUtils.activateActions(getExplorerManager(), false);
     }
     
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return CommonExplorers.MainExplorerManager;
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc=" Wizzard generated ">
     /** replaces this in object stream */
     @Override
     public Object writeReplace() {
@@ -162,16 +166,11 @@ final class PlayListTopComponent extends TopComponent
         return PREFERRED_ID;
     }
 
-    @Override
-    public ExplorerManager getExplorerManager() {
-        return MainApp.findInstance().getExplorerManager();
-    }
-    
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
             return PlayListTopComponent.getDefault();
         }
     }
-    
+    // </editor-fold>
 }

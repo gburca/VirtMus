@@ -60,7 +60,7 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
     
     private ArrayList<Integer> getKeys() {
         int sz = MainApp.findInstance().playLists.size();
-        ArrayList<Integer> plKeys = new ArrayList<Integer>(sz);
+        ArrayList<Integer> plKeys = new ArrayList<>(sz);
         for (int i = 0; i < sz; i++) {
             plKeys.add(i);
         }

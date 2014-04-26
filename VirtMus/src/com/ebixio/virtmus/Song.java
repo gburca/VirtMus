@@ -320,7 +320,7 @@ public class Song implements Comparable<Song> {
     public String getTags() {
         return tags;
     }
-
+    
     public boolean save() {
         if (sourceFile == null || !sourceFile.exists() || !sourceFile.isFile()) {
             return saveAs();

@@ -1,7 +1,7 @@
 /*
  * ThumbsTopComponent.java
  * 
- * Copyright (C) 2006-2012  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,7 +33,6 @@ import javax.swing.event.ChangeListener;
 import net.java.swingfx.jdraggable.DragPolicy;
 import net.java.swingfx.jdraggable.DraggableManager;
 import org.openide.ErrorManager;
-import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
@@ -203,10 +202,6 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
-    public ExplorerManager getExplorerManager() {
-        return MainApp.findInstance().getExplorerManager();
-    }
-    
     @Override
     public void resultChanged(LookupEvent ev) {
         Collection<? extends SongNode> sNodes = lookupSongs.allInstances();
@@ -263,7 +258,7 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
                     if (n instanceof MusicPageNode) {
                         MusicPageNode mpn = (MusicPageNode) n;
                         if (mpn.getPage() == mp) {
-                            getExplorerManager().setSelectedNodes(new Node[]{mpn});
+                            CommonExplorers.MainExplorerManager.setSelectedNodes(new Node[]{mpn});
                         }
                     }
                 }
@@ -311,10 +306,6 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
     public void loadSong(Song s) {
         if (loadedSong != null) loadedSong.removeChangeListener(changeListener);
 
-
-        s.addChangeListener(changeListener);
-        loadedSong = s;
-        
         for (Component c: jPanel.getComponents()) {
             //c.removeMouseListener(this);    // OR
             for (MouseListener m: c.getMouseListeners()) {
@@ -326,6 +317,9 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
         jPanel.setSize(this.getWidth(), this.getHeight());
         
         if (s == null) return;
+        s.addChangeListener(changeListener);
+        loadedSong = s;
+        
         for (MusicPage p: loadedSong.pageOrder) {
             DraggableThumbnail t = p.getThumbnail();
             t.addMouseListener(this);
@@ -336,7 +330,7 @@ final class ThumbsTopComponent extends TopComponent implements LookupListener, M
     }
 
     void reorderThumbs() {
-        ArrayList<MusicPage> newOrder = new ArrayList<MusicPage>();
+        ArrayList<MusicPage> newOrder = new ArrayList<>();
         Thumbnail selectedThumb = null, otherThumb;
         int components = jPanel.getComponentCount();
         int selectedIdx = 0, insertBefore = components;

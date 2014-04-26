@@ -31,6 +31,7 @@
         <folder name="VirtMus"/>
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
+            <file name="com-ebixio-virtmus-TagsAction.instance"/>
             <!-- file name="com-ebixio-virtmus-TagsAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="com.ebixio.virtmus.Bundle"/>
                 <attr name="component" methodvalue="com.ebixio.virtmus.TagsTopComponent.findInstance"/>
@@ -159,7 +160,7 @@
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-PlayListAction.instance"/>
             </file>
             <file name="TagsAction.shadow">
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-TagsAction.instance"/>
             </file>
             <file name="Tools_hidden"/>

@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -421,5 +422,23 @@ public class Utils {
         String s1 = orig.substring(0, s1len);
         String s2 = orig.substring(orig.length() - s2len);
         return s1 + "..." + s2;
+    }
+    
+    /** Convert the song or playlist tags into a list.
+     * @param tags The tags string. Can be null.
+     * @return A possibly empty list of tag strings. */
+    public static List<String> tags2list(String tags) {
+        ArrayList<String> t = new ArrayList<>();
+        
+        if (tags != null && tags.length() > 0) {
+            String ts[] = tags.split("[,\\s]");
+            for (String tag: ts) {
+                if (tag.length() > 0) {
+                    t.add(tag);
+                }
+            }
+        }
+        
+        return t;
     }
 }

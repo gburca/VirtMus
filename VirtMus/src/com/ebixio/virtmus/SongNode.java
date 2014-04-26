@@ -56,8 +56,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public class SongNode extends AbstractNode implements PropertyChangeListener, ChangeListener {
-    private Song song;
+public class SongNode extends AbstractNode
+    implements PropertyChangeListener, ChangeListener, Comparable<SongNode> {
+    private final Song song;
     
     /** Creates a new instance of SongNode
      * @param playList The playlist the song belongs to
@@ -74,7 +75,16 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
         song.addChangeListener(WeakListeners.change(this, song));
     }
     
+    // Used by stand-alone songs in the Tag component
+    public SongNode(Song song, MusicPages children) {
+        super(children, Lookups.fixed(new Object[]{song, children.getIndex()}));
+        this.song = song;
+        displayFormat = new MessageFormat("{0}");
+        setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
+        song.addPropertyChangeListener(WeakListeners.propertyChange(this, song));
+        song.addChangeListener(WeakListeners.change(this, song));
+    }
         
     @Override
     public boolean canDestroy() {
@@ -219,5 +229,10 @@ public class SongNode extends AbstractNode implements PropertyChangeListener, Ch
         fireDisplayNameChange(null, null);
     }
     // </editor-fold>
+
+    @Override
+    public int compareTo(SongNode o) {
+        return song.compareTo(o.song);
+    }
 
 }

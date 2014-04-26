@@ -243,7 +243,15 @@ public class Log {
         }
     }
 
-    /** Turns on full logging for debug purposes. */
+    /** Turns on full logging for debug purposes.
+     * This creates a VirtMus.log file (typically in the app's root directory)
+     * which contains just the SEVERE entries. Everything else can be found in
+     * ~/.virtmus/var/log/messages.log (or build/testuserdir/var/log/messages.log)
+     * and in the IDE log.
+     * 
+     * To log to VirtMus.log:
+     *  Logger.getLogger("org.netbeans").log(Level.SEVERE, "Test log msg");
+     */
     public static void enableDebugLogs() {
         // Pick the loggers to enable
         //Enumeration<String> loggers = LogManager.getLogManager().getLoggerNames();

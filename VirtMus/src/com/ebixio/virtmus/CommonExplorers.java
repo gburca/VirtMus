@@ -15,31 +15,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
 package com.ebixio.virtmus;
 
-import com.ebixio.util.Log;
-import java.awt.EventQueue;
-import org.openide.awt.ToolbarPool;
-import org.openide.modules.ModuleInstall;
-import org.openide.windows.WindowManager;
+import org.openide.explorer.ExplorerManager;
 
-public class Installer extends ModuleInstall {
+/**
+ * Provides some common VirtMus ExplorerManager(s).
+ * 
+ * In order to display the same set of nodes in multiple explorer views and have
+ * the selection synchronized across different TopComponents, we must use a
+ * common ExplorerManager.
+ * We want to synchronize the song shown in the PlayList
+ * TopComponent
+ * 
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
+ */
+public class CommonExplorers {
 
-    @Override
-    public void restored() {
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-
-            @Override
-            public void run() {
-                EventQueue.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Log.log("VirtMus module: restored");
-                        ToolbarPool.getDefault().setConfiguration("StandardToolbar");
-                    }
-                });
-            }
-        });
-    }
+    /**
+     * This is the main VirtMus ExplorerManager.
+     * We want to be able to share this between PlayList, Thumbs, etc...
+     */
+    public static final ExplorerManager MainExplorerManager = new ExplorerManager();
+    
+    public static final ExplorerManager TagsExplorerManager = new ExplorerManager();
 }

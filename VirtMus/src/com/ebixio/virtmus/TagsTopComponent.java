@@ -7,6 +7,9 @@ package com.ebixio.virtmus;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -15,20 +18,29 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class TagsTopComponent extends TopComponent {
+final class TagsTopComponent extends TopComponent 
+    implements ExplorerManager.Provider {
 
     private static TagsTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "com/ebixio/virtmus/resources/PlayListTopComponent.png";
+    static final String ICON_PATH = "com/ebixio/virtmus/resources/TagsTopComponent.png";
 
     private static final String PREFERRED_ID = "TagsTopComponent";
 
+    private final transient ExplorerManager manager = new ExplorerManager();
+    
     private TagsTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(TagsTopComponent.class, "CTL_TagsTopComponent"));
         setToolTipText(NbBundle.getMessage(TagsTopComponent.class, "HINT_TagsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
+        
+        associateLookup(ExplorerUtils.createLookup(manager, this.getActionMap()));
+        
+        manager.setRootContext(new AbstractNode(new Tags(MainApp.findInstance())));
+        manager.getRootContext().setDisplayName("Tags");
+        this.beanTreeView1.setRootVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -39,20 +51,28 @@ final class TagsTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        beanTreeView1 = new org.openide.explorer.view.BeanTreeView();
+
+        beanTreeView1.setDragSource(false);
+        beanTreeView1.setDropTarget(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(beanTreeView1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(beanTreeView1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.openide.explorer.view.BeanTreeView beanTreeView1;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -107,6 +127,11 @@ final class TagsTopComponent extends TopComponent {
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
+    }
+
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
 
     final static class ResolvableHelper implements Serializable {

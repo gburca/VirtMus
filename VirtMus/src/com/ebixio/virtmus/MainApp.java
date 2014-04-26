@@ -25,58 +25,35 @@ import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.logging.MemoryHandler;
-import java.util.logging.SimpleFormatter;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.uihandler.api.Controller;
-import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public final class MainApp implements ExplorerManager.Provider, ChangeListener {
+public final class MainApp implements ChangeListener {
     
     private static MainApp instance;
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
@@ -179,15 +156,14 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
     /** Creates a new instance of MainApp */
     private MainApp() {
         Log.configUiLog();
-        Log.enableDebugLogs();
+        //Log.enableDebugLogs();
         Log.log("MainApp::MainApp start");
-        Logger.getLogger("org.netbeans").log(Level.SEVERE, "Test log msg");
         
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
         System.getProperties().put("org.icepdf.core.awtFontLoading", "true");
         
-        System.setProperty("nb.show.statistics.ui", "true");
-        System.getProperties().put("nb.show.statistics.ui", "true");
+        //System.setProperty("nb.show.statistics.ui", "true");
+        //System.getProperties().put("nb.show.statistics.ui", "true");
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
@@ -261,7 +237,6 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
         });
 
     }
-
     
     /**
      * Re-reads all the playlists and songs from the disc
@@ -401,10 +376,6 @@ public final class MainApp implements ExplorerManager.Provider, ChangeListener {
 
     public void setExplorerManager(ExplorerManager manager) {
         this.manager = manager;
-    }
-    @Override
-    public ExplorerManager getExplorerManager() {
-        return manager;
     }
     
     public static String getElapsedTime() {

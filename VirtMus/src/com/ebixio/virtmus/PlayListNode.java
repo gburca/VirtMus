@@ -54,8 +54,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public class PlayListNode extends AbstractNode implements PropertyChangeListener, ChangeListener {
-    private PlayList playList;
+public class PlayListNode extends AbstractNode
+    implements PropertyChangeListener, ChangeListener, Comparable<PlayListNode> {
+    private final PlayList playList;
     
     /** Creates a new instance of PlayListNode
      * @param playList The PlayList represented by this node.
@@ -224,5 +225,10 @@ public class PlayListNode extends AbstractNode implements PropertyChangeListener
         }
     }
     // </editor-fold>
+
+    @Override
+    public int compareTo(PlayListNode o) {
+        return playList.compareTo(o.playList);
+    }
 
 }

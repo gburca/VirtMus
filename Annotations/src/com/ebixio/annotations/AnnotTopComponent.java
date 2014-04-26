@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@ import com.ebixio.annotations.tools.DrawingTool;
 import com.ebixio.annotations.tools.ToolFreehand;
 import com.ebixio.annotations.tools.ToolLine;
 import com.ebixio.annotations.tools.ToolRect;
+import com.ebixio.virtmus.CommonExplorers;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import java.awt.Color;
@@ -402,18 +403,15 @@ public final class AnnotTopComponent extends TopComponent
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
-    public ExplorerManager getExplorerManager() {
-        return MainApp.findInstance().getExplorerManager();
-    }
     @Override
     public void addNotify() {
-        getExplorerManager().addPropertyChangeListener(eListener);
+        CommonExplorers.MainExplorerManager.addPropertyChangeListener(eListener);
         super.addNotify();
     }
     @Override
     public void removeNotify() {
         super.removeNotify();
-        getExplorerManager().removePropertyChangeListener(eListener);
+        CommonExplorers.MainExplorerManager.removePropertyChangeListener(eListener);
     }
 
     @Override
@@ -431,7 +429,7 @@ public final class AnnotTopComponent extends TopComponent
      * it is different from the image being currently displayed.
      */
     private void updateSelection() {
-        Node[] nodes = getExplorerManager().getSelectedNodes();
+        Node[] nodes = CommonExplorers.MainExplorerManager.getSelectedNodes();
         if (nodes.length > 0) {
             Lookup l = nodes[0].getLookup();
             Collection pages = l.lookupResult(MusicPage.class).allInstances();
@@ -601,7 +599,7 @@ public final class AnnotTopComponent extends TopComponent
      * @return A set of drawing tools
      */
     public ComboBoxModel<DrawingTool> getTools() {
-        DefaultComboBoxModel<DrawingTool> cbm = new DefaultComboBoxModel<DrawingTool>();
+        DefaultComboBoxModel<DrawingTool> cbm = new DefaultComboBoxModel<>();
         cbm.addElement(new ToolRect(canvas));
         cbm.addElement(new ToolLine(canvas));
         cbm.addElement(new ToolFreehand(canvas));

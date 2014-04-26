@@ -98,7 +98,7 @@ public class PlayList implements Comparable<PlayList> {
     protected transient boolean movedSongs = false;
     // Some of the songs in this playlist could not be found
     protected transient boolean missingSongs = false;
-    private transient List<PropertyChangeListener> propListeners =
+    private transient final List<PropertyChangeListener> propListeners =
             Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
     
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
