@@ -18,17 +18,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="beanTreeView1" alignment="1" pref="180" max="32767" attributes="0"/>
+          <Component id="playlistTreeView" alignment="1" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="beanTreeView1" alignment="0" pref="262" max="32767" attributes="0"/>
+          <Component id="playlistTreeView" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="org.openide.explorer.view.BeanTreeView" name="beanTreeView1">
+    <Component class="org.openide.explorer.view.BeanTreeView" name="playlistTreeView">
     </Component>
   </SubComponents>
 </Form>

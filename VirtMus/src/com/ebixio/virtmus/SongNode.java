@@ -47,6 +47,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -58,7 +59,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class SongNode extends AbstractNode
     implements PropertyChangeListener, ChangeListener, Comparable<SongNode> {
-    private final Song song;
+    private Song song;
     
     /** Creates a new instance of SongNode
      * @param playList The playlist the song belongs to
@@ -67,23 +68,27 @@ public class SongNode extends AbstractNode
      */
     public SongNode(PlayList playList, Song song, MusicPages children) {
         super(children, Lookups.fixed(new Object[]{playList, song, children.getIndex()}));
-        this.song = song;
-        displayFormat = new MessageFormat("{0}");
-        setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
-
-        song.addPropertyChangeListener(WeakListeners.propertyChange(this, song));
-        song.addChangeListener(WeakListeners.change(this, song));
+        nodeConfig(song);
     }
     
-    // Used by stand-alone songs in the Tag component
+    /** Creates a new instance of SongNode. This is used by stand-alone songs
+     * that are not tied to a specific PlayList (ex: in the Tag TopComponent).
+     * @param song The song represented by this node
+     * @param children The music pages belonging to this song
+     */
     public SongNode(Song song, MusicPages children) {
         super(children, Lookups.fixed(new Object[]{song, children.getIndex()}));
+        nodeConfig(song);
+    }
+    
+    /** 2nd stage constructor. */
+    private void nodeConfig(Song song) {
         this.song = song;
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
         song.addPropertyChangeListener(WeakListeners.propertyChange(this, song));
-        song.addChangeListener(WeakListeners.change(this, song));
+        song.addChangeListener(WeakListeners.change(this, song));        
     }
         
     @Override
@@ -104,6 +109,8 @@ public class SongNode extends AbstractNode
             nameProp.setName("Name");
             fileProp.setName("Source File");
             tagsProp.setName("Tags");
+            tagsProp.setShortDescription(
+                NbBundle.getMessage(PlayListTopComponent.class, "CTL_TagsDescription"));
             set.put(nameProp);
             set.put(fileProp);
             set.put(tagsProp);
@@ -187,7 +194,7 @@ public class SongNode extends AbstractNode
     // <editor-fold defaultstate="collapsed" desc=" PropertyChangeListener interface ">
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("nameProp".equals(evt.getPropertyName())) {
+        if (Song.PROP_NAME.equals(evt.getPropertyName())) {
             String newName = (String)evt.getNewValue();
             this.fireDisplayNameChange(null, newName);
         }

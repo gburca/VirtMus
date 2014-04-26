@@ -424,7 +424,7 @@ public class Utils {
         return s1 + "..." + s2;
     }
     
-    /** Convert the song or playlist tags into a list.
+    /** Convert the song or PlayList tags into a list.
      * @param tags The tags string. Can be null.
      * @return A possibly empty list of tag strings. */
     public static List<String> tags2list(String tags) {

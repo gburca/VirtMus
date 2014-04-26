@@ -57,7 +57,6 @@ public final class MainApp implements ChangeListener {
     
     private static MainApp instance;
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
-    private transient ExplorerManager manager = new ExplorerManager();
     private static Date lastTime = new Date();
     private final transient Set<ChangeListener> plListeners = new HashSet<>();
     
@@ -205,12 +204,11 @@ public final class MainApp implements ChangeListener {
         });
 
         
-        // To update the status bar when songs/playlists are selected
-        manager.addPropertyChangeListener(new PropertyChangeListener() {
+        PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                    Node[] nodes = manager.getSelectedNodes();
+                    Node[] nodes = (Node[]) evt.getNewValue();
                     if (nodes.length == 0) {return;}
                     Lookup l = nodes[0].getLookup();
                     Collection songs = l.lookupResult(Song.class).allInstances();
@@ -234,8 +232,11 @@ public final class MainApp implements ChangeListener {
                     StatusDisplayer.getDefault().setStatusText(pre + "no file");
                 }
             }
-        });
+        };
 
+        // To update the status bar when songs/playlists are selected
+        CommonExplorers.MainExplorerManager.addPropertyChangeListener(pcl);
+        CommonExplorers.TagsExplorerManager.addPropertyChangeListener(pcl);
     }
     
     /**
@@ -373,10 +374,6 @@ public final class MainApp implements ChangeListener {
         }
         StatusDisplayer.getDefault().setStatusText("Save All finished.");
     }
-
-    public void setExplorerManager(ExplorerManager manager) {
-        this.manager = manager;
-    }
     
     public static String getElapsedTime() {
         StringBuilder res = new StringBuilder();
@@ -415,8 +412,9 @@ public final class MainApp implements ChangeListener {
         return false;
     }
     
+    /** Listeners will be notified of additions/deletions to the set of PlayLists. */
     public void addPLChangeListener(ChangeListener listener) {
-        plListeners.add(listener);
+        if (!plListeners.contains(listener)) plListeners.add(listener);
     }
     public void removePLChangeListener(ChangeListener listener) {
         plListeners.remove(listener);

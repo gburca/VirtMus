@@ -23,7 +23,6 @@ import com.ebixio.annotations.tools.ToolFreehand;
 import com.ebixio.annotations.tools.ToolLine;
 import com.ebixio.annotations.tools.ToolRect;
 import com.ebixio.virtmus.CommonExplorers;
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import java.awt.Color;
 import java.awt.RenderingHints;
@@ -75,8 +74,8 @@ public final class AnnotTopComponent extends TopComponent
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                //Node[] selectedNodes = (Node[]) evt.getNewValue();
-                updateSelection();
+                Node[] selectedNodes = (Node[]) evt.getNewValue();
+                updateSelection(selectedNodes);
             }
         }
     };
@@ -92,7 +91,7 @@ public final class AnnotTopComponent extends TopComponent
         setName(NbBundle.getMessage(AnnotTopComponent.class, "CTL_AnnotTopComponent"));
         setToolTipText(NbBundle.getMessage(AnnotTopComponent.class, "HINT_AnnotTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        //panner.setBackground(Color.red);
+        
         panner.setBorder(new LineBorder(Color.RED, 2));
         panner.setVisible(false);
         
@@ -406,12 +405,14 @@ public final class AnnotTopComponent extends TopComponent
     @Override
     public void addNotify() {
         CommonExplorers.MainExplorerManager.addPropertyChangeListener(eListener);
+        CommonExplorers.TagsExplorerManager.addPropertyChangeListener(eListener);
         super.addNotify();
     }
     @Override
     public void removeNotify() {
         super.removeNotify();
         CommonExplorers.MainExplorerManager.removePropertyChangeListener(eListener);
+        CommonExplorers.TagsExplorerManager.removePropertyChangeListener(eListener);
     }
 
     @Override
@@ -428,8 +429,7 @@ public final class AnnotTopComponent extends TopComponent
      * Since setImage is very time-consuming for large images, we want to do it only if
      * it is different from the image being currently displayed.
      */
-    private void updateSelection() {
-        Node[] nodes = CommonExplorers.MainExplorerManager.getSelectedNodes();
+    private void updateSelection(Node[] nodes) {
         if (nodes.length > 0) {
             Lookup l = nodes[0].getLookup();
             Collection pages = l.lookupResult(MusicPage.class).allInstances();

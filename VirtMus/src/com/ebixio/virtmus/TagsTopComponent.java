@@ -27,8 +27,6 @@ final class TagsTopComponent extends TopComponent
 
     private static final String PREFERRED_ID = "TagsTopComponent";
 
-    private final transient ExplorerManager manager = new ExplorerManager();
-    
     private TagsTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(TagsTopComponent.class, "CTL_TagsTopComponent"));
@@ -36,11 +34,12 @@ final class TagsTopComponent extends TopComponent
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);
         
+        ExplorerManager manager = CommonExplorers.TagsExplorerManager;
         associateLookup(ExplorerUtils.createLookup(manager, this.getActionMap()));
         
         manager.setRootContext(new AbstractNode(new Tags(MainApp.findInstance())));
         manager.getRootContext().setDisplayName("Tags");
-        this.beanTreeView1.setRootVisible(false);
+        this.tagsTreeView.setRootVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -51,10 +50,12 @@ final class TagsTopComponent extends TopComponent
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        beanTreeView1 = new org.openide.explorer.view.BeanTreeView();
+        tagsTreeView = new org.openide.explorer.view.BeanTreeView();
 
-        beanTreeView1.setDragSource(false);
-        beanTreeView1.setDropTarget(false);
+        setOpaque(true);
+
+        tagsTreeView.setDragSource(false);
+        tagsTreeView.setDropTarget(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -62,17 +63,17 @@ final class TagsTopComponent extends TopComponent
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(beanTreeView1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(tagsTreeView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(beanTreeView1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(tagsTreeView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.openide.explorer.view.BeanTreeView beanTreeView1;
+    private org.openide.explorer.view.BeanTreeView tagsTreeView;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -131,7 +132,7 @@ final class TagsTopComponent extends TopComponent
 
     @Override
     public ExplorerManager getExplorerManager() {
-        return manager;
+        return CommonExplorers.TagsExplorerManager;
     }
 
     final static class ResolvableHelper implements Serializable {

@@ -104,12 +104,16 @@ public class Song implements Comparable<Song> {
     
     // transients are not initialized when the object is deserialized !!!
     private transient File sourceFile = null;
+    
+    public static final String PROP_TAGS = "tagsProp";
+    public static final String PROP_NAME = "nameProp";
+    
     private transient List<PropertyChangeListener> propListeners = Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
     /* We should instantiate each song only once.
      * That way when a page is added/removed from it the change will be reflected in all playlists containing the song. */
     //private transient static HashMap<String, Song> instantiated = Collections.synchronizedMap(new HashMap<String, Song>());
-    private transient static HashMap<String, Song> instantiated = new HashMap<String, Song>();
+    private transient static HashMap<String, Song> instantiated = new HashMap<>();
 
     private static final Icon ICON = ImageUtilities.loadImageIcon(
             "com/ebixio/virtmus/resources/SongNode.png", false);
@@ -182,7 +186,7 @@ public class Song implements Comparable<Song> {
         } else {
             String songDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "");
             sD = new File(songDir);
-            if (sD != null && sD.exists()) fc.setCurrentDirectory(sD);
+            if (sD.exists()) fc.setCurrentDirectory(sD);
         }
 
         int returnVal = fc.showOpenDialog(mainWindow);
@@ -202,8 +206,10 @@ public class Song implements Comparable<Song> {
             return false;
         } else if (f.isDirectory()) {
             File[] images = f.listFiles();
-            for (int i = 0; i < images.length; i++) {
-                if (images[i].isFile()) addPage(images[i]);
+            for (File image : images) {
+                if (image.isFile()) {
+                    addPage(image);
+                }
             }
         } else if (f.isFile()) {
             if (f.getName().toLowerCase().endsWith(".pdf")) {
@@ -290,7 +296,7 @@ public class Song implements Comparable<Song> {
         
         String oldName = this.name;
         this.name = name;
-        fire("nameProp", oldName, name);
+        fire(PROP_NAME, oldName, name);
         setDirty(true);
         notifyListeners();
     }
@@ -305,6 +311,10 @@ public class Song implements Comparable<Song> {
     }
 
     public void setTags(String tags) {
+        if (tags != null) {
+            tags = tags.trim();
+            if (tags.length() == 0) tags = null;
+        }
         if (tags == null) {
             if (this.tags == null) return;
         } else if (tags.equals(this.tags)) {
@@ -313,7 +323,7 @@ public class Song implements Comparable<Song> {
 
         String oldTags = this.tags;
         this.tags = tags;
-        fire("tagsProp", oldTags, tags);
+        fire(PROP_TAGS, oldTags, tags);
         setDirty(true);
         notifyListeners();
     }
@@ -613,28 +623,32 @@ public class Song implements Comparable<Song> {
     }
     
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
-        propListeners.add(pcl);
+        if (!propListeners.contains(pcl)) {
+            propListeners.add(pcl);
+        }
     }
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         propListeners.remove(pcl);
     }
-    public void fire(String propertyName, Object old, Object nue) {
+    private void fire(String propertyName, Object old, Object nue) {
         // Passing 0 below on purpose, so you only synchronize for one atomic call
         PropertyChangeListener[] pcls = propListeners.toArray(new PropertyChangeListener[0]);
-        for (int i = 0; i < pcls.length; i++) {
-            pcls[i].propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
+        for (PropertyChangeListener pcl : pcls) {
+            pcl.propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
         }
     }
 
     public void addChangeListener(ChangeListener listener) {
-        pageListeners.add(listener);
+        if (!pageListeners.contains(listener)) pageListeners.add(listener);
     }
     public void removeChangeListener(ChangeListener listener) {
         pageListeners.remove(listener);
     }
     public void notifyListeners() {
         ChangeListener[] cls = pageListeners.toArray(new ChangeListener[0]);
-        for (int i = 0; i < cls.length; i++) cls[i].stateChanged(new ChangeEvent(this));
+        for (ChangeListener cl : cls) {
+            cl.stateChanged(new ChangeEvent(this));
+        }
     }
 
     @Override

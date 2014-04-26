@@ -98,8 +98,13 @@ public class PlayList implements Comparable<PlayList> {
     protected transient boolean movedSongs = false;
     // Some of the songs in this playlist could not be found
     protected transient boolean missingSongs = false;
+    
+    public static final String PROP_NAME = "nameProp";
+    public static final String PROP_TAGS = "tagsProp";
+    
     private transient final List<PropertyChangeListener> propListeners =
             Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
+
     
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
@@ -458,7 +463,7 @@ public class PlayList implements Comparable<PlayList> {
         
         String oldName = this.name;
         this.name = name;
-        fire("nameProp", oldName, name);
+        fire(PROP_NAME, oldName, name);
         setDirty(true);
         notifyListeners();
     }
@@ -476,7 +481,7 @@ public class PlayList implements Comparable<PlayList> {
         
         String oldTags = this.tags;
         this.tags = tags;
-        fire("tagsProp", oldTags, tags);
+        fire(PROP_TAGS, oldTags, tags);
         setDirty(true);
         notifyListeners();
     }
@@ -515,16 +520,16 @@ public class PlayList implements Comparable<PlayList> {
     
     // <editor-fold defaultstate="collapsed" desc=" Listeners ">
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
-        propListeners.add(pcl);
+        if (!propListeners.contains(pcl)) propListeners.add(pcl);
     }
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         propListeners.remove(pcl);
     }
-    public void fire(String propertyName, Object old, Object nue) {
+    private void fire(String propertyName, Object old, Object nue) {
         // Passing 0 below on purpose, so you only synchronize for one atomic call
         PropertyChangeListener[] pcls = propListeners.toArray(new PropertyChangeListener[0]);
-        for (int i = 0; i < pcls.length; i++) {
-            pcls[i].propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
+        for (PropertyChangeListener pcl : pcls) {
+            pcl.propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
         }
     }
 

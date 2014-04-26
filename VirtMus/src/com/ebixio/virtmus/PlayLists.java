@@ -39,7 +39,7 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * @param ma The main application
      */
     public PlayLists(MainApp ma) {
-//        Log.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
+        //Log.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
         //ma.addAllPlayLists(NbPreferences.forModule(MainApp.class));
         ma.addPLChangeListener(WeakListeners.change(this, ma));
     }
@@ -54,7 +54,7 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      */
     @Override
     protected void addNotify() {
-//        Log.log("PlayLists::addNotify " + Thread.currentThread().getName());
+        //Log.log("PlayLists::addNotify " + Thread.currentThread().getName());
         setKeys(getKeys());
     }
     
@@ -75,10 +75,6 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      */
     @Override
     protected Node[] createNodes(Integer key) {
-//        Log.log("PlayLists::createNodes " + Thread.currentThread().getName());
-//        if(!SwingUtilities.isEventDispatchThread()){
-//           throw new AssertionError("NOT on EDT");
-//        }
         List<PlayList> pl = MainApp.findInstance().playLists;
         PlayListNode pln = null;
         
@@ -87,9 +83,6 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
                 pln = new PlayListNode(pl.get(key), new Songs(pl.get(key)));
             }  
         }
-//        PlayListNode pln = new PlayListNode(
-//                MainApp.findInstance().playLists.get(key)
-//        );
         return new Node[] {pln};
     }
 

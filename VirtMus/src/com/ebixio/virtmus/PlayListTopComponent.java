@@ -64,7 +64,7 @@ final class PlayListTopComponent extends TopComponent
         Log.log("PlayListTopComponent::constructor before new PlayLists");
         manager.setRootContext(new AbstractNode(new PlayLists(MainApp.findInstance())));
         manager.getRootContext().setDisplayName("Playlists");
-        this.beanTreeView1.setRootVisible(false);
+        this.playlistTreeView.setRootVisible(false);
     }
      
     /** This method is called from within the constructor to
@@ -75,7 +75,7 @@ final class PlayListTopComponent extends TopComponent
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        beanTreeView1 = new org.openide.explorer.view.BeanTreeView();
+        playlistTreeView = new org.openide.explorer.view.BeanTreeView();
 
         setOpaque(true);
 
@@ -83,17 +83,17 @@ final class PlayListTopComponent extends TopComponent
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(beanTreeView1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+            .addComponent(playlistTreeView, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(beanTreeView1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+            .addComponent(playlistTreeView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.openide.explorer.view.BeanTreeView beanTreeView1;
+    private org.openide.explorer.view.BeanTreeView playlistTreeView;
     // End of variables declaration//GEN-END:variables
     
     /**

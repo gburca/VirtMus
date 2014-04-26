@@ -45,6 +45,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -99,12 +100,14 @@ public class PlayListNode extends AbstractNode
         try {
             Property nameProp = new PropertySupport.Reflection<String>(pl, String.class, "name"); // get/setName
             Property fileProp = new PropertySupport.Reflection<File>(pl, File.class, "getSourceFile", null); // only getSourceFile
-            Property songsProp = new PropertySupport.Reflection<Integer>(pl, Integer.class, "getSongCnt", null);
+            Property songsProp = new PropertySupport.Reflection<Integer>(pl, Integer.class, "getSongCnt", null); // only getSongCnt
             Property tagsProp = new PropertySupport.Reflection<String>(pl, String.class, "tags"); // get/setTags
             nameProp.setName("Name");
             fileProp.setName("Source File");
             songsProp.setName("Songs");
             tagsProp.setName("Tags");
+            tagsProp.setShortDescription(
+                NbBundle.getMessage(PlayListTopComponent.class, "CTL_TagsDescription"));
             set.put(nameProp);
             set.put(fileProp);
             set.put(songsProp);
@@ -219,7 +222,7 @@ public class PlayListNode extends AbstractNode
     // <editor-fold defaultstate="collapsed" desc=" PropertyChangeListener interface ">
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("nameProp".equals(evt.getPropertyName())) {
+        if (PlayList.PROP_NAME.equals(evt.getPropertyName())) {
             String newName = (String)evt.getNewValue();
             this.fireDisplayNameChange(null, newName);
         }
