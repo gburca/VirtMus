@@ -85,7 +85,7 @@ public class PlayList implements Comparable<PlayList> {
 
     @XStreamAlias("Name")
     private String name = null;
-    
+
     @XStreamAlias("Tags")
     private String tags = null;
 
@@ -98,23 +98,23 @@ public class PlayList implements Comparable<PlayList> {
     protected transient boolean movedSongs = false;
     // Some of the songs in this playlist could not be found
     protected transient boolean missingSongs = false;
-    
+
     public static final String PROP_NAME = "nameProp";
     public static final String PROP_TAGS = "tagsProp";
-    
+
     private transient final List<PropertyChangeListener> propListeners =
             Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
 
-    
+
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
     public transient boolean isFullyLoaded = true;
     private transient File sourceFile = null;
     private transient Set<ChangeListener> listeners = new HashSet<>();
-    
+
     public static enum Type { Default, AllSongs, Normal }
     public transient Type type = Type.Normal;
-    
+
     private static final Icon ICON = ImageUtilities.loadImageIcon(
             "com/ebixio/virtmus/resources/PlayListNode.png", false);
     private transient PlayListSavable savable = null;
@@ -132,14 +132,14 @@ public class PlayList implements Comparable<PlayList> {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     /** Creates a new instance of PlayList */
     public PlayList() {}
-    
+
     public PlayList(String name) {
         this.name = name;
     }
-    
+
     /** This function is executed by the XStream library after an object is
      * deserialized. It needs to initialize the transient fields (which are not
      * serialized/deserialized).
@@ -151,7 +151,7 @@ public class PlayList implements Comparable<PlayList> {
         version = MainApp.VERSION;
         return this;
     }
-    
+
     public void addAllSongs(File dir, boolean removeExisting) {
         if (removeExisting) songs.clear();
 
@@ -161,14 +161,14 @@ public class PlayList implements Comparable<PlayList> {
         t.dir = dir;
         t.setName("addAllSongsThread");
         t.setPriority(Thread.MIN_PRIORITY);
-        
+
         isFullyLoaded = false;
         t.start();  // Will set isFullyLoaded to true when finished
     }
 
     private class addAllSongsThread extends Thread {
         public File dir;
-        
+
         @Override
         public void run() {
             if (!(dir.exists() && dir.isDirectory())) {
@@ -176,7 +176,7 @@ public class PlayList implements Comparable<PlayList> {
                 notifyListeners();
                 return;
             }
-            
+
             FilenameFilter filter = new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
@@ -194,7 +194,7 @@ public class PlayList implements Comparable<PlayList> {
                     }
                 }
             }
-            
+
             // Compute some simple stats (what kind of music pages are being used)
             HashMap<String, Integer> hm = new HashMap<>();
             for (Song s: songs) {
@@ -207,7 +207,7 @@ public class PlayList implements Comparable<PlayList> {
                     }
                 }
             }
-            
+
             // Log the page stats
             LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_SONGS");
             Object[] params = new Object[1 + hm.size() * 2];
@@ -283,7 +283,7 @@ public class PlayList implements Comparable<PlayList> {
             return false;
         }
     }
-    
+
     public static PlayList open() {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
@@ -295,23 +295,23 @@ public class PlayList implements Comparable<PlayList> {
             fc.setCurrentDirectory(pD);
         }
         fc.addChoosableFileFilter(new PlayListFilter());
-        
+
         int returnVal = fc.showOpenDialog(mainWindow);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             return PlayList.deserialize( fc.getSelectedFile() );
         }
         return null;
     }
-    
+
     public boolean serialize() {
         return serialize(this.sourceFile);
     }
     public boolean serialize(File toFile) {
         if (toFile == null || toFile.isDirectory()) return false;
-        
+
         XStream xs = new XStream();
         xs.processAnnotations(PlayList.class);
-        
+
         // We need to re-create the songFiles
         songFiles.clear();
         synchronized (songs) {
@@ -319,7 +319,7 @@ public class PlayList implements Comparable<PlayList> {
                 if (s.getSourceFile() != null) songFiles.add(s.getSourceFile());
             }
         }
-        
+
         try {
             TraxSource traxSource = new TraxSource(this, xs);
             OutputStreamWriter buffer = new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8");
@@ -334,11 +334,11 @@ public class PlayList implements Comparable<PlayList> {
             Log.log(ex);
             return false;
         }
-        
+
         setDirty(false);
         return true;
     }
-    
+
     public static PlayList deserialize(final File f) {
         if (f == null || !f.getName().endsWith(".playlist.xml")) return null;
 
@@ -358,7 +358,7 @@ public class PlayList implements Comparable<PlayList> {
         } catch (Exception ex) {
             Log.log(ex);
             NotifyUtil.error("Failed to deserialize", f.toString(), ex);
-            return null;            
+            return null;
         } finally {
             if (fis != null) try {
                 fis.close();
@@ -392,23 +392,23 @@ public class PlayList implements Comparable<PlayList> {
                     Song s = Song.deserialize(sf);
                     if (s != null) pl.songs.add(s);
                 }
-                
+
                 if (pl.missingSongs) {
                     NotifyUtil.info(f.toString(), "Some songs are missing." +
                         " See the log file (menu View->IDE log) for details.");
                 }
-                
+
                 pl.isFullyLoaded = true;
                 pl.notifyListeners();
             }
         };
-        
+
         t.setName("Deserialize songs for PlayList: " + pl.getName());
         t.start();
-        
+
         return pl;
     }
-    
+
     public void addSong(Song song) {
         songs.add(song);
         setDirty(true);
@@ -422,7 +422,7 @@ public class PlayList implements Comparable<PlayList> {
         notifyListeners();
         return result;
     }
-    
+
     public void reorder(int[] order) {
         Song[] ss = new Song[order.length];
         for (int i = 0; i < order.length; i++) {
@@ -431,7 +431,7 @@ public class PlayList implements Comparable<PlayList> {
 
         songs.clear();
         songs.addAll(Arrays.asList(ss));
-        
+
         setDirty(true);
         notifyListeners();
     }
@@ -460,25 +460,29 @@ public class PlayList implements Comparable<PlayList> {
         } else if (name.equals(this.name)) {
             return;
         }
-        
+
         String oldName = this.name;
         this.name = name;
         fire(PROP_NAME, oldName, name);
         setDirty(true);
         notifyListeners();
     }
-    
+
     public String getTags() {
         return tags;
     }
-    
+
     public void setTags(String tags) {
+        if (tags != null) {
+            tags = tags.trim();
+            if (tags.length() == 0) tags = null;
+        }
         if (tags == null) {
             if (this.tags == null) return;
         } else if (tags.equals(this.tags)) {
             return;
         }
-        
+
         String oldTags = this.tags;
         this.tags = tags;
         fire(PROP_TAGS, oldTags, tags);
@@ -491,7 +495,7 @@ public class PlayList implements Comparable<PlayList> {
     }
     public void setDirty(boolean isDirty) {
         if (type != Type.Normal) return;
-        
+
         if (isDirty) {
             if (savable == null) {
                 savable = new PlayListSavable(this);
@@ -507,17 +511,17 @@ public class PlayList implements Comparable<PlayList> {
         }
     }
 
-    /** The playlist contents do not match the disk contents.
-     * @return true if some of the playlist files are missing, or have been moved.
+    /** The PlayList contents do not match the disk contents.
+     * @return true if some of the PlayList files are missing, or have been moved.
      */
     public boolean isStale() {
         return movedSongs || missingSongs;
     }
-    
+
     public boolean isMissingSongs() {
         return missingSongs;
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Listeners ">
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
         if (!propListeners.contains(pcl)) propListeners.add(pcl);
@@ -610,7 +614,7 @@ public class PlayList implements Comparable<PlayList> {
         public int hashCode() {
             return pl.hashCode();
         }
-        
+
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             ICON.paintIcon(c, g, x, y);

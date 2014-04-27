@@ -240,7 +240,7 @@ public final class MainApp implements ChangeListener {
     }
     
     /**
-     * Re-reads all the playlists and songs from the disc
+     * Re-reads all the PlayLists and Songs from the disc
      */
     public void refresh() {
         addAllPlayListsThreaded(NbPreferences.forModule(MainApp.class), true);

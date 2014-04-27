@@ -52,8 +52,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -101,19 +106,23 @@ public class Song implements Comparable<Song> {
     public String tags = null;
     @XStreamAsAttribute
     private String version = MainApp.VERSION;   // Used in the XML output
-    
+
     // transients are not initialized when the object is deserialized !!!
     private transient File sourceFile = null;
-    
+
     public static final String PROP_TAGS = "tagsProp";
     public static final String PROP_NAME = "nameProp";
-    
+
     private transient List<PropertyChangeListener> propListeners = Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
+
     /* We should instantiate each song only once.
      * That way when a page is added/removed from it the change will be reflected in all playlists containing the song. */
-    //private transient static HashMap<String, Song> instantiated = Collections.synchronizedMap(new HashMap<String, Song>());
-    private transient static HashMap<String, Song> instantiated = new HashMap<>();
+    private transient static Map<String, Song> instantiated = Collections.synchronizedMap(new HashMap<String, Song>());
+    /** Keeps track of de-serializations that are in progress. */
+    private transient static Map<String, CountDownLatch> inProgress = new HashMap<>();
+    /** The de-serializer lock. */
+    private transient static final Object deserLock = new Object();
 
     private static final Icon ICON = ImageUtilities.loadImageIcon(
             "com/ebixio/virtmus/resources/SongNode.png", false);
@@ -134,14 +143,14 @@ public class Song implements Comparable<Song> {
     }
 
     public Song() {}
-    
+
     /** Creates a new instance of Song from a file, or a directory of files
      * @param f The file/directory to create the song from.
      */
     public Song(File f) {
         addPage(f);
     }
-    
+
     /** Constructors are not called (and transients are not initialized)
      * when the object is deserialized !!! */
     private Object readResolve() {
@@ -151,12 +160,12 @@ public class Song implements Comparable<Song> {
         version = MainApp.VERSION;
         return this;
     }
-    
+
     public boolean isDirty() {
         return savable != null;
     }
     public void setDirty(boolean isDirty) {
-       
+
         if (isDirty) {
             if (savable == null) {
                 savable = new SongSavable(this);
@@ -173,13 +182,13 @@ public class Song implements Comparable<Song> {
             }
         }
     }
-    
+
     public boolean addPage() {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fc.setMultiSelectionEnabled(true);
-        
+
         File sD = this.sourceFile.getParentFile();
         if (sD != null && sD.exists()) {
             fc.setCurrentDirectory(sD);
@@ -253,7 +262,7 @@ public class Song implements Comparable<Song> {
         notifyListeners();
         return true;
     }
-    
+
     public boolean removePage(MusicPage[] mps) {
         boolean removed = false;
         for (MusicPage mp: mps) {
@@ -265,7 +274,7 @@ public class Song implements Comparable<Song> {
         notifyListeners();
         return removed;
     }
-    
+
     public void reorder(int[] order) {
         MusicPage[] mp = new MusicPage[order.length];
         for (int i = 0; i < order.length; i++) {
@@ -274,7 +283,7 @@ public class Song implements Comparable<Song> {
 
         pageOrder.clear();
         pageOrder.addAll(Arrays.asList(mp));
-        
+
         setDirty(true);
         notifyListeners();
     }
@@ -293,7 +302,7 @@ public class Song implements Comparable<Song> {
         } else if (name.equals(this.name)) {
             return;
         }
-        
+
         String oldName = this.name;
         this.name = name;
         fire(PROP_NAME, oldName, name);
@@ -330,7 +339,7 @@ public class Song implements Comparable<Song> {
     public String getTags() {
         return tags;
     }
-    
+
     public boolean save() {
         if (sourceFile == null || !sourceFile.exists() || !sourceFile.isFile()) {
             return saveAs();
@@ -365,27 +374,27 @@ public class Song implements Comparable<Song> {
             return false;
         }
     }
-    
+
     public static Song open() {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
-        
+
         String songDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "");
         File sD = new File(songDir);
         if (sD.exists()) {
             fc.setCurrentDirectory(sD);
         }
         fc.addChoosableFileFilter(new SongFilter());
-        
+
         int returnVal = fc.showOpenDialog(mainWindow);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             return deserialize(file);
         } else {
             return null;
-        }        
+        }
     }
 
     static private void configXStream(XStream xs) {
@@ -445,7 +454,7 @@ public class Song implements Comparable<Song> {
             Log.log(ex);
             return false;
         }
-        
+
         // If this was saved using saveAs, add this file to the list of instantiated songs
         try {
             if (! Song.instantiated.containsKey(toFile.getCanonicalPath())) {
@@ -462,21 +471,102 @@ public class Song implements Comparable<Song> {
 
         return true;
     }
-    
+
+    /** De-serialization helper class.
+     * Performs the de-serialization and notifies waiting threads when it's done.
+     */
+    private static class Deserializer implements Runnable {
+        CountDownLatch latch;
+        File file;
+        String canonicalPath;
+        public Deserializer(CountDownLatch latch, File file, String canonicalPath) {
+            this.latch = latch;
+            this.file = file;
+            this.canonicalPath = canonicalPath;
+        }
+
+        @Override
+        public void run() {
+            Song s = Song.deserializeCore(file, canonicalPath);
+            if (s != null) {
+                synchronized(deserLock) {
+                    Song.instantiated.put(canonicalPath, s);
+                    Song.inProgress.remove(canonicalPath);
+                }
+            }
+            // Notify all pending threads that the song is ready
+            latch.countDown();
+        }
+    }
+
+    /**
+     * De-serializes a song file.
+     *
+     * This function will block until the de-serialization is complete. The song
+     * de-serialization can be in one of 3 states:
+     * <li>Not started
+     * <li>In progress
+     * <li>Completed
+     *
+     * If it's completed, we just return the de-serialized song. If it's not yet
+     * started, we start a new Deserializer and wait for it to complete before
+     * returning the song (or null). If a job is already in progress we await()
+     * the same latch, and return the song (or null) when the job is done.
+     *
+     * @param f A song file to de-serialize
+     * @return The de-serialized song, or null if an error was encountered.
+     */
     static Song deserialize(File f) {
         if (f == null || !f.getName().endsWith(".song.xml")) return null;
 
-        Song s;
-        
         String canonicalPath;
         try {
             canonicalPath = f.getCanonicalPath();
         } catch (IOException ex) {
-            Exceptions.attachMessage(ex, "No canonical path for " + f.toString());
+            //Exceptions.attachMessage(ex, "No canonical path for " + f.toString());
             return null;
         }
-        
-        if (Song.instantiated.containsKey(canonicalPath)) return Song.instantiated.get(canonicalPath);
+
+        CountDownLatch latch;
+        Deserializer r = null;
+
+        synchronized(deserLock) {
+            if (instantiated.containsKey(canonicalPath)) { // deserialization completed
+                //Log.log("Song deserialization completed: " + canonicalPath, Level.FINEST);
+                return instantiated.get(canonicalPath);
+            } else if (!inProgress.containsKey(canonicalPath)) { // deser not started
+                //Log.log("Song deserialization not started: " + canonicalPath, Level.FINEST);
+                latch = new CountDownLatch(1);
+                inProgress.put(canonicalPath, latch);
+                r = new Deserializer(latch, f, canonicalPath);
+            } else { // deserialization in progress
+                //Log.log("Song deserialization in progress: " + canonicalPath, Level.FINEST);
+                latch = inProgress.get(canonicalPath);
+            }
+        }
+
+        if (r != null) {
+            r.run();
+        }
+
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return instantiated.get(canonicalPath);
+    }
+
+    /**
+     * The core de-serialization code. Callers must ensure the arguments
+     * are valid. No error checking is done on them.
+     * @param f The file to be de-serialized
+     * @param canonicalPath The result of f.getCanonicalPath()
+     * @return
+     */
+    private static Song deserializeCore(File f, String canonicalPath) {
+        Song s;
 
         XStream xs = new XStream();
         configXStream(xs);
@@ -492,15 +582,17 @@ public class Song implements Comparable<Song> {
             }
 
             xformed = convertReferences(new ByteArrayInputStream(xformed.toByteArray()));
-            
-//            File f2 = new File(f.getName() + ".conv");
-//            OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(f2), "UTF-8");
-//            w.write(xformed.toString("UTF-8"));
-//            w.close();
+
+            boolean debug = false;
+            if (debug) {
+                File f2 = new File(f.getName() + ".conv");
+                try (OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(f2), "UTF-8")) {
+                    w.write(xformed.toString("UTF-8"));
+                }
+            }
 
             s = (Song) xs.fromXML(xformed.toString("UTF-8"));
 
-            //s = (Song) xs.fromXML(new InputStreamReader(fis, "UTF-8"));
         } catch (FileNotFoundException ex) {
             //ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             NotifyUtil.error("Song file not found", canonicalPath, ex);
@@ -524,14 +616,12 @@ public class Song implements Comparable<Song> {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         s.sourceFile = new File(canonicalPath);
         synchronized (s.pageOrder) {
             for (MusicPage mp: s.pageOrder) mp.deserialize(s);
         }
         findPages(s);
-        
-        Song.instantiated.put(canonicalPath, s);
 
         return s;
     }
@@ -584,7 +674,7 @@ public class Song implements Comparable<Song> {
             StreamResult res = new StreamResult(baos);
             Source src = new DOMSource(doc);
             xformer.transform(src, res);
-            
+
         } catch (TransformerException ex) {
             Exceptions.printStackTrace(ex);
         } catch (SAXException ex) {
@@ -621,7 +711,7 @@ public class Song implements Comparable<Song> {
     public static void clearInstantiated() {
         instantiated.clear();
     }
-    
+
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
         if (!propListeners.contains(pcl)) {
             propListeners.add(pcl);
@@ -655,17 +745,17 @@ public class Song implements Comparable<Song> {
     public int compareTo(Song other) {
         return getName().compareTo(other.getName());
     }
-    
+
     private class SongSavable extends AbstractSavable implements Icon, SaveAsCapable {
 
         private final Song s;
-        
+
         public SongSavable(Song s) {
             if (s == null) throw new IllegalArgumentException("Null Song not allowed");
             this.s = s;
             register();
         }
-        
+
         @Override
         protected String findDisplayName() {
             return s.getName();
@@ -676,7 +766,7 @@ public class Song implements Comparable<Song> {
             s.save();
             VirtMusLookup.getInstance().remove(this);
         }
-        
+
         public void saved() {
             unregister();
             VirtMusLookup.getInstance().remove(this);
@@ -695,7 +785,7 @@ public class Song implements Comparable<Song> {
         public int hashCode() {
             return s.hashCode();
         }
-        
+
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             ICON.paintIcon(c, g, x, y);

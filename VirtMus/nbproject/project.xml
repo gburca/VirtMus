@@ -238,6 +238,7 @@
             <word>deserialized</word>
             <word>ebixio</word>
             <word>rasterizer</word>
+            <word>serializer</word>
             <word>virtmus</word>
         </spellchecker-wordlist>
     </configuration>

@@ -38,23 +38,23 @@ import org.openide.util.WeakListeners;
 public class Tags extends Children.Keys<String> implements PropertyChangeListener, ChangeListener {
     public static final HashMap<String, Set<PlayList>> plTags = new HashMap<>();
     public static final HashMap<String, Set<Song>> songTags = new HashMap<>();
-    
+
     public Tags(MainApp ma) {
         // Listen for PlayLists added or removed
         ma.addPLChangeListener(WeakListeners.change(this, ma));
     }
-    
+
     @Override
     protected void addNotify() {
         setKeys(getKeys());
     }
-    
+
     private ArrayList<String> getKeys() {
         List<PlayList> pl = MainApp.findInstance().playLists;
         synchronized (pl) {
             songTags.clear();
             plTags.clear();
-            
+
             for (PlayList p: pl) {
                 if (p.type == PlayList.Type.AllSongs || p.type== PlayList.Type.Default) {
                     for (Song s: p.songs) {
@@ -81,15 +81,15 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
                 }
             }
         }
-        
+
         // Show each tag just once (even if it's in both plTags and songTags)
         Set<String> tagSet = new HashSet<>();
         tagSet.addAll(plTags.keySet());
         tagSet.addAll(songTags.keySet());
-        
+
         ArrayList<String> tagKeys = new ArrayList<>(tagSet);
         Collections.sort(tagKeys);
-        
+
         return tagKeys;
     }
 
@@ -111,12 +111,12 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
             handleTagChange();
         }
     }
-    
+
     private void handleTagChange() {
         addNotify();
         for (String s: getKeys()) {
             refreshKey(s);
-        }        
+        }
     }
-    
+
 }

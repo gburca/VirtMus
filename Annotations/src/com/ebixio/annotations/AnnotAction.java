@@ -33,7 +33,7 @@ import org.openide.windows.TopComponent;
  */
 @ActionID(id = "com.ebixio.annotations.AnnotAction", category = "Window")
 @ActionRegistration(lazy = false, displayName = "#CTL_AnnotAction")
-@ActionReference(path = "Menu/Window", name = "AnnotAction")
+@ActionReference(path = "Menu/Window", name = "AnnotAction", position = 310)
 public class AnnotAction extends AbstractAction {
     
     public AnnotAction() {

@@ -32,13 +32,7 @@
         <folder name="Window">
             <file name="com-ebixio-virtmus-PlayListAction.instance"/>
             <file name="com-ebixio-virtmus-TagsAction.instance"/>
-            <!-- file name="com-ebixio-virtmus-TagsAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.ebixio.virtmus.Bundle"/>
-                <attr name="component" methodvalue="com.ebixio.virtmus.TagsTopComponent.findInstance"/>
-                <attr name="displayName" bundlevalue="com.ebixio.virtmus.Bundle#CTL_TagsAction"/>
-                <attr name="iconBase" stringvalue="com/ebixio/virtmus/resources/PlayListTopComponent.png"/>
-                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
-            </file -->
+            
             <file name="org-netbeans-core-windows-actions-CloneDocumentAction.instance_hidden"/>
             <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance_hidden"/>
             <file name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance_hidden"/>
@@ -160,7 +154,7 @@
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-PlayListAction.instance"/>
             </file>
             <file name="TagsAction.shadow">
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="210"/>
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-virtmus-TagsAction.instance"/>
             </file>
             <file name="Tools_hidden"/>
