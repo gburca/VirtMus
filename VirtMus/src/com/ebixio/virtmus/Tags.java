@@ -41,7 +41,7 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
 
     public Tags(MainApp ma) {
         // Listen for PlayLists added or removed
-        ma.addPLChangeListener(WeakListeners.change(this, ma));
+        ma.addPropertyChangeListener(MainApp.PROP_PL_LOADED, WeakListeners.propertyChange(this, ma));
     }
 
     @Override
@@ -49,14 +49,14 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
         setKeys(getKeys());
     }
 
-    private ArrayList<String> getKeys() {
+    private synchronized ArrayList<String> getKeys() {
         List<PlayList> pl = MainApp.findInstance().playLists;
         synchronized (pl) {
             songTags.clear();
             plTags.clear();
 
             for (PlayList p: pl) {
-                if (p.type == PlayList.Type.AllSongs || p.type== PlayList.Type.Default) {
+                if (p.type == PlayList.Type.AllSongs || p.type == PlayList.Type.Default) {
                     for (Song s: p.songs) {
                         // The user may add a tag at a later time
                         s.addPropertyChangeListener(Song.PROP_TAGS, WeakListeners.propertyChange(this, s));
@@ -68,6 +68,9 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
                         }
                     }
                 } else {
+                    // Get notified if new songs are added (deserialized)
+                    p.addChangeListener(WeakListeners.change(this, p));
+
                     p.addPropertyChangeListener(PlayList.PROP_TAGS, WeakListeners.propertyChange(this, p));
                     for (String tag: Utils.tags2list(p.getTags())) {
                         if (!plTags.containsKey(tag)) {
@@ -97,6 +100,7 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        // PlayLists were added or removed
         handleTagChange();
     }
 
@@ -106,10 +110,12 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
             (evt.getSource() instanceof Song     && Song.PROP_TAGS.equals(evt.getPropertyName()))
          || (evt.getSource() instanceof PlayList && PlayList.PROP_TAGS.equals(evt.getPropertyName()))) {
             handleTagChange();
+        } else if (MainApp.PROP_PL_LOADED.equals(evt.getPropertyName())) {
+
         }
     }
 
-    private void handleTagChange() {
+    private synchronized void handleTagChange() {
         addNotify();
         for (String s: getKeys()) {
             refreshKey(s);

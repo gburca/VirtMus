@@ -1,7 +1,7 @@
 /*
  * PageOrderConverter.java
  *
- * Copyright (C) 2006-2009  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +21,6 @@
 package com.ebixio.virtmus.xml;
 
 import com.ebixio.virtmus.MusicPage;
-import com.ebixio.virtmus.MusicPageSVG;
-import com.ebixio.virtmus.Song;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.ConverterMatcher;
@@ -30,10 +28,10 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * TODO: Handle sourceFile references in the song file, or modify the xsl to
@@ -48,6 +46,7 @@ public class PageOrderConverter implements Converter, ConverterMatcher {
     }
 
     @SuppressWarnings(value={"unchecked"})
+    @Override
     public void marshal(Object value, HierarchicalStreamWriter writer, MarshallingContext context) {
         List<MusicPage> list = (List<MusicPage>)value;
         synchronized(list) {
@@ -58,8 +57,9 @@ public class PageOrderConverter implements Converter, ConverterMatcher {
         }
     }
 
+    @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-        List<MusicPage> order = Collections.synchronizedList(new Vector<MusicPage>());
+        List<MusicPage> order = Collections.synchronizedList(new ArrayList<MusicPage>());
         while (reader.hasMoreChildren()) {
             reader.moveDown();
             MusicPage mp = (MusicPage)xs.unmarshal(reader);
@@ -69,6 +69,7 @@ public class PageOrderConverter implements Converter, ConverterMatcher {
         return order;
     }
 
+    @Override
     public boolean canConvert(Class clazz) {
         return true;
     }

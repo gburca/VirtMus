@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -98,10 +100,10 @@ public class PlayList implements Comparable<PlayList> {
 
     public static final String PROP_NAME = "nameProp";
     public static final String PROP_TAGS = "tagsProp";
-    
-    private transient PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    private transient PropertyChangeSupport pcs;
     // Could change this to EventListenerList if we had more than 1 event type
-    private transient Set<ChangeListener> listeners = Collections.synchronizedSet(new HashSet<ChangeListener>());
+    private transient Set<ChangeListener> listeners;
 
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
@@ -109,11 +111,11 @@ public class PlayList implements Comparable<PlayList> {
     private transient File sourceFile = null;
 
     public static enum Type { Default, AllSongs, Normal }
-    public transient Type type = Type.Normal;
+    public transient Type type;
 
     private static final Icon ICON = ImageUtilities.loadImageIcon(
             "com/ebixio/virtmus/resources/PlayListNode.png", false);
-    private transient PlayListSavable savable = null;
+    private transient PlayListSavable savable;
 
     private transient static Transformer plXFormer;
 
@@ -132,13 +134,16 @@ public class PlayList implements Comparable<PlayList> {
     /** Creates a new instance of PlayList.
      * This constructor is NOT called when the object is deserialized.
      */
-    public PlayList() {}
+    public PlayList() {
+        readResolve();
+    }
 
     /** Creates a new PlayList.
      * This constructor is NOT called when the object is deserialized.
      * @param name User visible name for this PlayList.
      */
     public PlayList(String name) {
+        readResolve();
         this.name = name;
     }
 
@@ -333,7 +338,7 @@ public class PlayList implements Comparable<PlayList> {
         } catch (FileNotFoundException ex) {
             Log.log(ex);
             return false;
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException | TransformerException ex) {
             Log.log(ex);
             return false;
         }
@@ -358,7 +363,7 @@ public class PlayList implements Comparable<PlayList> {
             Log.log(ex);
             NotifyUtil.error("Playlist file not found", f.toString(), ex);
             return null;
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             Log.log(ex);
             NotifyUtil.error("Failed to deserialize", f.toString(), ex);
             return null;
@@ -379,6 +384,7 @@ public class PlayList implements Comparable<PlayList> {
                 pl.movedSongs = false;
                 for (File sf: pl.songFiles) {
                     if (!sf.exists()) {
+                        // See if we can find where it moved
                         String msg = "Playlist " + pl.sourceFile.getAbsolutePath() +
                                 " is missing song " + sf.getAbsolutePath() + ".";
                         sf = Utils.findFileRelative(f, sf);

@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -59,6 +60,10 @@ public final class MainApp implements ChangeListener {
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
     private static Date lastTime = new Date();
     private final transient Set<ChangeListener> plListeners = new HashSet<>();
+
+    private PropertyChangeSupport propertyChangeSupport;
+    public static final String PROP_PL_LOADED       = "allPlayListsLoaded";
+    public static final String PROP_NEW_PL_ADDED    = "newPlayListAdded";
 
     public static final String VERSION = "4.00";
 
@@ -163,6 +168,8 @@ public final class MainApp implements ChangeListener {
 
         //System.setProperty("nb.show.statistics.ui", "true");
         //System.getProperties().put("nb.show.statistics.ui", "true");
+
+        propertyChangeSupport = new PropertyChangeSupport(this);
 
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
@@ -291,6 +298,7 @@ public final class MainApp implements ChangeListener {
             pl = new PlayList("Default Play List");
             pl.type = PlayList.Type.Default;
             playLists.add(pl);
+            this.fire(PROP_NEW_PL_ADDED, null, pl);
 
             File dir = new File(pref.get(OptPlayListDir, ""));
             if (dir.exists() && dir.canRead() && dir.isDirectory()) {
@@ -307,7 +315,8 @@ public final class MainApp implements ChangeListener {
                     pl = PlayList.deserialize(f);
                     if (pl != null) {
                         playLists.add(pl);
-                        this.notifyPLListeners();
+                        //this.notifyPLListeners();
+                        this.fire(PROP_NEW_PL_ADDED, null, pl);
                     }
                 }
             }
@@ -316,6 +325,7 @@ public final class MainApp implements ChangeListener {
             pl.type = PlayList.Type.AllSongs;
             pl.addAllSongs(new File(pref.get(OptSongDir, "")), true);
             playLists.add(pl);
+            this.fire(PROP_NEW_PL_ADDED, null, pl);
 
             LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_PLAYLISTS");
             rec.setParameters(new Object[] {playLists.size()});
@@ -324,7 +334,8 @@ public final class MainApp implements ChangeListener {
             Collections.sort(playLists);
         }
 
-        this.notifyPLListeners();
+        //this.notifyPLListeners();
+        this.fire(PROP_PL_LOADED, null, playLists);
 
         setStatusText("Finished loading all PlayLists");
     }
@@ -399,7 +410,8 @@ public final class MainApp implements ChangeListener {
             } else {
                 playLists.remove(idx);
                 playLists.add(idx, with);
-                notifyPLListeners();
+                //notifyPLListeners();
+                this.fire(PROP_NEW_PL_ADDED, replace, with);
                 return true;
             }
         }
@@ -409,10 +421,25 @@ public final class MainApp implements ChangeListener {
         PlayList pl = PlayList.open();
         if (pl != null) {
             playLists.add(pl);
-            notifyPLListeners();
+            //notifyPLListeners();
+            this.fire(PROP_NEW_PL_ADDED, null, pl);
             return true;
         }
         return false;
+    }
+
+    // <editor-fold defaultstate="collapsed" desc=" Listeners ">
+    public void addPropertyChangeListener (PropertyChangeListener pcl) {
+        propertyChangeSupport.addPropertyChangeListener(pcl);
+    }
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener pcl) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, pcl);
+    }
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propertyChangeSupport.removePropertyChangeListener(pcl);
+    }
+    private void fire(String propertyName, Object old, Object nue) {
+        propertyChangeSupport.firePropertyChange(propertyName, old, nue);
     }
 
     /** Listeners will be notified of additions/deletions to the set of PlayLists. */
@@ -427,5 +454,5 @@ public final class MainApp implements ChangeListener {
         ChangeListener[] cls = plListeners.toArray(new javax.swing.event.ChangeListener[0]);
         for (ChangeListener cl: cls) cl.stateChanged(ev);
     }
-
+    // </editor-fold>
 }

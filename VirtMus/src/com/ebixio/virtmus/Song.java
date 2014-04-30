@@ -155,7 +155,7 @@ public class Song implements Comparable<Song> {
 
     /** Constructors are not called (and transients are not initialized)
      * when the object is deserialized !!! */
-    private Object readResolve() {
+    private Object readResolve2() {
         pcs = new PropertyChangeSupport(this);
         pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
         savable = null;
@@ -600,7 +600,7 @@ public class Song implements Comparable<Song> {
             NotifyUtil.error("Song file not found", canonicalPath, ex);
             Log.log("Song file not found " + canonicalPath);
             return null;
-        } catch (Exception ex) {
+        } catch (IOException | TransformerException ex) {
             //Exceptions.attachMessage(ex, "Failed to deserialize " + canonicalPath);
             NotifyUtil.error("Failed to read song", canonicalPath, ex);
             Log.log("Failed to deserialize " + canonicalPath);
@@ -677,13 +677,7 @@ public class Song implements Comparable<Song> {
             Source src = new DOMSource(doc);
             xformer.transform(src, res);
 
-        } catch (TransformerException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParserConfigurationException ex) {
+        } catch (TransformerException | SAXException | IOException | ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
 
