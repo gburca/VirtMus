@@ -59,7 +59,7 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
                 if (p.type == PlayList.Type.AllSongs || p.type== PlayList.Type.Default) {
                     for (Song s: p.songs) {
                         // The user may add a tag at a later time
-                        s.addPropertyChangeListener(WeakListeners.propertyChange(this, s));
+                        s.addPropertyChangeListener(Song.PROP_TAGS, WeakListeners.propertyChange(this, s));
                         for (String tag: Utils.tags2list(s.getTags())) {
                             if (!songTags.containsKey(tag)) {
                                 songTags.put(tag, new HashSet<Song>());
@@ -68,10 +68,7 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
                         }
                     }
                 } else {
-                    p.addPropertyChangeListener(WeakListeners.propertyChange(this, p));
-                    for (Song s: p.songs) {
-                        s.addPropertyChangeListener(WeakListeners.propertyChange(this, s));
-                    }
+                    p.addPropertyChangeListener(PlayList.PROP_TAGS, WeakListeners.propertyChange(this, p));
                     for (String tag: Utils.tags2list(p.getTags())) {
                         if (!plTags.containsKey(tag)) {
                             plTags.put(tag, new HashSet<PlayList>());

@@ -87,7 +87,7 @@ public class SongNode extends AbstractNode
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
-        song.addPropertyChangeListener(WeakListeners.propertyChange(this, song));
+        song.addPropertyChangeListener(Song.PROP_NAME, WeakListeners.propertyChange(this, song));
         song.addChangeListener(WeakListeners.change(this, song));        
     }
         

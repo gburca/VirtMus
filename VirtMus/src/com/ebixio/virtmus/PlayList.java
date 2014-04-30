@@ -31,8 +31,8 @@ import com.thoughtworks.xstream.io.xml.TraxSource;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,7 +54,6 @@ import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.transform.OutputKeys;
@@ -65,7 +63,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.spi.actions.AbstractSavable;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.util.Exceptions;
@@ -101,16 +98,15 @@ public class PlayList implements Comparable<PlayList> {
 
     public static final String PROP_NAME = "nameProp";
     public static final String PROP_TAGS = "tagsProp";
-
-    private transient final List<PropertyChangeListener> propListeners =
-            Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
-
+    
+    private transient PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    // Could change this to EventListenerList if we had more than 1 event type
+    private transient Set<ChangeListener> listeners = Collections.synchronizedSet(new HashSet<ChangeListener>());
 
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
     public transient boolean isFullyLoaded = true;
     private transient File sourceFile = null;
-    private transient Set<ChangeListener> listeners = new HashSet<>();
 
     public static enum Type { Default, AllSongs, Normal }
     public transient Type type = Type.Normal;
@@ -133,9 +129,15 @@ public class PlayList implements Comparable<PlayList> {
         }
     }
 
-    /** Creates a new instance of PlayList */
+    /** Creates a new instance of PlayList.
+     * This constructor is NOT called when the object is deserialized.
+     */
     public PlayList() {}
 
+    /** Creates a new PlayList.
+     * This constructor is NOT called when the object is deserialized.
+     * @param name User visible name for this PlayList.
+     */
     public PlayList(String name) {
         this.name = name;
     }
@@ -146,7 +148,8 @@ public class PlayList implements Comparable<PlayList> {
      */
     private Object readResolve() {
         savable = null;
-        listeners = new HashSet<ChangeListener>();
+        pcs = new PropertyChangeSupport(this);
+        listeners = Collections.synchronizedSet(new HashSet<ChangeListener>());
         type = Type.Normal;
         version = MainApp.VERSION;
         return this;
@@ -524,17 +527,16 @@ public class PlayList implements Comparable<PlayList> {
 
     // <editor-fold defaultstate="collapsed" desc=" Listeners ">
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
-        if (!propListeners.contains(pcl)) propListeners.add(pcl);
+        pcs.addPropertyChangeListener(pcl);
+    }
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener pcl) {
+        pcs.addPropertyChangeListener(propertyName, pcl);
     }
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propListeners.remove(pcl);
+        pcs.removePropertyChangeListener(pcl);
     }
     private void fire(String propertyName, Object old, Object nue) {
-        // Passing 0 below on purpose, so you only synchronize for one atomic call
-        PropertyChangeListener[] pcls = propListeners.toArray(new PropertyChangeListener[0]);
-        for (PropertyChangeListener pcl : pcls) {
-            pcl.propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
-        }
+        pcs.firePropertyChange(propertyName, old, nue);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -556,7 +558,7 @@ public class PlayList implements Comparable<PlayList> {
 
     /**
      * Implements Comparable
-     * Sorts the playlist first by type and then by name.
+     * Sorts the PlayList first by type and then by name.
      * @param other Another PlayList to compare to.
      * @return -1, 0, 1
      */

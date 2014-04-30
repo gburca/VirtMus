@@ -69,7 +69,7 @@ public class PlayListNode extends AbstractNode
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/PlayListNode.png");
         
-        playList.addPropertyChangeListener(WeakListeners.propertyChange(this, playList));
+        playList.addPropertyChangeListener(PlayList.PROP_NAME, WeakListeners.propertyChange(this, playList));
         playList.addChangeListener(WeakListeners.change(this, playList));
     }
     

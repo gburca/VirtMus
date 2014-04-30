@@ -37,8 +37,8 @@ import com.thoughtworks.xstream.io.xml.TraxSource;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,13 +52,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -113,7 +110,8 @@ public class Song implements Comparable<Song> {
     public static final String PROP_TAGS = "tagsProp";
     public static final String PROP_NAME = "nameProp";
 
-    private transient List<PropertyChangeListener> propListeners = Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
+    private transient PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    // Could change this to EventListenerList if we had more than 1 event type
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
 
     /* We should instantiate each song only once.
@@ -142,9 +140,13 @@ public class Song implements Comparable<Song> {
         }
     }
 
+    /** Creates a new Song instance.
+     * This constructor is NOT called when the object is deserialized.
+     */
     public Song() {}
 
-    /** Creates a new instance of Song from a file, or a directory of files
+    /** Creates a new instance of Song from a file, or a directory of files.
+     * This constructor is NOT called when the object is deserialized.
      * @param f The file/directory to create the song from.
      */
     public Song(File f) {
@@ -154,7 +156,7 @@ public class Song implements Comparable<Song> {
     /** Constructors are not called (and transients are not initialized)
      * when the object is deserialized !!! */
     private Object readResolve() {
-        propListeners = Collections.synchronizedList(new LinkedList<PropertyChangeListener>());
+        pcs = new PropertyChangeSupport(this);
         pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
         savable = null;
         version = MainApp.VERSION;
@@ -713,19 +715,16 @@ public class Song implements Comparable<Song> {
     }
 
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
-        if (!propListeners.contains(pcl)) {
-            propListeners.add(pcl);
-        }
+        pcs.addPropertyChangeListener(pcl);
+    }
+    public void addPropertyChangeListener (String propertyName, PropertyChangeListener pcl) {
+        pcs.addPropertyChangeListener(propertyName, pcl);
     }
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        propListeners.remove(pcl);
+        pcs.removePropertyChangeListener(pcl);
     }
     private void fire(String propertyName, Object old, Object nue) {
-        // Passing 0 below on purpose, so you only synchronize for one atomic call
-        PropertyChangeListener[] pcls = propListeners.toArray(new PropertyChangeListener[0]);
-        for (PropertyChangeListener pcl : pcls) {
-            pcl.propertyChange(new PropertyChangeEvent(this, propertyName, old, nue));
-        }
+        pcs.firePropertyChange(propertyName, old, nue);
     }
 
     public void addChangeListener(ChangeListener listener) {
