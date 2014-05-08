@@ -1,5 +1,6 @@
 package com.ebixio.virtmus.actions;
 
+import com.ebixio.util.Log;
 import com.ebixio.virtmus.Utils;
 import java.io.File;
 import java.io.IOException;
@@ -16,9 +17,15 @@ import org.openide.util.actions.CallableSystemAction;
 @ActionRegistration(displayName = "#CTL_HelpContentsAction", lazy = false)
 @ActionReference(path = "Menu/Help", position = 101)
 public final class HelpAction extends CallableSystemAction {
-    
+
     @Override
     public void performAction() {
+        // TODO: Fix href linking in generated local docs and use them instead.
+        // openLocalDocs();
+        Utils.openURL("http://virtmus.com/");
+    }
+
+    private void openLocalDocs() {
         try {
             /*
             JOptionPane.showMessageDialog(null, "App: " + Utils.getAppPath() +
@@ -29,38 +36,40 @@ public final class HelpAction extends CallableSystemAction {
             for (File appPath: appPaths) {
                 if (appPath == null) continue;
                 String appPathS = appPath.getCanonicalPath().replace(File.separatorChar, '/');
-                appPathS += "/Docs/index.html";
+                appPathS += "/../Docs/wiki.static/index.html";
                 File index = new File(appPathS);
                 if (index.canRead()) {
+                    Log.log("Trying to open help file: " + appPathS);
                     Utils.openURL("file://" + appPathS);
                     return;
                 }
             }
+            Log.log("No help file found.");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(HelpAction.class, "CTL_HelpAction");
     }
-    
+
     @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
         putValue("noIconInMenu", Boolean.TRUE);
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
 }

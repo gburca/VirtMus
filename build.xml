@@ -31,12 +31,17 @@
         </propertyfile>
      
     </target>
+    
+    <target name="create-docs" description="Converts the VirtMus.wiki documents into a static site">
+        <copy file="Docs/favicon.ico" tofile="Docs/wiki.static/favicon.ico"/>
+        <copy file="Docs/img/VirtMusLogo.gif" tofile="Docs/wiki.static/VirtMusLogo.gif"/>
+    </target>
 
     <!--
         Run this target to populate dist/virtmus with the same files and config as a full install.
         The app can then be tested from dist/virtmus without doing an install.
     -->
-    <target name="build-dist" depends="build-zip" description="Adds VirtMus specific changes">
+    <target name="build-dist" depends="build-zip,create-docs" description="Adds VirtMus specific changes">
         <delete dir="dist/${app.name}"/>
         <unzip src="dist/${app.name}.zip" dest="dist"/>
 
@@ -53,11 +58,14 @@
 
         <!-- Need to modify shell scripts to use UNIX (LF) line terminations -->
         <fixcrlf srcDir="dist/${app.name}/etc" includes="${app.name}.conf" eof="remove" eol="unix"/>
+        <chmod file="dist/${app.name}/bin/virtmus" perm="a+x"/>
 
         <echo message="Adding the VirtMus documentation files"/>
         <copy todir="dist/${app.name}/Docs" >
             <fileset dir="Docs">
                 <exclude name="**/src/**"/>
+                <exclude name="**/wiki/**"/>
+                <exclude name="**/wiki.static/public/**"/>
             </fileset>
         </copy>
     </target>

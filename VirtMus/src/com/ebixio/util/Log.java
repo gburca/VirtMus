@@ -75,12 +75,13 @@ public class Log {
         }
     }
     public static void log(Throwable t) {
-        log(t.toString());
+        // The stack trace includes the exception info. No need to log it.
+        //log(t.toString());
         
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
-        log(pw.toString());
+        log(sw.toString());
     }
        
     public static String getStackTrace() {

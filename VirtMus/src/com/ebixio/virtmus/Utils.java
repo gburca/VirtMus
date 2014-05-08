@@ -198,10 +198,12 @@ public class Utils {
             try {
                 // Canonical name can not be computed if drive is not mounted.
                 // Ex: oldTarget = "D:\etc..." but there's no "D:" and songs
-                // have been moved to "C:" instead.
+                // have been moved to "C:" instead. We expect to see:
+                // java.io.IOException: The device is not ready
                 oldTarget = oldTarget.getCanonicalFile();
             } catch (IOException ex) {
-                Log.log(ex);
+                // Don't log it. It's just noise, and expected.
+                //Log.log(ex);
             }
             String oldFileName = oldTarget.getName();   // /a/b/d
             String oldParentName = oldTarget.getParent();
@@ -250,10 +252,7 @@ public class Utils {
                 }
             }
             
-        } catch (IOException ex) {
-            Log.log(ex);
-            return null;
-        } catch (PatternSyntaxException ex) {
+        } catch (IOException | PatternSyntaxException ex) {
             Log.log(ex);
             return null;
         }
@@ -337,9 +336,7 @@ public class Utils {
         try {
             URI sourceURI = new URI(source.getLocation().toString());
             codeLoc = new File(sourceURI);
-        } catch (URISyntaxException e) {
-            return null;
-        } catch (IllegalArgumentException e) {
+        } catch (URISyntaxException | IllegalArgumentException e) {
             return null;
         }
         
