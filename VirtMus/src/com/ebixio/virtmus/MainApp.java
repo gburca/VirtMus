@@ -60,7 +60,7 @@ public final class MainApp implements ChangeListener {
     private static Date lastTime = new Date();
     private final transient Set<ChangeListener> plListeners = new HashSet<>();
     
-    public static final String VERSION = "3.20";
+    public static final String VERSION = "4.00";
     
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;

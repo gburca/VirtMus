@@ -37,9 +37,7 @@ To release:
 	- Installer/VirtMus-v.vv.zip
 
 - Update virtmus.com
-	- From the DocMaintenance tiddler, click on "publish" and "generate SEO files"
-	- Copy the entire Docs directory to virtmus.com
-	- Follow the "Step-by-step guide" section
+	- Follow the DocMaintenance wiki page instructions
 
 - To create the PortableApps version for the USB drive
 	- Unzip the Installer/VirtMus-v.vv.zip into Installer/VirtMusPortable/App/VirtMus

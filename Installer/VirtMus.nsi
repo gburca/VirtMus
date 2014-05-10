@@ -10,7 +10,7 @@
 ;--------------------------------
 ;General
         ; Name and file.
-	!define VERSION "3.20"
+	!define VERSION "4.00"
 
 	; This ${PRODUCT} !define is used throughout this intaller for a lot of
 	; things including install directory names and links. It should probably
