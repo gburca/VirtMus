@@ -30,7 +30,7 @@ To release:
 	- clean
 	- update-version-string
 	- #build-zip (is run automatically by target below)
-        - create-installers
+	- create-installers
 
 - Distribute:
 	- Installer/VirtMus-v.vv.exe

@@ -1,7 +1,7 @@
 /*
  * LiveWindow.java
  *
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -66,7 +66,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     /** How far the pages are advanced from the top-left of the first page.
      * A value of 1.3 means 70% of the second page is showing on screen. */
     private float animationCurrent = 0.0F;
-    
+
     private double animationEnd = 0.0F;
 
     /** By how much to advance the page at a time (in %). This value comes from
@@ -99,11 +99,15 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     ArrayList<Integer> toBeRendered = new ArrayList<>(3);
     boolean waitingForImage = false;
     final int separatorSize = 3;
+    /** The full vertical line that indicates the end of the page. */
     final Color separatorColor = Color.RED;
+    /** The small vertical line that indicates how far the page will shift
+     * on the next mouse click.
+     */
     final Color pageShiftColor = Color.BLUE;
     Animator anim = null;
     Graphics2D graph2D;
-    
+
     Thread noScreenSaver;
 
     /** Creates new form LiveWindow
@@ -140,7 +144,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         }
 
         this.setCursor(Utils.getInvisibleCursor());
-        
+
         noScreenSaver = new Thread(new Runnable() {
 
             @Override
@@ -165,7 +169,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                 }
             }
         }, "NoScreenSaver");
-        
+
         //glasspane.setVisible(true);   // Causes strange behavior.
     }
 

@@ -54,14 +54,14 @@ import org.openide.util.NbPreferences;
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public final class MainApp implements ChangeListener {
-    
+
     private static MainApp instance;
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
     private static Date lastTime = new Date();
     private final transient Set<ChangeListener> plListeners = new HashSet<>();
-    
+
     public static final String VERSION = "4.00";
-    
+
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
         // <editor-fold defaultstate="collapsed" desc=" Rotation Behaviors ">
@@ -93,7 +93,7 @@ public final class MainApp implements ChangeListener {
                      * [ 0  -1  width ]
                      * [ 1   0    0   ]
                      * [ 0   0    1   ]
-                     * 
+                     *
                      * x' = width - y
                      * y' = x
                      */
@@ -104,7 +104,7 @@ public final class MainApp implements ChangeListener {
                      * [ -1  0  width ]
                      * [  0 -1  height]
                      * [  0  0     1  ]
-                     * 
+                     *
                      * x' = width - x
                      * y' = height - y
                      */
@@ -114,7 +114,7 @@ public final class MainApp implements ChangeListener {
                      * [  0  1    0    ]
                      * [ -1  0  height ]
                      * [  0  0    1    ]
-                     * 
+                     *
                      * x' = y
                      * y' = height - x
                      */
@@ -134,33 +134,33 @@ public final class MainApp implements ChangeListener {
                     return new Dimension(d);
             }
         }
-        // </editor-fold>        
+        // </editor-fold>
     }
     public static enum ScrollDir { Vertical, Horizontal }
     public static Rotation screenRot;
     public static ScrollDir scrollDir;
-    
+
     public static final String OptPlayListDir       = "PlayListDirectory";
     public static final String OptSongDir           = "SongDirectory";
     public static final String OptScreenRot         = "LiveScreenOrientation";
     public static final String OptPageScrollAmount  = "PageScrollPercentage";
     public static final String OptPageScrollDir     = "ScrollDirection";
-    public static final String OptUseOpenGL         = "UseOpenGL";    
+    public static final String OptUseOpenGL         = "UseOpenGL";
     public static final String OptSvgEditor         = "SvgEditor";
     public static final String OptInstallId         = "InstallId";
     public static final String OptLogVersion        = "LogVersion";
 
     public static final Object playListPrefLock = new Object();
-    
+
     /** Creates a new instance of MainApp */
     private MainApp() {
         Log.configUiLog();
         //Log.enableDebugLogs();
         Log.log("MainApp::MainApp start");
-        
+
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
         System.getProperties().put("org.icepdf.core.awtFontLoading", "true");
-        
+
         //System.setProperty("nb.show.statistics.ui", "true");
         //System.getProperties().put("nb.show.statistics.ui", "true");
 
@@ -168,11 +168,11 @@ public final class MainApp implements ChangeListener {
 
         screenRot = Rotation.valueOf( pref.get(OptScreenRot, Rotation.Clockwise_0.toString()) );
         scrollDir = ScrollDir.valueOf( pref.get(OptPageScrollDir, ScrollDir.Horizontal.toString()) );
-        
+
         setupListeners(pref);
-        
+
         addAllPlayListsThreaded(pref, false);
-        
+
         Log.log("MainApp::MainApp finished");
     }
 
@@ -180,30 +180,33 @@ public final class MainApp implements ChangeListener {
         pref.addPreferenceChangeListener(new PreferenceChangeListener() {
             @Override
             public void preferenceChange(PreferenceChangeEvent evt) {
-                if (evt.getKey().equals(OptSongDir)) {
-                    Log.log("Preference SongDir changed");
-                    if (MainApp.findInstance().isDirty()) {
-                        int returnVal = JOptionPane.showConfirmDialog(null,
-                                "You have unsaved changes. Save all changes before loading new song directory?",
-                                "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
-                        switch (returnVal) {
-                            case JOptionPane.YES_OPTION:    saveAll();   break;
-                            case JOptionPane.CANCEL_OPTION: return;
-                            case JOptionPane.NO_OPTION:
-                            default: break;
+                switch (evt.getKey()) {
+                    case OptSongDir:
+                        Log.log("Preference SongDir changed");
+                        if (MainApp.findInstance().isDirty()) {
+                            int returnVal = JOptionPane.showConfirmDialog(null,
+                                    "You have unsaved changes. Save all changes before loading new song directory?",
+                                    "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
+                            switch (returnVal) {
+                                case JOptionPane.YES_OPTION:    saveAll();   break;
+                                case JOptionPane.CANCEL_OPTION: return;
+                                case JOptionPane.NO_OPTION:
+                                default: break;
+                            }
                         }
-                    }
-                    synchronized(playListPrefLock) {
-                        playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
-                    }
-                } else if (evt.getKey().equals(OptPlayListDir)) {
-                    Preferences pref = NbPreferences.forModule(MainApp.class);
-                    addAllPlayListsThreaded(pref, false);
+                        synchronized(playListPrefLock) {
+                            playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
+                        }
+                        break;
+                    case OptPlayListDir:
+                        Preferences pref = NbPreferences.forModule(MainApp.class);
+                        addAllPlayListsThreaded(pref, false);
+                        break;
                 }
             }
         });
 
-        
+
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -238,14 +241,14 @@ public final class MainApp implements ChangeListener {
         CommonExplorers.MainExplorerManager.addPropertyChangeListener(pcl);
         CommonExplorers.TagsExplorerManager.addPropertyChangeListener(pcl);
     }
-    
+
     /**
      * Re-reads all the PlayLists and Songs from the disc
      */
     public void refresh() {
         addAllPlayListsThreaded(NbPreferences.forModule(MainApp.class), true);
     }
-    
+
     void addAllPlayListsThreaded(final Preferences pref, final boolean clearSongs) {
         Thread t = new Thread() {
             @Override
@@ -253,7 +256,7 @@ public final class MainApp implements ChangeListener {
                 addAllPlayLists(pref, clearSongs);
             }
         };
-        
+
         t.setName("addAllPlayLists");
         // We want the GUI to be responsive and show the updates instead of being
         // stuck with the splash-screen
@@ -266,7 +269,7 @@ public final class MainApp implements ChangeListener {
         setStatusText("Re-loading all PlayLists");
 
         PlayList pl;
-        
+
         if (isDirty()) {
             int returnVal = JOptionPane.showConfirmDialog(null,
                     "You have unsaved changes. Save all changes before loading new playlists?",
@@ -278,10 +281,10 @@ public final class MainApp implements ChangeListener {
                 default: break;
             }
         }
-        
+
         synchronized (playListPrefLock) {
             playLists.clear();
-            
+
             // Discard all the songs so they get re-loaded when the playlist is re-created
             if (clearSongs) Song.clearInstantiated();
 
@@ -313,19 +316,19 @@ public final class MainApp implements ChangeListener {
             pl.type = PlayList.Type.AllSongs;
             pl.addAllSongs(new File(pref.get(OptSongDir, "")), true);
             playLists.add(pl);
-            
+
             LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_PLAYLISTS");
             rec.setParameters(new Object[] {playLists.size()});
             Log.uiLog(rec);
 
             Collections.sort(playLists);
         }
-        
+
         this.notifyPLListeners();
-        
+
         setStatusText("Finished loading all PlayLists");
     }
-    
+
     /** Handle setting the status bar text from non-EDT threads
      * @param msg The status bar text to display. */
     public static void setStatusText(final String msg) {
@@ -336,19 +339,19 @@ public final class MainApp implements ChangeListener {
             }
         });
     }
-    
+
     public static synchronized MainApp findInstance() {
         if (instance == null) {
             instance = new MainApp();
         }
         return instance;
     }
-    
+
     @Override
     public void stateChanged(ChangeEvent arg0) {
-        
+
     };
-    
+
     public boolean isDirty() {
         synchronized (playLists) {
             for (PlayList pl : playLists) {
@@ -374,20 +377,20 @@ public final class MainApp implements ChangeListener {
         }
         StatusDisplayer.getDefault().setStatusText("Save All finished.");
     }
-    
+
     public static String getElapsedTime() {
         StringBuilder res = new StringBuilder();
         Date thisTime = new Date();
         long elapsed = thisTime.getTime() - lastTime.getTime();
-        
+
         res.append("Last time ").append(lastTime.toString());
         res.append(" now ").append(thisTime.toString());
         res.append(" Elapsed ").append((new Long(elapsed)).toString()).append("ms");
-        
+
         lastTime = thisTime;
         return res.toString();
     }
-    
+
     public boolean replacePlayList(PlayList replace, PlayList with) {
         synchronized (playLists) {
             int idx = playLists.lastIndexOf(replace);
@@ -411,7 +414,7 @@ public final class MainApp implements ChangeListener {
         }
         return false;
     }
-    
+
     /** Listeners will be notified of additions/deletions to the set of PlayLists. */
     public void addPLChangeListener(ChangeListener listener) {
         if (!plListeners.contains(listener)) plListeners.add(listener);

@@ -62,7 +62,7 @@
 
         <echo message="Adding the VirtMus documentation files"/>
         <copy todir="dist/${app.name}/Docs" >
-            <fileset dir="Docs">
+            <fileset dir="Docs/wiki.static">
                 <exclude name="**/src/**"/>
                 <exclude name="**/wiki/**"/>
                 <exclude name="**/wiki.static/public/**"/>
