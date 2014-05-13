@@ -65,14 +65,17 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
     /** How far the pages are advanced from the top-left of the first page.
      * A value of 1.3 means 70% of the second page is showing on screen. */
-    private float pageShift = 0.0F;
+    private float animationCurrent = 0.0F;
+    
+    private double animationEnd = 0.0F;
 
     /** By how much to advance the page at a time (in %). This value comes from
      * the user preference dialog box. */
-    private float pageIncrement;
+    private final float pageIncrement;
 
-    private boolean pageShiftNeeded;
-    private AffineTransform xform = MainApp.screenRot.getTransform(displaySize.getSize());
+    /** Do we shift/animate the pages, or just display the next page. */
+    private final boolean pageAnimationNeeded;
+    private final AffineTransform xform = MainApp.screenRot.getTransform(displaySize.getSize());
     private boolean fullyPainted = false;
 
     /** Maximum number of "previous" pages to keep cached. For example, if the user is
@@ -92,8 +95,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     final private boolean renderSequentially = true;
 
     final Map<Integer, BufferedImage> pageCache = Collections.synchronizedMap(new HashMap<Integer, BufferedImage>(3));
-    final ArrayList<Integer> renderFailed = new ArrayList<Integer>();
-    ArrayList<Integer> toBeRendered = new ArrayList<Integer>(3);
+    final ArrayList<Integer> renderFailed = new ArrayList<>();
+    ArrayList<Integer> toBeRendered = new ArrayList<>(3);
     boolean waitingForImage = false;
     final int separatorSize = 3;
     final Color separatorColor = Color.RED;
@@ -131,9 +134,9 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
         pageIncrement = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100.0")) / 100;
         if (pageIncrement == 0) {
-            pageShiftNeeded = false;
+            pageAnimationNeeded = false;
         } else {
-            pageShiftNeeded = true;
+            pageAnimationNeeded = true;
         }
 
         this.setCursor(Utils.getInvisibleCursor());
@@ -248,7 +251,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     public void setLiveSong(Song song, MusicPage startingPage) {
         this.song = song;
         page = song.pageOrder.indexOf(startingPage);
-        pageShift = page;
+        animationCurrent = page;
+        animationEnd = page;
         synchronized (pageCache) {
             this.pageCache.clear();
         }
@@ -278,7 +282,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
             return;
         }
         if (page < song.pageOrder.size() - 1) {
-            startShift(pageShift, page + 1);
+            startAnimation(animationEnd, page + 1);
         }
     }
 
@@ -287,10 +291,10 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
             return;
         }
         if (page > 0) {
-            startShift(pageShift, page - 1);
-        } else if (page == 0 && pageShift > 0) {
+            startAnimation(animationEnd, page - 1);
+        } else if (page == 0 && animationEnd > 0) {
             // If there's no "previous page" at least go to the top of the current page
-            startShift(pageShift, page);
+            startAnimation(animationEnd, page);
         }
     }
 
@@ -299,7 +303,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
             return;
         }
         page = 0;
-        pageShift = 0;
+        animationCurrent = 0;
+        animationEnd = 0;
         showPage(page);
     }
 
@@ -307,14 +312,14 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         if (song == null || song.pageOrder == null) {
             return;
         }
-        if (!pageShiftNeeded) {
+        if (!pageAnimationNeeded) {
             showNextPage();
         } else {
-            float newShift = pageShift + pageIncrement;
+            float newShift = (float)animationEnd + pageIncrement;
             if (newShift > (song.pageOrder.size() - 1)) {
                 newShift = song.pageOrder.size() - 1;
             }
-            startShift(pageShift, newShift);
+            startAnimation(animationEnd, newShift);
         }
     }
 
@@ -322,14 +327,14 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         if (song == null || song.pageOrder == null) {
             return;
         }
-        if (!pageShiftNeeded) {
+        if (!pageAnimationNeeded) {
             showPrevPage();
         } else {
-            float newShift = pageShift - pageIncrement;
+            float newShift = (float)animationEnd - pageIncrement;
             if (newShift < 0) {
                 newShift = 0;
             }
-            startShift(pageShift, newShift);
+            startAnimation(animationEnd, newShift);
         }
     }
     // </editor-fold>
@@ -358,11 +363,11 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
      * Dispatches the paint request to the appropriate paint function.
      */
     protected void paintDispatch() {
-        if (pageShiftNeeded) {
+        if (pageAnimationNeeded) {
             if (MainApp.scrollDir == MainApp.ScrollDir.Vertical) {
-                paintShiftedVertical(graph2D);
+                paintAnimatedVertical(graph2D);
             } else {
-                paintShiftedHorizontal(graph2D);
+                paintAnimatedHorizontal(graph2D);
             }
         } else {
             paintRegular(graph2D);
@@ -420,7 +425,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
      *
      * @param g The graphics context to paint on
      */
-    public void paintShiftedVertical(Graphics2D g) {
+    public void paintAnimatedVertical(Graphics2D g) {
         int heightPainted = 0;
         BufferedImage img1 = pageCache.get(page);
         AffineTransform origXform = g.getTransform();
@@ -432,7 +437,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
         if (img1 != null) {
             glasspane.setVisible(false);
-            float page1Shift = pageShift - page;
+            float page1Shift = animationCurrent - page;
 
             int img1y = Math.round(img1.getHeight() * page1Shift);
             g.drawImage(img1, 0, -img1y, img1.getWidth(), img1.getHeight(), Color.BLACK, this);
@@ -472,12 +477,12 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
             g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         }
 
-        fullyPainted = heightPainted > d.height ? true : false;
+        fullyPainted = heightPainted > d.height;
 
         g.setTransform(origXform);
     }
 
-    public void paintShiftedHorizontal(Graphics2D g) {
+    public void paintAnimatedHorizontal(Graphics2D g) {
         int widthPainted = 0;
         BufferedImage img1 = pageCache.get(page);
         AffineTransform origXform = g.getTransform();
@@ -490,7 +495,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         if (img1 != null) {
             glasspane.setVisible(false);
 
-            float page1Shift = pageShift - page;
+            float page1Shift = animationCurrent - page;
             int img1x = Math.round(img1.getWidth() * page1Shift);
             //g.drawImage(img1, -img1x, 0, img1.getWidth(), img1.getHeight(), Color.BLACK, this);
             g.drawImage(img1, -img1x, 0, img1.getWidth(), img1.getHeight(), this);
@@ -531,7 +536,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
             g.drawString(msg, d.width / 2 - msgW / 2, d.height / 2);
         }
 
-        fullyPainted = widthPainted > d.width ? true : false;
+        fullyPainted = widthPainted > d.width;
         g.setTransform(origXform);
     }
 
@@ -547,11 +552,11 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
      * are beyond maxPrevCache or maxNextCache.
      */
     private void cleanCache(int currentPage) {
-        HashSet<Integer> toKeep = new HashSet<Integer>(getPagesToCache(currentPage));
+        HashSet<Integer> toKeep = new HashSet<>(getPagesToCache(currentPage));
         synchronized (pageCache) {
             // Must create new set. keySet() gives us a reference to the set and
             // we'll get access exceptions for modifying while iterating.
-            Set<Integer> cache = new HashSet<Integer>(pageCache.keySet());
+            Set<Integer> cache = new HashSet<>(pageCache.keySet());
             for (int i : cache) {
                 if (! toKeep.contains(i)) pageCache.remove(i);
             }
@@ -589,7 +594,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
      * @return A list of pages to be rendered/cached
      */
     private ArrayList<Integer> getPagesToCache(int page) {
-        ArrayList<Integer> list = new ArrayList<Integer>(maxNextCache + maxPrevCache + 1);
+        ArrayList<Integer> list = new ArrayList<>(maxNextCache + maxPrevCache + 1);
         int range = Math.max(maxPrevCache, maxNextCache);
         int visible = 3;    // How many pages are visible at once on the screen
 
@@ -702,7 +707,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
      * @param from Starting location
      * @param to Final location
      */
-    public void startShift(final double from, final double to) {
+    public void startAnimation(final double from, final double to) {
+        animationEnd = to;
         final SplineInterpolator si = new SplineInterpolator(0.0f, 0.8f, 1.0f, 0.8f);
         if (anim != null && anim.isRunning()) {
             anim.stop();
@@ -717,15 +723,15 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
             @Override
             public void timingEvent(float fraction) {
-                pageShift = (float) from + (float) (to - from) * si.interpolate(fraction);
-                page = (int) Math.floor((double) pageShift);
+                animationCurrent = (float) from + (float) (to - from) * si.interpolate(fraction);
+                page = (int) Math.floor((double) animationCurrent);
                 animPaint();
             }
 
             @Override
             public void end() {
-                pageShift = (float) (from + (to - from));
-                page = (int) Math.floor((double) pageShift);
+                animationCurrent = (float) (from + (to - from));
+                page = (int) Math.floor((double) animationCurrent);
                 setIgnoreRepaint(false);
                 showPage(page);
             }
