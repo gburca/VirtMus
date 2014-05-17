@@ -17,6 +17,7 @@
  */
 package com.ebixio.virtmus;
 
+import com.ebixio.util.WeakPropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -39,9 +40,20 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
     public static final HashMap<String, Set<PlayList>> plTags = new HashMap<>();
     public static final HashMap<String, Set<Song>> songTags = new HashMap<>();
 
-    public Tags(MainApp ma) {
+    public Tags() {
+    }
+    
+    /**
+     * Initialize the Tags.
+     * Keeping this separate from the constructor so we don't leak "this" in
+     * the constructor.
+     */
+    public void init() {
         // Listen for PlayLists added or removed
-        ma.addPropertyChangeListener(MainApp.PROP_PL_LOADED, WeakListeners.propertyChange(this, ma));
+        WeakPropertyChangeListener wpcl = new WeakPropertyChangeListener(this, PlayListSet.findInstance());
+        PlayListSet.findInstance().addPropertyChangeListener(wpcl);
+        // Pick up changes that happened before we registered for changes.
+        handleTagChange();
     }
 
     @Override
@@ -50,28 +62,30 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
     }
 
     private synchronized ArrayList<String> getKeys() {
-        List<PlayList> pl = MainApp.findInstance().playLists;
+        List<PlayList> pl = PlayListSet.findInstance().playLists;
         synchronized (pl) {
             songTags.clear();
             plTags.clear();
 
             for (PlayList p: pl) {
                 if (p.type == PlayList.Type.AllSongs || p.type == PlayList.Type.Default) {
-                    for (Song s: p.songs) {
-                        // The user may add a tag at a later time
-                        s.addPropertyChangeListener(Song.PROP_TAGS, WeakListeners.propertyChange(this, s));
-                        for (String tag: Utils.tags2list(s.getTags())) {
-                            if (!songTags.containsKey(tag)) {
-                                songTags.put(tag, new HashSet<Song>());
+                    synchronized(p.songs) {
+                        for (Song s: p.songs) {
+                            // The user may add a tag at a later time
+                            s.addPropertyChangeListener(Song.PROP_TAGS, new WeakPropertyChangeListener(this, s));
+                            for (String tag: Utils.tags2list(s.getTags())) {
+                                if (!songTags.containsKey(tag)) {
+                                    songTags.put(tag, new HashSet<Song>());
+                                }
+                                songTags.get(tag).add(s);
                             }
-                            songTags.get(tag).add(s);
                         }
                     }
                 } else {
                     // Get notified if new songs are added (deserialized)
                     p.addChangeListener(WeakListeners.change(this, p));
 
-                    p.addPropertyChangeListener(PlayList.PROP_TAGS, WeakListeners.propertyChange(this, p));
+                    p.addPropertyChangeListener(PlayList.PROP_TAGS, new WeakPropertyChangeListener(this, p));
                     for (String tag: Utils.tags2list(p.getTags())) {
                         if (!plTags.containsKey(tag)) {
                             plTags.put(tag, new HashSet<PlayList>());
@@ -110,8 +124,8 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
             (evt.getSource() instanceof Song     && Song.PROP_TAGS.equals(evt.getPropertyName()))
          || (evt.getSource() instanceof PlayList && PlayList.PROP_TAGS.equals(evt.getPropertyName()))) {
             handleTagChange();
-        } else if (MainApp.PROP_PL_LOADED.equals(evt.getPropertyName())) {
-
+        } else if (PlayListSet.PROP_ALL_PL_LOADED.equals(evt.getPropertyName())) {
+            handleTagChange();
         }
     }
 

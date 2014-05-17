@@ -20,6 +20,7 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.actions.GoLive;
 import com.ebixio.virtmus.actions.PlayListDelete;
 import com.ebixio.virtmus.actions.PlayListRevertAction;
@@ -69,7 +70,7 @@ public class PlayListNode extends AbstractNode
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/PlayListNode.png");
         
-        playList.addPropertyChangeListener(PlayList.PROP_NAME, WeakListeners.propertyChange(this, playList));
+        playList.addPropertyChangeListener(PlayList.PROP_NAME, new WeakPropertyChangeListener(this, playList));
         playList.addChangeListener(WeakListeners.change(this, playList));
     }
     

@@ -21,6 +21,7 @@ package com.ebixio.virtmus.actions;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListNode;
+import com.ebixio.virtmus.PlayListSet;
 import com.ebixio.virtmus.Song;
 import java.beans.PropertyVetoException;
 import javax.swing.Action;
@@ -56,7 +57,8 @@ public final class SongOpenAction extends CallableSystemAction {
             if (pl != null) {
                 pl.addSong(s);
             } else {
-                MainApp.findInstance().playLists.get(0).addSong(s);
+                // TODO: Do we need to synchronize?
+                PlayListSet.findInstance().playLists.get(0).addSong(s);
                 // No need to allow saving this playlist
             }
             

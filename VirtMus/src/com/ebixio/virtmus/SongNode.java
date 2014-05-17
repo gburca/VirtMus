@@ -20,6 +20,7 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.actions.RenameItemAction;
 import com.ebixio.virtmus.actions.SongRemoveAction;
 import com.ebixio.virtmus.actions.SongSaveAction;
@@ -87,7 +88,7 @@ public class SongNode extends AbstractNode
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
-        song.addPropertyChangeListener(Song.PROP_NAME, WeakListeners.propertyChange(this, song));
+        song.addPropertyChangeListener(Song.PROP_NAME, new WeakPropertyChangeListener(this, song));
         song.addChangeListener(WeakListeners.change(this, song));        
     }
         

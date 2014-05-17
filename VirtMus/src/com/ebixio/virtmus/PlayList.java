@@ -22,6 +22,8 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
+import com.ebixio.util.PropertyChangeSupportUnique;
+import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.filefilters.PlayListFilter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -31,8 +33,6 @@ import com.thoughtworks.xstream.io.xml.TraxSource;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -101,7 +101,7 @@ public class PlayList implements Comparable<PlayList> {
     public static final String PROP_NAME = "nameProp";
     public static final String PROP_TAGS = "tagsProp";
 
-    private transient PropertyChangeSupport pcs;
+    private transient PropertyChangeSupportUnique pcs;
     // Could change this to EventListenerList if we had more than 1 event type
     private transient Set<ChangeListener> listeners;
 
@@ -153,7 +153,7 @@ public class PlayList implements Comparable<PlayList> {
      */
     private Object readResolve() {
         savable = null;
-        pcs = new PropertyChangeSupport(this);
+        pcs = new PropertyChangeSupportUnique(this);
         listeners = Collections.synchronizedSet(new HashSet<ChangeListener>());
         type = Type.Normal;
         version = MainApp.VERSION;
@@ -161,7 +161,11 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void addAllSongs(File dir, boolean removeExisting) {
-        if (removeExisting) songs.clear();
+        if (removeExisting) {
+            synchronized(songs) {
+                songs.clear();
+            }
+        }
 
         // It can take a very long time to find all the songs (depending on the
         // size of the directory tree) so we use a thread.
@@ -196,7 +200,9 @@ public class PlayList implements Comparable<PlayList> {
                 if (f.canRead()) {
                     Song s = Song.deserialize(f);
                     if (s != null) {
-                        songs.add(s);
+                        synchronized(songs) {
+                            songs.add(s);
+                        }
                         if (type != Type.Normal) sortSongsByName();
                         notifyListeners();
                     }
@@ -205,13 +211,15 @@ public class PlayList implements Comparable<PlayList> {
 
             // Compute some simple stats (what kind of music pages are being used)
             HashMap<String, Integer> hm = new HashMap<>();
-            for (Song s: songs) {
-                for (MusicPage mp: s.pageOrder) {
-                    String ext = Utils.getFileExtension(mp.imgSrc.sourceFile).toLowerCase();
-                    if (hm.containsKey(ext)) {
-                        hm.put(ext, hm.get(ext) + 1);
-                    } else {
-                        hm.put(ext, 1);
+            synchronized(songs) {
+                for (Song s: songs) {
+                    for (MusicPage mp: s.pageOrder) {
+                        String ext = Utils.getFileExtension(mp.imgSrc.sourceFile).toLowerCase();
+                        if (hm.containsKey(ext)) {
+                            hm.put(ext, hm.get(ext) + 1);
+                        } else {
+                            hm.put(ext, 1);
+                        }
                     }
                 }
             }
@@ -399,7 +407,11 @@ public class PlayList implements Comparable<PlayList> {
                         Log.log(msg, Level.WARNING);
                     }
                     Song s = Song.deserialize(sf);
-                    if (s != null) pl.songs.add(s);
+                    if (s != null) {
+                        synchronized(pl.songs) {
+                            pl.songs.add(s);
+                        }
+                    }
                 }
 
                 if (pl.missingSongs) {
@@ -419,27 +431,34 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void addSong(Song song) {
-        songs.add(song);
+        synchronized(songs) {
+            songs.add(song);
+        }
         setDirty(true);
         if (this.type != Type.Normal) sortSongsByName();
         notifyListeners();
     }
 
     public boolean removeSong(Song song) {
-        boolean result = songs.remove(song);
+        boolean result;
+        synchronized(songs) {
+            result = songs.remove(song);
+        }
         setDirty(true);
         notifyListeners();
         return result;
     }
 
     public void reorder(int[] order) {
-        Song[] ss = new Song[order.length];
-        for (int i = 0; i < order.length; i++) {
-            ss[order[i]] = songs.get(i);
-        }
+        synchronized(songs) {
+            Song[] ss = new Song[order.length];
+            for (int i = 0; i < order.length; i++) {
+                ss[order[i]] = songs.get(i);
+            }
 
-        songs.clear();
-        songs.addAll(Arrays.asList(ss));
+            songs.clear();
+            songs.addAll(Arrays.asList(ss));
+        }
 
         setDirty(true);
         notifyListeners();
@@ -532,17 +551,25 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Listeners ">
-    public void addPropertyChangeListener (PropertyChangeListener pcl) {
-        pcs.addPropertyChangeListener(pcl);
+    public void addPropertyChangeListener (WeakPropertyChangeListener pcl) {
+        synchronized(pcs) {
+            pcs.addPropertyChangeListener(pcl);
+        }
     }
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener pcl) {
-        pcs.addPropertyChangeListener(propertyName, pcl);
+    public void addPropertyChangeListener(String propertyName, WeakPropertyChangeListener pcl) {
+        synchronized(pcs) {
+            pcs.addPropertyChangeListener(propertyName, pcl);
+        }
     }
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        pcs.removePropertyChangeListener(pcl);
+    public void removePropertyChangeListener(WeakPropertyChangeListener pcl) {
+        synchronized(pcs) {
+            pcs.removePropertyChangeListener(pcl);
+        }
     }
     private void fire(String propertyName, Object old, Object nue) {
-        pcs.firePropertyChange(propertyName, old, nue);
+        synchronized(pcs) {
+            pcs.firePropertyChange(propertyName, old, nue);
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {

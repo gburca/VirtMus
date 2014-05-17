@@ -391,10 +391,10 @@ final class VirtmusPanel extends javax.swing.JPanel {
         svgEditor.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, inkscape));
         pageScrollPercentage.setValue(Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100.0")));
         
-        String orientation = NbPreferences.forModule(MainApp.class).get(MainApp.OptScreenRot, MainApp.screenRot.toString());
+        String orientation = NbPreferences.forModule(MainApp.class).get(MainApp.OptScreenRot, MainApp.findInstance().screenRot.toString());
         enableOptionButton(orientationButtonGroup.getElements(), orientation);
 
-        String scrollDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollDir, MainApp.scrollDir.toString());
+        String scrollDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString());
         enableOptionButton(scrollDirGroup.getElements(), scrollDir);
         
         useOpenGL.setSelected(Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false")));
@@ -429,11 +429,11 @@ final class VirtmusPanel extends javax.swing.JPanel {
             NbPreferences.forModule(MainApp.class).put(MainApp.OptPageScrollAmount, Float.toString(currentScroll.floatValue()) );
         }
         
-        MainApp.screenRot = MainApp.Rotation.valueOf(
-                saveOption(MainApp.OptScreenRot, MainApp.screenRot.toString(), orientationButtonGroup));
+        MainApp.findInstance().screenRot = MainApp.Rotation.valueOf(
+                saveOption(MainApp.OptScreenRot, MainApp.findInstance().screenRot.toString(), orientationButtonGroup));
         
-        MainApp.scrollDir = MainApp.ScrollDir.valueOf(
-                saveOption(MainApp.OptPageScrollDir, MainApp.scrollDir.toString(), scrollDirGroup));
+        MainApp.findInstance().scrollDir = MainApp.ScrollDir.valueOf(
+                saveOption(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString(), scrollDirGroup));
         
         Boolean oldUseOpenGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false"));
         if (oldUseOpenGL != useOpenGL.isSelected()) {

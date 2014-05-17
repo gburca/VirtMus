@@ -49,7 +49,9 @@ final class TagsTopComponent extends TopComponent
         ExplorerManager manager = CommonExplorers.TagsExplorerManager;
         associateLookup(ExplorerUtils.createLookup(manager, this.getActionMap()));
         
-        manager.setRootContext(new AbstractNode(new Tags(MainApp.findInstance())));
+        Tags tags = new Tags();
+        tags.init();
+        manager.setRootContext(new AbstractNode(tags));
         manager.getRootContext().setDisplayName("Tags");
         this.tagsTreeView.setRootVisible(false);
     }

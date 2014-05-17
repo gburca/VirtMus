@@ -4,9 +4,8 @@
  */
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
-import java.io.File;
+import com.ebixio.virtmus.PlayListSet;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
 import org.openide.awt.ActionID;
@@ -24,12 +23,12 @@ public final class PlayListDelete extends CookieAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        HashMap<File, String> toDelete = new HashMap<File, String>();
+        HashMap<PlayList, String> toDelete = new HashMap<>();
         
         for (Node n: activatedNodes) {
             PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
             if (pl.type == PlayList.Type.Normal) {
-                toDelete.put(pl.getSourceFile(), pl.getName());
+                toDelete.put(pl, pl.getName());
             }
         }
         
@@ -41,15 +40,10 @@ public final class PlayListDelete extends CookieAction {
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (returnVal == JOptionPane.NO_OPTION) return;
         
-        for (File f: toDelete.keySet()) {
-            try {
-                f.delete();
-            } catch (Exception e) {
-                // Ignore exception
-            }
+        for (PlayList p: toDelete.keySet()) {
+            PlayListSet.findInstance().deletePlayList(p);
         }
-        
-        MainApp.findInstance().refresh();
+        PlayListSet.findInstance().addAllPlayLists(true);
     }
 
     @Override

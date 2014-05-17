@@ -19,6 +19,8 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.MainApp;
+import com.ebixio.virtmus.PlayList;
+import com.ebixio.virtmus.PlayListSet;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -36,7 +38,10 @@ public final class OpenPlayListAction extends CallableSystemAction {
     
     @Override
     public void performAction() {
-        MainApp.findInstance().addPlayList();
+        PlayList pl = PlayList.open();
+        if (pl != null) {
+            PlayListSet.findInstance().addPlayList(pl);
+        }
     }
     
     @Override

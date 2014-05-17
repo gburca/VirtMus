@@ -57,7 +57,7 @@ public class PropertyChangeSupportUnique extends PropertyChangeSupport {
     private boolean contains(PropertyChangeListener[] pcl, WeakPropertyChangeListener newListener) {
         for (PropertyChangeListener p: pcl) {
             if (p instanceof WeakPropertyChangeListener) {
-                if (newListener.equals(p)) {
+                if (newListener.isSameListener(p)) {
                     return true;
                 }
             }

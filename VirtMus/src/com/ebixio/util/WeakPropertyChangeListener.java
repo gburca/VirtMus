@@ -66,27 +66,16 @@ public class WeakPropertyChangeListener implements PropertyChangeListener {
         }
     }
 
-    @Override
-    public boolean equals(Object other) {
-        if (other instanceof WeakPropertyChangeListener) {
-            return equals((WeakPropertyChangeListener)other);
-        } else {
-            return false;
-        }
-    }
-
-    public boolean equals(WeakPropertyChangeListener other) {
+    public boolean isSameListener(PropertyChangeListener other) {
         if (other == null) return false;
-        return listenerRef.get() == other.listenerRef.get()
-                && src == other.src;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 29 * hash + Objects.hashCode(this.listenerRef.get());
-        hash = 29 * hash + Objects.hashCode(this.src);
-        return hash;
+        
+        if (other instanceof WeakPropertyChangeListener) {
+            WeakPropertyChangeListener wpcl = (WeakPropertyChangeListener)other;
+            return listenerRef.get() == wpcl.listenerRef.get()
+                    && src == wpcl.src;            
+        } else {
+            return other == listenerRef.get();
+        }
     }
 
     @Override

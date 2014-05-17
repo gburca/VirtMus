@@ -6,6 +6,7 @@ package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
+import com.ebixio.virtmus.PlayListSet;
 import org.netbeans.api.project.Project;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -25,7 +26,7 @@ public final class PlayListRevertAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
-            MainApp.findInstance().replacePlayList(pl, PlayList.deserialize(pl.getSourceFile()));
+            PlayListSet.findInstance().replacePlayList(pl, PlayList.deserialize(pl.getSourceFile()));
             setEnabled(false);
         }
     }

@@ -38,8 +38,7 @@ public final class NewPlayListAction extends CallableSystemAction {
     public void performAction() {
         PlayList pl = new PlayList();
         if (pl.saveAs()) {
-            MainApp.findInstance().playLists.add(pl);
-            MainApp.findInstance().notifyPLListeners();
+            PlayListSet.findInstance().addPlayList(pl);
         }
     }
     

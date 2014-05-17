@@ -168,7 +168,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
 
         initTextRenderer();
         windowSize = new Dimension(drawable.getWidth(), drawable.getHeight());
-        windowSizeR = MainApp.screenRot.getSize(windowSize);
+        windowSizeR = MainApp.findInstance().screenRot.getSize(windowSize);
         
         //IntBuffer i = IntBuffer.wrap(new int[1]);
         //gl.glGetIntegerv(GL.GL_MAX_TEXTURE_SIZE, i);
@@ -187,7 +187,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         //glu.gluLookAt(0d, 0d, cameraDist,   0d, 0d, 0d,   0d, 1d, 0d);
         glu.gluLookAt(pageShift, 0, cameraDist, pageShift, 0, 0, 0, 1d, 0);
         
-        if (MainApp.scrollDir == MainApp.ScrollDir.Vertical) {
+        if (MainApp.findInstance().scrollDir == MainApp.ScrollDir.Vertical) {
             renderPageVertical(drawable);
         } else {
             renderPageHorizontal(drawable);
@@ -275,8 +275,8 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         GL gl = drawable.getGL();
 
         gl.glPushMatrix();
-        if (MainApp.screenRot != MainApp.Rotation.Clockwise_0) {
-            gl.glRotatef(-MainApp.screenRot.degrees(), 0, 0, 1);
+        if (MainApp.findInstance().screenRot != MainApp.Rotation.Clockwise_0) {
+            gl.glRotatef(-MainApp.findInstance().screenRot.degrees(), 0, 0, 1);
         }
         
         TexturePage tp1, tp2, tp3;
@@ -307,8 +307,8 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         GL gl = drawable.getGL();
 
         gl.glPushMatrix();
-        if (MainApp.screenRot != MainApp.Rotation.Clockwise_0) {
-            gl.glRotatef(-MainApp.screenRot.degrees(), 0, 0, 1);
+        if (MainApp.findInstance().screenRot != MainApp.Rotation.Clockwise_0) {
+            gl.glRotatef(-MainApp.findInstance().screenRot.degrees(), 0, 0, 1);
         }
         
         TexturePage tp1, tp2, tp3, tp4;
@@ -412,7 +412,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
             if (newPage < 0 || newPage >= song.pageOrder.size()) return;
             Renderer.JobRequest request = new Renderer.JobRequest(
                     this, newPage, Math.abs(page - newPage),
-                    MainApp.screenRot.getSize(windowSize));
+                    MainApp.findInstance().screenRot.getSize(windowSize));
             
             Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;

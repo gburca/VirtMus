@@ -196,7 +196,7 @@ public abstract class MusicPage {
      */
     public void saveImg(final File file, final String format) {
         Dimension displaySize = Utils.getScreenSize();
-        Dimension rotatedSize = MainApp.screenRot.getSize(displaySize);
+        Dimension rotatedSize = MainApp.findInstance().screenRot.getSize(displaySize);
         BufferedImage img = this.getImage(rotatedSize, MainApp.Rotation.Clockwise_0, false);
         
         // Let's find out what the most efficient format is...

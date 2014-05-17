@@ -59,7 +59,9 @@ final class PlayListTopComponent extends TopComponent
         // Place the Explorer Manager in the TopComponent's Lookup
         associateLookup(ExplorerUtils.createLookup(manager, map));
         
-        manager.setRootContext(new AbstractNode(new PlayLists(MainApp.findInstance())));
+        PlayLists pl = new PlayLists();
+        pl.init();
+        manager.setRootContext(new AbstractNode(pl));
         manager.getRootContext().setDisplayName("Playlists");
         this.playlistTreeView.setRootVisible(false);
     }

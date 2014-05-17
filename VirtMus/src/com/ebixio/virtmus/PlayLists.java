@@ -20,28 +20,37 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.WeakPropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public class PlayLists extends Children.Keys<Integer> implements ChangeListener {
+public class PlayLists extends Children.Keys<PlayList> implements PropertyChangeListener {
     
     /**
-     * Creates a new instance of PlayLists
-     * @param ma The main application
+     * Creates a new instance of PlayLists.
      */
-    public PlayLists(MainApp ma) {
+    public PlayLists() {
         //Log.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
-        //ma.addAllPlayLists(NbPreferences.forModule(MainApp.class));
-        ma.addPLChangeListener(WeakListeners.change(this, ma));
+    }
+    
+    /**
+     * Initialize the PlayLists.
+     * Keeping this separate from the constructor so we don't leak "this" in
+     * the constructor.
+     */    
+    public void init() {
+        WeakPropertyChangeListener wpcl = new WeakPropertyChangeListener(this, PlayListSet.findInstance());
+        PlayListSet.findInstance().addPropertyChangeListener(wpcl);
+        // Pick up the changes that happened before we registered for changes.
+        refreshKeys();
     }
 
     /**
@@ -58,13 +67,8 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
         setKeys(getKeys());
     }
     
-    private ArrayList<Integer> getKeys() {
-        int sz = MainApp.findInstance().playLists.size();
-        ArrayList<Integer> plKeys = new ArrayList<>(sz);
-        for (int i = 0; i < sz; i++) {
-            plKeys.add(i);
-        }
-        return plKeys;
+    private ArrayList<PlayList> getKeys() {
+        return new ArrayList<>(PlayListSet.findInstance().playLists);
     }
 
     /**
@@ -74,32 +78,26 @@ public class PlayLists extends Children.Keys<Integer> implements ChangeListener 
      * @return A node corresponding to the key
      */
     @Override
-    protected Node[] createNodes(Integer key) {
-        List<PlayList> pl = MainApp.findInstance().playLists;
-        PlayListNode pln = null;
-        
-        synchronized (pl) {
-            if (pl.size() > key) {
-                pln = new PlayListNode(pl.get(key), new Songs(pl.get(key)));
-            }  
-        }
+    protected Node[] createNodes(PlayList key) {
+        PlayListNode pln = new PlayListNode(key, new Songs(key));
         return new Node[] {pln};
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
-        //Log.log("PlayLists::stateChanged: " + this.toString());
+    public void propertyChange(PropertyChangeEvent evt) {
+        refreshKeys();
+    }
+    
+    private void refreshKeys() {
         /* When setKeys is called from addNotify above, the class tries to be smart
            and only calls createNodes for the newly added keys. If the content of a
            node has changed, but the key remained the same, we need to call refreshKey(key)
            for the change to be refreshed.
          */
         addNotify();
-        List<Integer> allKeys = getKeys();
-        for (Integer i: allKeys) {
-            refreshKey(i);
-        }
+        List<PlayList> allKeys = getKeys();
+        for (PlayList p: allKeys) {
+            refreshKey(p);
+        }        
     }
-    
-
 }

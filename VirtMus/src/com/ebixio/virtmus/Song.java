@@ -22,6 +22,8 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
+import com.ebixio.util.PropertyChangeSupportUnique;
+import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.filefilters.SongFilter;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.IcePdfImg;
@@ -110,7 +112,7 @@ public class Song implements Comparable<Song> {
     public static final String PROP_TAGS = "tagsProp";
     public static final String PROP_NAME = "nameProp";
 
-    private transient PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private transient PropertyChangeSupportUnique pcs = new PropertyChangeSupportUnique(this);
     // Could change this to EventListenerList if we had more than 1 event type
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
 
@@ -156,7 +158,7 @@ public class Song implements Comparable<Song> {
     /** Constructors are not called (and transients are not initialized)
      * when the object is deserialized !!! */
     private Object readResolve2() {
-        pcs = new PropertyChangeSupport(this);
+        pcs = new PropertyChangeSupportUnique(this);
         pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
         savable = null;
         version = MainApp.VERSION;
@@ -708,17 +710,25 @@ public class Song implements Comparable<Song> {
         instantiated.clear();
     }
 
-    public void addPropertyChangeListener (PropertyChangeListener pcl) {
-        pcs.addPropertyChangeListener(pcl);
+    public void addPropertyChangeListener (WeakPropertyChangeListener pcl) {
+        synchronized(pcs) {
+            pcs.addPropertyChangeListener(pcl);
+        }
     }
-    public void addPropertyChangeListener (String propertyName, PropertyChangeListener pcl) {
-        pcs.addPropertyChangeListener(propertyName, pcl);
+    public void addPropertyChangeListener (String propertyName, WeakPropertyChangeListener pcl) {
+        synchronized(pcs) {
+            pcs.addPropertyChangeListener(propertyName, pcl);
+        }
     }
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        pcs.removePropertyChangeListener(pcl);
+    public void removePropertyChangeListener(WeakPropertyChangeListener pcl) {
+        synchronized(pcs) {
+            pcs.removePropertyChangeListener(pcl);
+        }
     }
     private void fire(String propertyName, Object old, Object nue) {
-        pcs.firePropertyChange(propertyName, old, nue);
+        synchronized(pcs) {
+            pcs.firePropertyChange(propertyName, old, nue);
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {

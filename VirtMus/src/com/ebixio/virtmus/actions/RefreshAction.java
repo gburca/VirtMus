@@ -4,13 +4,12 @@
  */
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.MainApp;
+import com.ebixio.virtmus.PlayListSet;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.actions.CallableSystemAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.RefreshAction", category = "VirtMus")
@@ -20,7 +19,7 @@ public final class RefreshAction extends CallableSystemAction {
 
     @Override
     public void performAction() {
-        MainApp.findInstance().refresh();
+        PlayListSet.findInstance().addAllPlayLists(true);
     }
 
     @Override

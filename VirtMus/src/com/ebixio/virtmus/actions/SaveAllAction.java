@@ -18,7 +18,7 @@
 
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.MainApp;
+import com.ebixio.virtmus.PlayListSet;
 import com.ebixio.virtmus.VirtMusLookup;
 import java.util.Collection;
 import javax.swing.SwingUtilities;
@@ -55,13 +55,13 @@ public final class SaveAllAction extends NodeAction implements LookupListener {
     
     @Override
     protected void performAction(Node[] node) {
-        MainApp.findInstance().saveAll();
+        PlayListSet.findInstance().saveAll();
         SystemAction.get(SaveAllAction.class).setEnabled(false);
     }
 
     @Override
     protected boolean enable(Node[] node) {
-        return MainApp.findInstance().isDirty();
+        return PlayListSet.findInstance().isDirty();
     }
 
     @Override
