@@ -25,6 +25,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -33,20 +36,27 @@ import org.openide.nodes.Node;
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PlayLists extends Children.Keys<PlayList> implements PropertyChangeListener {
-    
+    /* When changes happen and we need to rescan the playlists, we only want at most
+    1 pending rescan task besides the one that's currently executing. Any more
+    would be superfluous.
+    */
+    ThreadPoolExecutor tpe = new ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, new ArrayBlockingQueue(1), new ThreadPoolExecutor.DiscardPolicy());
+
     /**
      * Creates a new instance of PlayLists.
      */
     public PlayLists() {
         //Log.log("PlayLists::constructor thread: " + Thread.currentThread().getName());
     }
-    
+
     /**
      * Initialize the PlayLists.
      * Keeping this separate from the constructor so we don't leak "this" in
      * the constructor.
-     */    
+     */
     public void init() {
+        tpe.allowCoreThreadTimeOut(true);
+
         WeakPropertyChangeListener wpcl = new WeakPropertyChangeListener(this, PlayListSet.findInstance());
         PlayListSet.findInstance().addPropertyChangeListener(wpcl);
         // Pick up the changes that happened before we registered for changes.
@@ -58,7 +68,7 @@ public class PlayLists extends Children.Keys<PlayList> implements PropertyChange
      * displayed. We need to create here a bunch of "keys" to represent each playlist.
      * The framework will then call createNode with each "key" in turn to obtain the
      * actual PlayList object to be displayed.
-     * 
+     *
      * See the "Recognizing a File Type" tutorial
      */
     @Override
@@ -66,38 +76,59 @@ public class PlayLists extends Children.Keys<PlayList> implements PropertyChange
         //Log.log("PlayLists::addNotify " + Thread.currentThread().getName());
         setKeys(getKeys());
     }
-    
+
     private ArrayList<PlayList> getKeys() {
-        return new ArrayList<>(PlayListSet.findInstance().playLists);
+        synchronized(PlayListSet.findInstance().playLists) {
+            return new ArrayList<>(PlayListSet.findInstance().playLists);
+        }
     }
 
     /**
-     * This method will get called with one of the items passed to setKeys in 
+     * This method will get called with one of the items passed to setKeys in
      * addNotify above.
      * @param key A key to create the node for
      * @return A node corresponding to the key
      */
     @Override
     protected Node[] createNodes(PlayList key) {
-        PlayListNode pln = new PlayListNode(key, new Songs(key));
+        Songs songs = new Songs(key);
+        songs.init();
+
+        PlayListNode pln = new PlayListNode(key, songs);
         return new Node[] {pln};
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        refreshKeys();
+        String prop = evt.getPropertyName();
+        if (PlayListSet.PROP_NEW_PL_ADDED.equals(prop) ||
+            PlayListSet.PROP_ALL_PL_LOADED.equals(prop)) {
+            refreshKeys();
+        }
     }
-    
+
+    /**
+     * Handling re-scan in a separate thread to prevent deadlock. The property
+     * change event can be fired from a synchronized(playLists) block, and
+     * getKeys() iterates over (and locks) the same collection causing a potential
+     * deadlock situation.
+     * @see Tags.handleTagChange()
+     */
     private void refreshKeys() {
-        /* When setKeys is called from addNotify above, the class tries to be smart
-           and only calls createNodes for the newly added keys. If the content of a
-           node has changed, but the key remained the same, we need to call refreshKey(key)
-           for the change to be refreshed.
-         */
-        addNotify();
-        List<PlayList> allKeys = getKeys();
-        for (PlayList p: allKeys) {
-            refreshKey(p);
-        }        
+        tpe.execute(new Runnable() {
+            @Override
+            public void run() {
+                /* When setKeys is called from addNotify above, the class tries to be smart
+                   and only calls createNodes for the newly added keys. If the content of a
+                   node has changed, but the key remained the same, we need to call refreshKey(key)
+                   for the change to be refreshed.
+                 */
+                addNotify();
+                List<PlayList> allKeys = getKeys();
+                for (PlayList p: allKeys) {
+                    refreshKey(p);
+                }
+            }
+        });
     }
 }

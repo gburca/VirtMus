@@ -23,7 +23,6 @@ package com.ebixio.virtmus;
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
 import com.ebixio.util.PropertyChangeSupportUnique;
-import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.filefilters.SongFilter;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.IcePdfImg;
@@ -40,7 +39,6 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -113,6 +111,7 @@ public class Song implements Comparable<Song> {
     public static final String PROP_NAME = "nameProp";
 
     private transient PropertyChangeSupportUnique pcs = new PropertyChangeSupportUnique(this);
+    private transient final Object pcsMutex = new Object();
     // Could change this to EventListenerList if we had more than 1 event type
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
 
@@ -669,11 +668,14 @@ public class Song implements Comparable<Song> {
 
             Transformer xformer = TransformerFactory.newInstance().newTransformer();
 
-//            FileOutputStream fos = new FileOutputStream("D:\\erase.xml");
-//            StreamResult res = new StreamResult(fos);
-//            Source src = new DOMSource(doc);
-//            xformer.transform(src, res);
-//            fos.close();
+            boolean debug = false;
+            if (debug) {
+                try (FileOutputStream fos = new FileOutputStream("C:\\erase.xml")) {
+                    StreamResult res = new StreamResult(fos);
+                    Source src = new DOMSource(doc);
+                    xformer.transform(src, res);
+                }
+            }
 
             StreamResult res = new StreamResult(baos);
             Source src = new DOMSource(doc);
@@ -710,23 +712,23 @@ public class Song implements Comparable<Song> {
         instantiated.clear();
     }
 
-    public void addPropertyChangeListener (WeakPropertyChangeListener pcl) {
-        synchronized(pcs) {
+    public void addPropertyChangeListener (PropertyChangeListener pcl) {
+        synchronized(pcsMutex) {
             pcs.addPropertyChangeListener(pcl);
         }
     }
-    public void addPropertyChangeListener (String propertyName, WeakPropertyChangeListener pcl) {
-        synchronized(pcs) {
+    public void addPropertyChangeListener (String propertyName, PropertyChangeListener pcl) {
+        synchronized(pcsMutex) {
             pcs.addPropertyChangeListener(propertyName, pcl);
         }
     }
-    public void removePropertyChangeListener(WeakPropertyChangeListener pcl) {
-        synchronized(pcs) {
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        synchronized(pcsMutex) {
             pcs.removePropertyChangeListener(pcl);
         }
     }
     private void fire(String propertyName, Object old, Object nue) {
-        synchronized(pcs) {
+        synchronized(pcsMutex) {
             pcs.firePropertyChange(propertyName, old, nue);
         }
     }

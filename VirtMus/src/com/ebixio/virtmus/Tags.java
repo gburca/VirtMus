@@ -17,6 +17,7 @@
  */
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
 import com.ebixio.util.WeakPropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -26,34 +27,49 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public class Tags extends Children.Keys<String> implements PropertyChangeListener, ChangeListener {
+public class Tags extends Children.Keys<String> implements PropertyChangeListener {
     public static final HashMap<String, Set<PlayList>> plTags = new HashMap<>();
     public static final HashMap<String, Set<Song>> songTags = new HashMap<>();
+    private boolean addListeners = false;
+
+    /* When changes happen and we need to rescan the tags, we only want at most
+    1 pending rescan task besides the one that's currently executing. Any more
+    would be superfluous.
+    */
+    ThreadPoolExecutor tpe = new ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, new ArrayBlockingQueue(1), new ThreadPoolExecutor.DiscardPolicy());
 
     public Tags() {
     }
-    
+
     /**
      * Initialize the Tags.
      * Keeping this separate from the constructor so we don't leak "this" in
      * the constructor.
      */
     public void init() {
+        tpe.allowCoreThreadTimeOut(true);
+
         // Listen for PlayLists added or removed
         WeakPropertyChangeListener wpcl = new WeakPropertyChangeListener(this, PlayListSet.findInstance());
         PlayListSet.findInstance().addPropertyChangeListener(wpcl);
         // Pick up changes that happened before we registered for changes.
-        handleTagChange();
+        if (PlayListSet.findInstance().getPlayListsLoading() == 0) {
+            addListeners = true;
+        }
+        refreshKeys();
     }
 
     @Override
@@ -62,12 +78,26 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
     }
 
     private synchronized ArrayList<String> getKeys() {
+        if (!addListeners) {
+            return new ArrayList<>();
+        }
+
+        PlayListSet pls = PlayListSet.findInstance();
+
+        WeakPropertyChangeListener pcl = new WeakPropertyChangeListener(this, pls);
+        pls.addPropertyChangeListener(PlayListSet.PROP_NEW_PL_ADDED, pcl);
+        pls.addPropertyChangeListener(PlayListSet.PROP_PL_DELETED, pcl);
+
         List<PlayList> pl = PlayListSet.findInstance().playLists;
         synchronized (pl) {
             songTags.clear();
             plTags.clear();
 
             for (PlayList p: pl) {
+                pcl = new WeakPropertyChangeListener(this, p);
+                p.addPropertyChangeListener(PlayList.PROP_SONG_ADDED, pcl);
+                p.addPropertyChangeListener(PlayList.PROP_SONG_REMOVED, pcl);
+
                 if (p.type == PlayList.Type.AllSongs || p.type == PlayList.Type.Default) {
                     synchronized(p.songs) {
                         for (Song s: p.songs) {
@@ -82,10 +112,8 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
                         }
                     }
                 } else {
-                    // Get notified if new songs are added (deserialized)
-                    p.addChangeListener(WeakListeners.change(this, p));
+                    p.addPropertyChangeListener(PlayList.PROP_TAGS, pcl);
 
-                    p.addPropertyChangeListener(PlayList.PROP_TAGS, new WeakPropertyChangeListener(this, p));
                     for (String tag: Utils.tags2list(p.getTags())) {
                         if (!plTags.containsKey(tag)) {
                             plTags.put(tag, new HashSet<PlayList>());
@@ -113,27 +141,36 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
-        // PlayLists were added or removed
-        handleTagChange();
-    }
-
-    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (
             (evt.getSource() instanceof Song     && Song.PROP_TAGS.equals(evt.getPropertyName()))
          || (evt.getSource() instanceof PlayList && PlayList.PROP_TAGS.equals(evt.getPropertyName()))) {
-            handleTagChange();
-        } else if (PlayListSet.PROP_ALL_PL_LOADED.equals(evt.getPropertyName())) {
-            handleTagChange();
+            //Log.log("Tags changed for S/P", Level.INFO);
+            refreshKeys();
+        } else if (PlayListSet.PROP_ALL_SONGS_LOADED.equals(evt.getPropertyName())) {
+            //Log.log("All songs loaded. Refreshing tag nodes.", Level.INFO);
+            addListeners = true;
+            refreshKeys();
         }
     }
 
-    private synchronized void handleTagChange() {
-        addNotify();
-        for (String s: getKeys()) {
-            refreshKey(s);
-        }
+    /**
+     * Handling the tag re-scan in a separate thread. This is primarily so we
+     * don't get into a deadlock situation where we get a property change event
+     * and turn around to register for other events. For example: allSongsLoaded
+     * comes in, and we register for the newPlayLists property.
+     */
+    private synchronized void refreshKeys() {
+        tpe.execute(new Runnable() {
+                @Override
+                public void run() {
+                    addNotify();
+                    for (String s: getKeys()) {
+                        refreshKey(s);
+                    }
+                }
+            }
+        );
     }
 
 }

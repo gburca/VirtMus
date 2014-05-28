@@ -33,16 +33,24 @@ public class PropertyChangeSupportUnique extends PropertyChangeSupport {
         super(sourceBean);
     }
 
-    public void addPropertyChangeListener(WeakPropertyChangeListener listener) {
-        if (isNew(listener)) {
-            super.addPropertyChangeListener(listener);
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (listener instanceof WeakPropertyChangeListener) {
+            if (! isNew((WeakPropertyChangeListener)listener)) {
+                return;
+            }
         }
+        super.addPropertyChangeListener(listener);
     }
 
-    public void addPropertyChangeListener(String propertyName, WeakPropertyChangeListener listener) {
-        if (isNew(propertyName, listener)) {
-            super.addPropertyChangeListener(propertyName, listener);
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (listener instanceof WeakPropertyChangeListener) {
+            if (! isNew(propertyName, (WeakPropertyChangeListener)listener)) {
+                return;
+            }
         }
+        super.addPropertyChangeListener(propertyName, listener);
     }
 
     private boolean isNew(WeakPropertyChangeListener newListener) {

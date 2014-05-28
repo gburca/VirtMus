@@ -23,7 +23,6 @@ package com.ebixio.virtmus;
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
 import com.ebixio.util.PropertyChangeSupportUnique;
-import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.filefilters.PlayListFilter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -33,6 +32,7 @@ import com.thoughtworks.xstream.io.xml.TraxSource;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -78,7 +78,6 @@ import org.openide.windows.WindowManager;
  */
 @XStreamAlias("PlayList")
 public class PlayList implements Comparable<PlayList> {
-
     @XStreamAlias("SongFiles")
     public ArrayList<File> songFiles = new ArrayList<>();
 
@@ -98,16 +97,20 @@ public class PlayList implements Comparable<PlayList> {
     // Some of the songs in this playlist could not be found
     protected transient boolean missingSongs = false;
 
-    public static final String PROP_NAME = "nameProp";
-    public static final String PROP_TAGS = "tagsProp";
+    public static final String PROP_NAME            = "nameProp";
+    public static final String PROP_TAGS            = "tagsProp";
+    public static final String PROP_LOADED          = "loadedProp";
+    public static final String PROP_SONG_ADDED      = "songAddedProp";
+    public static final String PROP_SONG_REMOVED    = "songRemovedProp";
 
     private transient PropertyChangeSupportUnique pcs;
+    private transient final Object pcsMutex = new Object();
     // Could change this to EventListenerList if we had more than 1 event type
     private transient Set<ChangeListener> listeners;
 
     // When separate threads are used to load the playlist songs, isFullyLoaded indicates
     // the thread has finished loading all the songs.
-    public transient boolean isFullyLoaded = true;
+    private transient boolean fullyLoaded = true;
     private transient File sourceFile = null;
 
     public static enum Type { Default, AllSongs, Normal }
@@ -161,11 +164,7 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void addAllSongs(File dir, boolean removeExisting) {
-        if (removeExisting) {
-            synchronized(songs) {
-                songs.clear();
-            }
-        }
+        if (removeExisting) songs.clear();
 
         // It can take a very long time to find all the songs (depending on the
         // size of the directory tree) so we use a thread.
@@ -174,7 +173,7 @@ public class PlayList implements Comparable<PlayList> {
         t.setName("addAllSongsThread");
         t.setPriority(Thread.MIN_PRIORITY);
 
-        isFullyLoaded = false;
+        setFullyLoaded(false);
         t.start();  // Will set isFullyLoaded to true when finished
     }
 
@@ -184,7 +183,7 @@ public class PlayList implements Comparable<PlayList> {
         @Override
         public void run() {
             if (!(dir.exists() && dir.isDirectory())) {
-                isFullyLoaded = true;
+                setFullyLoaded(true);
                 notifyListeners();
                 return;
             }
@@ -200,11 +199,10 @@ public class PlayList implements Comparable<PlayList> {
                 if (f.canRead()) {
                     Song s = Song.deserialize(f);
                     if (s != null) {
-                        synchronized(songs) {
-                            songs.add(s);
-                        }
+                        songs.add(s);
                         if (type != Type.Normal) sortSongsByName();
                         notifyListeners();
+                        fire(PROP_SONG_ADDED, null, s);
                     }
                 }
             }
@@ -236,7 +234,7 @@ public class PlayList implements Comparable<PlayList> {
             rec.setParameters(params);
             Log.uiLog(rec);
 
-            isFullyLoaded = true;
+            setFullyLoaded(true);
             notifyListeners();
             MainApp.setStatusText("Loaded all songs from " + dir.getPath());
         }
@@ -356,6 +354,10 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public static PlayList deserialize(final File f) {
+        return deserialize(f, null);
+    }
+
+    public static PlayList deserialize(final File f, PropertyChangeListener listener) {
         if (f == null || !f.getName().endsWith(".playlist.xml")) return null;
 
         XStream xs = new XStream(new PureJavaReflectionProvider());
@@ -384,7 +386,10 @@ public class PlayList implements Comparable<PlayList> {
         }
 
         pl.sourceFile = f;
-        pl.isFullyLoaded = false;
+        pl.setFullyLoaded(false);
+        if (listener != null) {
+            pl.addPropertyChangeListener(PROP_LOADED, listener);
+        }
 
         Thread t = new Thread() {
             @Override public void run() {
@@ -408,9 +413,7 @@ public class PlayList implements Comparable<PlayList> {
                     }
                     Song s = Song.deserialize(sf);
                     if (s != null) {
-                        synchronized(pl.songs) {
-                            pl.songs.add(s);
-                        }
+                        pl.songs.add(s);
                     }
                 }
 
@@ -419,7 +422,7 @@ public class PlayList implements Comparable<PlayList> {
                         " See the log file (menu View->IDE log) for details.");
                 }
 
-                pl.isFullyLoaded = true;
+                pl.setFullyLoaded(true);
                 pl.notifyListeners();
             }
         };
@@ -431,21 +434,19 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void addSong(Song song) {
-        synchronized(songs) {
-            songs.add(song);
-        }
+        songs.add(song);
         setDirty(true);
         if (this.type != Type.Normal) sortSongsByName();
-        notifyListeners();
+        fire(PROP_SONG_ADDED, null, song);
     }
 
     public boolean removeSong(Song song) {
         boolean result;
-        synchronized(songs) {
-            result = songs.remove(song);
+        result = songs.remove(song);
+        if (result) {
+            setDirty(true);
+            fire(PROP_SONG_REMOVED, song, null);
         }
-        setDirty(true);
-        notifyListeners();
         return result;
     }
 
@@ -493,7 +494,6 @@ public class PlayList implements Comparable<PlayList> {
         this.name = name;
         fire(PROP_NAME, oldName, name);
         setDirty(true);
-        notifyListeners();
     }
 
     public String getTags() {
@@ -501,6 +501,8 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void setTags(String tags) {
+        if (type != PlayList.Type.Normal) return;
+
         if (tags != null) {
             tags = tags.trim();
             if (tags.length() == 0) tags = null;
@@ -515,7 +517,6 @@ public class PlayList implements Comparable<PlayList> {
         this.tags = tags;
         fire(PROP_TAGS, oldTags, tags);
         setDirty(true);
-        notifyListeners();
     }
 
     public boolean isDirty() {
@@ -550,24 +551,40 @@ public class PlayList implements Comparable<PlayList> {
         return missingSongs;
     }
 
+    /**
+     * @return the fullyLoaded
+     */
+    public synchronized boolean isFullyLoaded() {
+        return fullyLoaded;
+    }
+
+    /**
+     * @param fullyLoaded the fullyLoaded to set
+     */
+    public synchronized void setFullyLoaded(boolean fullyLoaded) {
+        boolean oldFullyLoaded = this.fullyLoaded;
+        this.fullyLoaded = fullyLoaded;
+        pcs.firePropertyChange(PROP_LOADED, oldFullyLoaded, fullyLoaded);
+    }
+
     // <editor-fold defaultstate="collapsed" desc=" Listeners ">
-    public void addPropertyChangeListener (WeakPropertyChangeListener pcl) {
-        synchronized(pcs) {
+    public void addPropertyChangeListener (PropertyChangeListener pcl) {
+        synchronized(pcsMutex) {
             pcs.addPropertyChangeListener(pcl);
         }
     }
-    public void addPropertyChangeListener(String propertyName, WeakPropertyChangeListener pcl) {
-        synchronized(pcs) {
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener pcl) {
+        synchronized(pcsMutex) {
             pcs.addPropertyChangeListener(propertyName, pcl);
         }
     }
-    public void removePropertyChangeListener(WeakPropertyChangeListener pcl) {
-        synchronized(pcs) {
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        synchronized(pcsMutex) {
             pcs.removePropertyChangeListener(pcl);
         }
     }
     private void fire(String propertyName, Object old, Object nue) {
-        synchronized(pcs) {
+        synchronized(pcsMutex) {
             pcs.firePropertyChange(propertyName, old, nue);
         }
     }

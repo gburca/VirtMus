@@ -37,12 +37,12 @@ public class TagChildren extends Children.Keys<String> {
     protected void addNotify() {
         setKeys(new String[]{tag});
     }
-    
+
     /**
      * Creates the PlayList and Song nodes corresponding to the given tag.
-     * 
+     *
      * The (sorted) PlayLists are first, followed by the songs (also sorted).
-     * 
+     *
      * @param key A tag
      * @return An array of PlayList and Song nodes that have the given tag.
      */
@@ -50,10 +50,13 @@ public class TagChildren extends Children.Keys<String> {
     protected Node[] createNodes(String key) {
         ArrayList<PlayListNode> pls = new ArrayList<>();
         ArrayList<SongNode> songs = new ArrayList<>();
-        
+
         if (Tags.plTags.containsKey(key)) {
             for (PlayList p: Tags.plTags.get(key)) {
-                pls.add(new PlayListNode(p, new Songs(p)));
+                Songs s = new Songs(p);
+                s.init();
+
+                pls.add(new PlayListNode(p, s));
             }
         }
         if (Tags.songTags.containsKey(key)) {
@@ -61,10 +64,10 @@ public class TagChildren extends Children.Keys<String> {
                 songs.add(new SongNode(s, new MusicPages(s)));
             }
         }
-        
+
         Collections.sort(pls);
         Collections.sort(songs);
-        
+
         Node allNodes[] = new Node[pls.size() + songs.size()];
         int idx = 0;
         for (PlayListNode p: pls) {
@@ -73,8 +76,8 @@ public class TagChildren extends Children.Keys<String> {
         for (SongNode s: songs) {
             allNodes[idx++] = s;
         }
-        
+
         return allNodes;
     }
-    
+
 }

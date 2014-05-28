@@ -191,7 +191,7 @@ public class PlayListNode extends AbstractNode
     public String getHtmlDisplayName() {
         String name = super.getDisplayName();
         
-        if (playList.isFullyLoaded) {
+        if (playList.isFullyLoaded()) {
             name = "<font color='!textText'>" + name + "</font>";
         } else {
             name = "<font color='!controlShadow'>" + name + "</font>";

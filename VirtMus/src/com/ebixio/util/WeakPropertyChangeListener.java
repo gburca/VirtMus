@@ -68,11 +68,11 @@ public class WeakPropertyChangeListener implements PropertyChangeListener {
 
     public boolean isSameListener(PropertyChangeListener other) {
         if (other == null) return false;
-        
+
         if (other instanceof WeakPropertyChangeListener) {
             WeakPropertyChangeListener wpcl = (WeakPropertyChangeListener)other;
             return listenerRef.get() == wpcl.listenerRef.get()
-                    && src == wpcl.src;            
+                    && src == wpcl.src;
         } else {
             return other == listenerRef.get();
         }
