@@ -41,35 +41,55 @@ public class Util {
         return buffer.toString();
     }
 
+    /**
+     * Helper function to test if the new string is different from the old one.
+     * Used by PlayLists and Songs to determine if the tags or notes have changed.
+     * @param old Old (existing) string
+     * @param newStr New string
+     * @return True if the two arguments are different
+     */
+    public static boolean isDifferent(String old, String newStr) {
+        if (newStr != null) {
+            newStr = newStr.trim();
+            if (newStr.length() == 0) newStr = null;
+        }
+        if (newStr == null) {
+            if (old == null) return false;
+        } else if (newStr.equals(old)) {
+            return false;
+        }
+        return true;
+    }
+
     public static Validator getValidator(InputStream xsd) {
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         Schema schema;
         Validator validator = null;
-        
+
         try {
             schema = factory.newSchema(new StreamSource(xsd));
             validator = schema.newValidator();
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return validator;
     }
-    
+
     public static boolean validateXml(File xml, InputStream xsd) {
         return validateXml(xml, getValidator(xsd));
     }
-    
+
     public static boolean validateXml(File xml, Validator validator) {
         if (validator == null) return false;
-        
+
         try {
             DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = parser.parse(xml);
             validator.validate(new DOMSource(document));
 
             return true;    // No exceptions == valid document
-            
+
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ParserConfigurationException ex) {

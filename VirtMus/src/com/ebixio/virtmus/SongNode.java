@@ -107,14 +107,17 @@ public class SongNode extends AbstractNode
             Property nameProp = new PropertySupport.Reflection<String>(s, String.class, "name"); // get/setName
             Property fileProp = new PropertySupport.Reflection<File>(s, File.class, "getSourceFile", null); // only getSourceFile
             Property tagsProp = new PropertySupport.Reflection<String>(s, String.class, "tags"); // get/setTags
+            Property notesProp = new PropertySupport.Reflection<String>(s, String.class, "notes"); // get/setNotes
             nameProp.setName("Name");
             fileProp.setName("Source File");
             tagsProp.setName("Tags");
             tagsProp.setShortDescription(
                 NbBundle.getMessage(PlayListTopComponent.class, "CTL_TagsDescription"));
+            notesProp.setName("Notes");
             set.put(nameProp);
             set.put(fileProp);
             set.put(tagsProp);
+            set.put(notesProp);
         } catch (NoSuchMethodException ex) {
             ErrorManager.getDefault().notify(ex);
         }

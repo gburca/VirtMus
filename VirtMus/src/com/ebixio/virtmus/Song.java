@@ -23,6 +23,7 @@ package com.ebixio.virtmus;
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
 import com.ebixio.util.PropertyChangeSupportUnique;
+import com.ebixio.util.Util;
 import com.ebixio.virtmus.filefilters.SongFilter;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.IcePdfImg;
@@ -99,8 +100,16 @@ import org.xml.sax.SAXException;
 public class Song implements Comparable<Song> {
     @XStreamAlias("pages")
     public final List<MusicPage> pageOrder = Collections.synchronizedList(new ArrayList<MusicPage>());
-    public String name = null;
-    public String tags = null;
+
+    @XStreamAlias("name")
+    private String name = null;
+
+    @XStreamAlias("Tags")
+    private String tags = null;
+
+    @XStreamAlias("Notes")
+    private String notes = null;
+
     @XStreamAsAttribute
     private String version = MainApp.VERSION;   // Used in the XML output
 
@@ -323,15 +332,7 @@ public class Song implements Comparable<Song> {
     }
 
     public void setTags(String tags) {
-        if (tags != null) {
-            tags = tags.trim();
-            if (tags.length() == 0) tags = null;
-        }
-        if (tags == null) {
-            if (this.tags == null) return;
-        } else if (tags.equals(this.tags)) {
-            return;
-        }
+        if (!Util.isDifferent(this.tags, tags)) return;
 
         String oldTags = this.tags;
         this.tags = tags;
@@ -341,6 +342,16 @@ public class Song implements Comparable<Song> {
     }
     public String getTags() {
         return tags;
+    }
+
+    public void setNotes(String notes) {
+        if (!Util.isDifferent(this.notes, notes)) return;
+
+        this.notes = notes;
+        setDirty(true);
+    }
+    public String getNotes() {
+        return notes;
     }
 
     public boolean save() {

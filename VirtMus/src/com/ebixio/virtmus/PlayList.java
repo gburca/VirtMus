@@ -23,6 +23,7 @@ package com.ebixio.virtmus;
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
 import com.ebixio.util.PropertyChangeSupportUnique;
+import com.ebixio.util.Util;
 import com.ebixio.virtmus.filefilters.PlayListFilter;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -86,6 +87,9 @@ public class PlayList implements Comparable<PlayList> {
 
     @XStreamAlias("Tags")
     private String tags = null;
+
+    @XStreamAlias("Notes")
+    private String notes = null;
 
     @XStreamAsAttribute
     private String version = MainApp.VERSION;   // Used in the XML output
@@ -496,27 +500,30 @@ public class PlayList implements Comparable<PlayList> {
         setDirty(true);
     }
 
-    public String getTags() {
-        return tags;
-    }
-
     public void setTags(String tags) {
         if (type != PlayList.Type.Normal) return;
 
-        if (tags != null) {
-            tags = tags.trim();
-            if (tags.length() == 0) tags = null;
-        }
-        if (tags == null) {
-            if (this.tags == null) return;
-        } else if (tags.equals(this.tags)) {
-            return;
-        }
+        if (!Util.isDifferent(this.tags, tags)) return;
 
         String oldTags = this.tags;
         this.tags = tags;
         fire(PROP_TAGS, oldTags, tags);
         setDirty(true);
+    }
+    public String getTags() {
+        return tags;
+    }
+
+    public void setNotes(String notes) {
+        if (type != PlayList.Type.Normal) return;
+
+        if (!Util.isDifferent(this.notes, notes)) return;
+
+        this.notes = notes;
+        setDirty(true);
+    }
+    public String getNotes() {
+        return notes;
     }
 
     public boolean isDirty() {
