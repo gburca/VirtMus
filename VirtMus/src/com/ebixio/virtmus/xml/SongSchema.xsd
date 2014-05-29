@@ -12,9 +12,10 @@
 <xsd:element name="song">
     <xsd:complexType>
         <xsd:sequence>
-            <xsd:element name="name" minOccurs="0" type="xsd:string"/>
-            <xsd:element name="tags" minOccurs="0" type="xsd:string"/>
-            <xsd:element name="pages">
+            <xsd:element name="Name" minOccurs="0" type="xsd:string"/>
+            <xsd:element name="Tags" minOccurs="0" type="xsd:string"/>
+            <xsd:element name="Notes" minOccurs="0" type="xsd:string"/>
+            <xsd:element name="Pages">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="page" type="pageType" minOccurs="0" maxOccurs="unbounded"/>

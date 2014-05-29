@@ -43,12 +43,18 @@ public class Util {
 
     /**
      * Helper function to test if the new string is different from the old one.
-     * Used by PlayLists and Songs to determine if the tags or notes have changed.
+     * Used by PlayLists and Songs to determine if the tags or notes properties
+     * have changed.
+     *
      * @param old Old (existing) string
      * @param newStr New string
      * @return True if the two arguments are different
      */
     public static boolean isDifferent(String old, String newStr) {
+        // When the user selects a property but then clicks away, sometimes the
+        // default value (<null value>) gets entered as the new value.
+        if ("<null value>".equals(newStr)) newStr = null;
+
         if (newStr != null) {
             newStr = newStr.trim();
             if (newStr.length() == 0) newStr = null;

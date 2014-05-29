@@ -4,17 +4,14 @@
  */
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListSet;
-import org.netbeans.api.project.Project;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.PlayListRevertAction", category = "PlayList")
@@ -26,6 +23,7 @@ public final class PlayListRevertAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
+            pl.setDirty(false); // To remove PlayListSavable from the lookup
             PlayListSet.findInstance().replacePlayList(pl, PlayList.deserialize(pl.getSourceFile()));
             setEnabled(false);
         }

@@ -211,7 +211,6 @@ public class SongNode extends AbstractNode
     public boolean canRename()  { return true; }
     @Override
     public void setName(String nue) {
-        if (nue.equals(song.getName())) return;
         song.setName(nue);
     }
 
@@ -236,6 +235,7 @@ public class SongNode extends AbstractNode
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc=" ChangeListener interface ">
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireDisplayNameChange(null, null);
     }

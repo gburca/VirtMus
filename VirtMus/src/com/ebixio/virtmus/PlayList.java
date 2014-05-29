@@ -327,6 +327,8 @@ public class PlayList implements Comparable<PlayList> {
     public boolean serialize(File toFile) {
         if (toFile == null || toFile.isDirectory()) return false;
 
+        version = MainApp.VERSION;
+
         XStream xs = new XStream();
         xs.processAnnotations(PlayList.class);
 
@@ -488,11 +490,9 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void setName(String name) {
-        if (name == null) {
-            if (this.name == null) return;
-        } else if (name.equals(this.name)) {
-            return;
-        }
+        if (type != PlayList.Type.Normal) return;
+
+        if (!Util.isDifferent(this.name, name)) return;
 
         String oldName = this.name;
         this.name = name;

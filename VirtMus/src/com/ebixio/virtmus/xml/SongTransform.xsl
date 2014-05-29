@@ -25,20 +25,23 @@
 
 
 <xsl:template match="/song">
-	<xsl:element name="song">
+    <xsl:element name="song">
         <xsl:attribute name="version">
             <xsl:value-of select="@version"/>
         </xsl:attribute>
-        <xsl:if test="name">
-            <name><xsl:value-of select="name"/></name>
+        <xsl:if test="Name">
+            <Name><xsl:value-of select="Name"/></Name>
         </xsl:if>
-        <xsl:if test="tags">
-            <tags><xsl:value-of select="tags"/></tags>
+        <xsl:if test="Tags">
+            <Tags><xsl:value-of select="Tags"/></Tags>
         </xsl:if>
-		<pages>
-			<xsl:apply-templates select="//page"/>
-		</pages>
-	</xsl:element>
+        <xsl:if test="Notes">
+            <Notes><xsl:value-of select="Notes"/></Notes>
+        </xsl:if>
+        <Pages>
+                <xsl:apply-templates select="//page"/>
+        </Pages>
+    </xsl:element>
 </xsl:template>
 
 

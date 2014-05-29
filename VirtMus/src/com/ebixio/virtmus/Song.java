@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,10 +99,10 @@ import org.xml.sax.SAXException;
  */
 @XStreamAlias("song")
 public class Song implements Comparable<Song> {
-    @XStreamAlias("pages")
+    @XStreamAlias("Pages")
     public final List<MusicPage> pageOrder = Collections.synchronizedList(new ArrayList<MusicPage>());
 
-    @XStreamAlias("name")
+    @XStreamAlias("Name")
     private String name = null;
 
     @XStreamAlias("Tags")
@@ -309,11 +310,7 @@ public class Song implements Comparable<Song> {
     }
 
     public void setName(String name) {
-        if (name == null) {
-            if (this.name == null) return;
-        } else if (name.equals(this.name)) {
-            return;
-        }
+        if (!Util.isDifferent(this.name, name)) return;
 
         String oldName = this.name;
         this.name = name;
@@ -432,10 +429,14 @@ public class Song implements Comparable<Song> {
         xs.addDefaultImplementation(MusicPageSVG.class, MusicPage.class);
 
     }
+
     public boolean serialize() {
         return serialize(this.sourceFile);
     }
+
     public boolean serialize(File toFile) {
+        version = MainApp.VERSION;  // Update version
+
         XStream xstream = new XStream();
         configXStream(xstream);
 
@@ -444,13 +445,14 @@ public class Song implements Comparable<Song> {
             mp.prepareToSave();
         }
 
-//        try {
-//            xstream.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
-//        } catch (UnsupportedEncodingException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (FileNotFoundException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        boolean debug = false;
+        if (debug) {
+            try {
+                xstream.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
+            } catch (UnsupportedEncodingException | FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         try {
             TraxSource traxSource = new TraxSource(this, xstream);
@@ -461,10 +463,7 @@ public class Song implements Comparable<Song> {
             }
 
             //xstream.toXML(this, new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8"));
-        } catch (FileNotFoundException ex) {
-            Log.log(ex);
-            return false;
-        } catch (Exception ex) {
+        } catch (FileNotFoundException | UnsupportedEncodingException | TransformerException ex) {
             Log.log(ex);
             return false;
         }

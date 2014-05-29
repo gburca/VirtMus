@@ -76,20 +76,29 @@ public class PlayListNode extends AbstractNode
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GoLive.class),
-            SystemAction.get(SavePlayListAction.class),
-            SystemAction.get(PlayListRevertAction.class),
-            null,
-            SystemAction.get(SongNewAction.class),
-            SystemAction.get(SongOpenAction.class),
-            null,
-            SystemAction.get(RenameItemAction.class),
-            SystemAction.get(ReorderAction.class),
-            null,
-            SystemAction.get(PlayListDelete.class)
+        if (playList.type == PlayList.Type.Normal) {
+            return new Action[] {
+                SystemAction.get(GoLive.class),
+                SystemAction.get(SavePlayListAction.class),
+                SystemAction.get(PlayListRevertAction.class),
+                null,
+                SystemAction.get(SongNewAction.class),
+                SystemAction.get(SongOpenAction.class),
+                null,
+                SystemAction.get(RenameItemAction.class),
+                SystemAction.get(ReorderAction.class),
+                null,
+                SystemAction.get(PlayListDelete.class)
 
-        };
+            };
+        } else {
+            return new Action[] {
+                SystemAction.get(GoLive.class),
+                null,
+                SystemAction.get(SongNewAction.class),
+                SystemAction.get(SongOpenAction.class),
+            };
+        }
     }
 
     @Override
@@ -97,9 +106,10 @@ public class PlayListNode extends AbstractNode
         Sheet sheet = Sheet.createDefault();
         Sheet.Set set = Sheet.createPropertiesSet();
         PlayList pl = getLookup().lookup(PlayList.class);
+        boolean normal = pl.type == PlayList.Type.Normal;
 
         try {
-            Property nameProp = new PropertySupport.Reflection<String>(pl, String.class, "name"); // get/setName
+            Property nameProp = new PropertySupport.Reflection<String>(pl, String.class, "getName", normal ? "setName" : null); // get/setName
             Property fileProp = new PropertySupport.Reflection<File>(pl, File.class, "getSourceFile", null); // only getSourceFile
             Property songsProp = new PropertySupport.Reflection<Integer>(pl, Integer.class, "getSongCnt", null); // only getSongCnt
             Property tagsProp = new PropertySupport.Reflection<String>(pl, String.class, "tags"); // get/setTags
@@ -114,8 +124,10 @@ public class PlayListNode extends AbstractNode
             set.put(nameProp);
             set.put(fileProp);
             set.put(songsProp);
-            set.put(tagsProp);
-            set.put(notesProp);
+            if (normal) {
+                set.put(tagsProp);
+                set.put(notesProp);
+            }
         } catch (NoSuchMethodException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -175,10 +187,12 @@ public class PlayListNode extends AbstractNode
     // <editor-fold defaultstate="collapsed" desc=" Node name ">
 
     @Override
-    public boolean canRename() { return true; }
+    public boolean canRename() {
+        return playList.type == PlayList.Type.Normal;
+    }
+
     @Override
     public void setName(String nue) {
-        if (nue.equals(playList.getName())) return;
         playList.setName(nue);
     }
     

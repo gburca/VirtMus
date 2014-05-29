@@ -27,6 +27,10 @@
                 <Tags><xsl:value-of select="Tags"/></Tags>
             </xsl:if>
 
+            <xsl:if test="Notes">
+                <Notes><xsl:value-of select="Notes"/></Notes>
+            </xsl:if>
+
             <xsl:if test="SongFiles">
                 <SongFiles>
                     <xsl:apply-templates select="SongFiles/file"/>
