@@ -106,18 +106,19 @@ public class Log {
             File system: uihandler.exceptionreporter
         */
         Controller.getDefault().setEnableExceptionHandler(false);
+        Preferences pref = NbPreferences.forModule(MainApp.class);
         
         // Assign an InstallId if it's not set.
-        long installId = NbPreferences.forModule(MainApp.class).getLong(MainApp.OptInstallId, 0);
+        long installId = pref.getLong(MainApp.OptInstallId, 0);
         if (installId == 0) {
             Random r = new Random();
             while (installId <= 0) installId = r.nextLong();
-            NbPreferences.forModule(MainApp.class).putLong(MainApp.OptInstallId, installId);
+            pref.putLong(MainApp.OptInstallId, installId);
         }
         
         // If prevVersion != MainApp.VERSION we know this is an upgrade
-        String prevVersion = NbPreferences.forModule(MainApp.class).get(MainApp.OptAppVersion, "0.00");
-        NbPreferences.forModule(MainApp.class).put(MainApp.OptAppVersion, MainApp.VERSION);
+        String prevVersion = pref.get(MainApp.OptAppVersion, "0.00");
+        pref.put(MainApp.OptAppVersion, MainApp.VERSION);
 
         LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
         rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
@@ -125,9 +126,9 @@ public class Log {
         
         Preferences corePref = NbPreferences.root().node("org/netbeans/core");
         
-        if (NbPreferences.forModule(MainApp.class).getBoolean(MainApp.OptLogVersion, true)) {
+        if (pref.getBoolean(MainApp.OptLogVersion, true)) {
             if (!corePref.getBoolean("usageStatisticsEnabled", true)) {
-                NbPreferences.forModule(MainApp.class).putBoolean(MainApp.OptLogVersion, false);
+                pref.putBoolean(MainApp.OptLogVersion, false);
                 Log.logVersion(installId, prevVersion, false);
             } else {
                 Log.logVersion(installId, prevVersion, true);

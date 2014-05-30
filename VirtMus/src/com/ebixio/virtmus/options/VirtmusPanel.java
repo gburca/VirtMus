@@ -22,6 +22,7 @@ import com.ebixio.virtmus.MainApp;
 import java.awt.Frame;
 import java.io.File;
 import java.util.Enumeration;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
@@ -32,6 +33,7 @@ import org.openide.windows.WindowManager;
 final class VirtmusPanel extends javax.swing.JPanel {
     
     private final VirtmusOptionsPanelController controller;
+    private Preferences pref = NbPreferences.forModule(MainApp.class);
     
     VirtmusPanel(VirtmusOptionsPanelController controller) {
         this.controller = controller;
@@ -386,18 +388,18 @@ final class VirtmusPanel extends javax.swing.JPanel {
             inkscape = "";
         }
 
-        playListDir.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptPlayListDir, ""));
-        songDir.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, ""));
-        svgEditor.setText(NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, inkscape));
-        pageScrollPercentage.setValue(Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100.0")));
+        playListDir.setText(pref.get(MainApp.OptPlayListDir, ""));
+        songDir.setText(pref.get(MainApp.OptSongDir, ""));
+        svgEditor.setText(pref.get(MainApp.OptSvgEditor, inkscape));
+        pageScrollPercentage.setValue(Float.parseFloat(pref.get(MainApp.OptPageScrollAmount, "100.0")));
         
-        String orientation = NbPreferences.forModule(MainApp.class).get(MainApp.OptScreenRot, MainApp.findInstance().screenRot.toString());
+        String orientation = pref.get(MainApp.OptScreenRot, MainApp.findInstance().screenRot.toString());
         enableOptionButton(orientationButtonGroup.getElements(), orientation);
 
-        String scrollDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString());
+        String scrollDir = pref.get(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString());
         enableOptionButton(scrollDirGroup.getElements(), scrollDir);
         
-        useOpenGL.setSelected(Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false")));
+        useOpenGL.setSelected(Boolean.parseBoolean(pref.get(MainApp.OptUseOpenGL, "false")));
     }
     
     private void enableOptionButton(Enumeration<AbstractButton> buttonEnum, String option) {
@@ -413,20 +415,20 @@ final class VirtmusPanel extends javax.swing.JPanel {
     void store() {
         // Save changes only if it's different so that we only trigger listener
         // notification if a change was really made.
-        if (! NbPreferences.forModule(MainApp.class).get(MainApp.OptPlayListDir, "").equals(playListDir.getText()) ) {
-            NbPreferences.forModule(MainApp.class).put(MainApp.OptPlayListDir, playListDir.getText());
+        if (! pref.get(MainApp.OptPlayListDir, "").equals(playListDir.getText()) ) {
+            pref.put(MainApp.OptPlayListDir, playListDir.getText());
         }
-        if (! NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "").equals(songDir.getText()) ) {
-            NbPreferences.forModule(MainApp.class).put(MainApp.OptSongDir, songDir.getText());
+        if (! pref.get(MainApp.OptSongDir, "").equals(songDir.getText()) ) {
+            pref.put(MainApp.OptSongDir, songDir.getText());
         }
-        if (! NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, "").equals(svgEditor.getText()) ) {
-            NbPreferences.forModule(MainApp.class).put(MainApp.OptSvgEditor, svgEditor.getText());
+        if (! pref.get(MainApp.OptSvgEditor, "").equals(svgEditor.getText()) ) {
+            pref.put(MainApp.OptSvgEditor, svgEditor.getText());
         }
         
-        float scrollPercentage = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "0"));
+        float scrollPercentage = Float.parseFloat(pref.get(MainApp.OptPageScrollAmount, "0"));
         Number currentScroll = (Number) pageScrollPercentage.getValue();
         if (scrollPercentage != currentScroll.floatValue()) {
-            NbPreferences.forModule(MainApp.class).put(MainApp.OptPageScrollAmount, Float.toString(currentScroll.floatValue()) );
+            pref.put(MainApp.OptPageScrollAmount, Float.toString(currentScroll.floatValue()) );
         }
         
         MainApp.findInstance().screenRot = MainApp.Rotation.valueOf(
@@ -435,17 +437,17 @@ final class VirtmusPanel extends javax.swing.JPanel {
         MainApp.findInstance().scrollDir = MainApp.ScrollDir.valueOf(
                 saveOption(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString(), scrollDirGroup));
         
-        Boolean oldUseOpenGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false"));
+        Boolean oldUseOpenGL = Boolean.parseBoolean(pref.get(MainApp.OptUseOpenGL, "false"));
         if (oldUseOpenGL != useOpenGL.isSelected()) {
-            NbPreferences.forModule(MainApp.class).put(MainApp.OptUseOpenGL, Boolean.toString(useOpenGL.isSelected()));
+            pref.put(MainApp.OptUseOpenGL, Boolean.toString(useOpenGL.isSelected()));
         }
     }
     
     private String saveOption(String optionName, String defaultValue, ButtonGroup buttonGroup) {
         String newOption = buttonGroup.getSelection().getActionCommand();
-        String oldOption = NbPreferences.forModule(MainApp.class).get(optionName, defaultValue);
+        String oldOption = pref.get(optionName, defaultValue);
         if (! oldOption.equals(newOption)) {
-            NbPreferences.forModule(MainApp.class).put(optionName, newOption);
+            pref.put(optionName, newOption);
         }
         return newOption;
     }

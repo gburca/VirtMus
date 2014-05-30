@@ -37,6 +37,7 @@ public class Installer extends ModuleInstall {
                     public void run() {
                         Log.log("VirtMus module: restored");
                         ToolbarPool.getDefault().setConfiguration("StandardToolbar");
+                        MainApp.findInstance();
                     }
                 });
             }
