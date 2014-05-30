@@ -256,9 +256,13 @@
         <folder name="Modes">
             <folder name="explorer">
                 <file name="PlayListTopComponent.wstcref" url="PlayListTopComponentWstcref.xml"/>
-                <file name="TagsTopComponent.wstcref" url="TagsTopComponentWstcref.xml"/>
             </folder>
             <file name="explorer.wsmode" url="explorerWsmode.xml"/>
+
+            <folder name="tags">
+                <file name="TagsTopComponent.wstcref" url="TagsTopComponentWstcref.xml"/>
+            </folder>
+            <file name="tags.wsmode" url="tagsWsmode.xml"/>
         </folder>
     </folder>
 </filesystem>
