@@ -263,6 +263,11 @@
                 <file name="TagsTopComponent.wstcref" url="TagsTopComponentWstcref.xml"/>
             </folder>
             <file name="tags.wsmode" url="tagsWsmode.xml"/>
+
+            <folder name="properties">
+                <file name="properties.wstcref" url="propertiesWstcref.xml"/>
+            </folder>
+            <file name="properties.wsmode" url="propertiesWsmode.xml"/>
         </folder>
     </folder>
 </filesystem>
