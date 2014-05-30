@@ -115,8 +115,12 @@ public class Log {
             NbPreferences.forModule(MainApp.class).putLong(MainApp.OptInstallId, installId);
         }
         
+        // If prevVersion != MainApp.VERSION we know this is an upgrade
+        String prevVersion = NbPreferences.forModule(MainApp.class).get(MainApp.OptAppVersion, "0.00");
+        NbPreferences.forModule(MainApp.class).put(MainApp.OptAppVersion, MainApp.VERSION);
+
         LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
-        rec.setParameters(new Object[]{MainApp.VERSION, installId});
+        rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
         Log.uiLog(rec);
         
         Preferences corePref = NbPreferences.root().node("org/netbeans/core");
@@ -124,9 +128,9 @@ public class Log {
         if (NbPreferences.forModule(MainApp.class).getBoolean(MainApp.OptLogVersion, true)) {
             if (!corePref.getBoolean("usageStatisticsEnabled", true)) {
                 NbPreferences.forModule(MainApp.class).putBoolean(MainApp.OptLogVersion, false);
-                Log.logVersion(installId, false);
+                Log.logVersion(installId, prevVersion, false);
             } else {
-                Log.logVersion(installId, true);
+                Log.logVersion(installId, prevVersion, true);
             }
         }
     }
@@ -192,7 +196,7 @@ public class Log {
         }).execute();
     }
 
-    public static void logVersion(long installId, boolean statsEnabled) {
+    public static void logVersion(long installId, String prevVersion, boolean statsEnabled) {
         try {
             URL url = new URL("http://ebixio.com:8001/virtmus/analytics");
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -208,6 +212,7 @@ public class Log {
                 String postData =
                         "version="          + URLEncoder.encode(MainApp.VERSION, "UTF-8") +
                         "&installId="       + String.valueOf(installId) +
+                        "&prevVersion="      + URLEncoder.encode(prevVersion, "UTF-8") +
                         "&statsEnabled="    + Boolean.toString(statsEnabled);
                 outS.writeBytes(postData);
                 outS.flush();

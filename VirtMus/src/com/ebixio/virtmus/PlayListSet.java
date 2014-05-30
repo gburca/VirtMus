@@ -154,23 +154,44 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
         switch (evt.getKey()) {
             case MainApp.OptSongDir:
                 Log.log("Preference SongDir changed");
-                if (isDirty()) {
-                    int returnVal = JOptionPane.showConfirmDialog(null,
-                            "You have unsaved changes. Save all changes before loading new song directory?",
-                            "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
-                    switch (returnVal) {
-                        case JOptionPane.YES_OPTION:    saveAll();   break;
-                        case JOptionPane.CANCEL_OPTION: return;
-                        case JOptionPane.NO_OPTION:
-                        default: break;
-                    }
+
+                /* We need the synchronization because we could be in the middle
+                of AddPlayLists.run() when the preferences are changed, and
+                playLists.get(1) might not exist yet (or might be something
+                other than AllSongs). */
+                synchronized(AddPlayLists.class) {
+                    if (!promptForSave("Save all changes before loading new song directory?")) return;
+                    playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
                 }
-                playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
                 break;
             case MainApp.OptPlayListDir:
                 addAllPlayLists(false);
                 break;
         }
+    }
+
+    /**
+     *
+     * @param msg
+     * @return false if user selected "Cancel"
+     */
+    private boolean promptForSave(String msg) {
+        if (isDirty()) {
+            int returnVal = JOptionPane.showConfirmDialog(null,
+                    "You have unsaved changes. " + msg,
+                    "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
+            switch (returnVal) {
+                case JOptionPane.YES_OPTION:
+                    saveAll();
+                    break;
+                case JOptionPane.CANCEL_OPTION:
+                    return false;
+                case JOptionPane.NO_OPTION:
+                default:
+                    break;
+            }
+        }
+        return true;
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Property Change Listener ">
@@ -260,10 +281,11 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
             setPriority(Thread.MIN_PRIORITY);
         }
 
+        // TODO: Remove this if finished debugging
         private void pause(long time) {
             synchronized(eraseme) {
                 try {
-                    eraseme.wait(1000);
+                    eraseme.wait(time);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -274,20 +296,10 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
         public void run() {
             PlayList pl;
 
-            if (isDirty()) {
-                int returnVal = JOptionPane.showConfirmDialog(null,
-                        "You have unsaved changes. Save all changes before loading new playlists?",
-                        "Changes exist in currently loaded playlists or songs.", JOptionPane.YES_NO_CANCEL_OPTION);
-                switch (returnVal) {
-                    case JOptionPane.YES_OPTION:    saveAll();   break;
-                    case JOptionPane.CANCEL_OPTION: return;
-                    case JOptionPane.NO_OPTION:
-                    default: break;
-                }
-            }
-
             // Syncrhonized to block re-loads if there is one in progress
             synchronized (AddPlayLists.class) {
+                if (!promptForSave("Save all changes before loading new playlists?")) return;
+
                 playLists.clear();
                 //pause(5000);
 

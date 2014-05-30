@@ -133,6 +133,7 @@ public final class MainApp {
     public static final String OptSvgEditor         = "SvgEditor";
     public static final String OptInstallId         = "InstallId";
     public static final String OptLogVersion        = "LogVersion";
+    public static final String OptAppVersion        = "AppVersion";
 
     /** Creates a new instance of MainApp */
     private MainApp() {

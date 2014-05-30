@@ -109,11 +109,11 @@ public class PlayListNode extends AbstractNode
         boolean normal = pl.type == PlayList.Type.Normal;
 
         try {
-            Property nameProp = new PropertySupport.Reflection<String>(pl, String.class, "getName", normal ? "setName" : null); // get/setName
-            Property fileProp = new PropertySupport.Reflection<File>(pl, File.class, "getSourceFile", null); // only getSourceFile
-            Property songsProp = new PropertySupport.Reflection<Integer>(pl, Integer.class, "getSongCnt", null); // only getSongCnt
-            Property tagsProp = new PropertySupport.Reflection<String>(pl, String.class, "tags"); // get/setTags
-            Property notesProp = new PropertySupport.Reflection<String>(pl, String.class, "notes"); // get/setNotes
+            Property nameProp = new PropertySupport.Reflection<>(pl, String.class, "getName", normal ? "setName" : null); // get/setName
+            Property fileProp = new PropertySupport.Reflection<>(pl, File.class, "getSourceFile", null); // only getSourceFile
+            Property songsProp = new PropertySupport.Reflection<>(pl, Integer.class, "getSongCnt", null); // only getSongCnt
+            Property tagsProp = new PropertySupport.Reflection<>(pl, String.class, "tags"); // get/setTags
+            Property notesProp = new PropertySupport.Reflection<>(pl, String.class, "notes"); // get/setNotes
             nameProp.setName("Name");
             fileProp.setName("Source File");
             songsProp.setName("Songs");
