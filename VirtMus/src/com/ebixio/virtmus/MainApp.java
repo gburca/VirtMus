@@ -43,8 +43,6 @@ import org.openide.util.NbPreferences;
 public final class MainApp {
 
     private static MainApp instance;
-    //public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
-    private static Date lastTime = new Date();
 
     public static final String VERSION = "4.00";
 
@@ -153,12 +151,23 @@ public final class MainApp {
         screenRot = Rotation.valueOf( pref.get(OptScreenRot, Rotation.Clockwise_0.toString()) );
         scrollDir = ScrollDir.valueOf( pref.get(OptPageScrollDir, ScrollDir.Horizontal.toString()) );
 
-        setupListeners(pref);
+        addSelectionListeners();
 
         Log.log("MainApp::MainApp finished");
     }
 
-    private void setupListeners(Preferences pref) {
+    public static synchronized MainApp findInstance() {
+        if (instance == null) {
+            instance = new MainApp();
+        }
+        return instance;
+    }
+
+    /**
+     * Add listeners for the current selection. When the user changes the selected
+     * Song or PlayList, we update the status bar.
+     */
+    private void addSelectionListeners() {
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -203,26 +212,6 @@ public final class MainApp {
                 StatusDisplayer.getDefault().setStatusText(msg);
             }
         });
-    }
-
-    public static synchronized MainApp findInstance() {
-        if (instance == null) {
-            instance = new MainApp();
-        }
-        return instance;
-    }
-
-    public static String getElapsedTime() {
-        StringBuilder res = new StringBuilder();
-        Date thisTime = new Date();
-        long elapsed = thisTime.getTime() - lastTime.getTime();
-
-        res.append("Last time ").append(lastTime.toString());
-        res.append(" now ").append(thisTime.toString());
-        res.append(" Elapsed ").append((new Long(elapsed)).toString()).append("ms");
-
-        lastTime = thisTime;
-        return res.toString();
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Listeners ">

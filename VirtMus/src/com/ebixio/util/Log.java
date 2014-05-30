@@ -20,7 +20,6 @@
 package com.ebixio.util;
 
 import com.ebixio.virtmus.MainApp;
-import static com.ebixio.virtmus.MainApp.VERSION;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -117,7 +116,7 @@ public class Log {
         }
         
         LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
-        rec.setParameters(new Object[]{VERSION, installId});
+        rec.setParameters(new Object[]{MainApp.VERSION, installId});
         Log.uiLog(rec);
         
         Preferences corePref = NbPreferences.root().node("org/netbeans/core");
@@ -203,11 +202,11 @@ public class Log {
             conn.setUseCaches(false);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("User-Agent", "VirtMus-" + VERSION);
+            conn.setRequestProperty("User-Agent", "VirtMus-" + MainApp.VERSION);
             
             try (DataOutputStream outS = new DataOutputStream(conn.getOutputStream())) {
                 String postData =
-                        "version="          + URLEncoder.encode(VERSION, "UTF-8") +
+                        "version="          + URLEncoder.encode(MainApp.VERSION, "UTF-8") +
                         "&installId="       + String.valueOf(installId) +
                         "&statsEnabled="    + Boolean.toString(statsEnabled);
                 outS.writeBytes(postData);
@@ -238,8 +237,6 @@ public class Log {
         } catch (MalformedURLException ex) {
             uiLog(ex);
         } catch (IOException ex) {
-            uiLog(ex);
-        } catch (Exception ex) {
             uiLog(ex);
         }
     }

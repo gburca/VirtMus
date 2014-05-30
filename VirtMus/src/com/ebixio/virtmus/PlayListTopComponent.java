@@ -18,7 +18,6 @@
 
 package com.ebixio.virtmus;
 
-import com.ebixio.util.Log;
 import java.io.Serializable;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;

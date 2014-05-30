@@ -1,7 +1,7 @@
 /*
  * Song.java
  *
- * Copyright (C) 2006-2009  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
