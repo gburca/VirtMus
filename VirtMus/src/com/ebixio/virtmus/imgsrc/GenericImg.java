@@ -5,10 +5,10 @@
 package com.ebixio.virtmus.imgsrc;
 
 import com.ebixio.util.Log;
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.VirtMusKernel;
+import com.ebixio.virtmus.options.Options;
 import com.sun.media.jai.codec.FileSeekableStream;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -72,7 +72,7 @@ public class GenericImg extends ImgSrc {
     }
 
     @Override
-    public synchronized BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize, MusicPage page) {
+    public synchronized BufferedImage getImage(Dimension containerSize, Options.Rotation rotation, boolean fillSize, MusicPage page) {
         RenderedOp srcImg, destImg;
         Rectangle destSize;
 

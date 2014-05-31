@@ -30,6 +30,7 @@ import com.ebixio.virtmus.imgsrc.IcePdfImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
 import com.ebixio.virtmus.imgsrc.PdfViewImg;
+import com.ebixio.virtmus.options.Options;
 import com.ebixio.virtmus.xml.MusicPageConverter;
 import com.ebixio.virtmus.xml.PageOrderConverter;
 import com.thoughtworks.xstream.XStream;
@@ -206,7 +207,7 @@ public class Song implements Comparable<Song> {
         if (sD != null && sD.exists()) {
             fc.setCurrentDirectory(sD);
         } else {
-            String songDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "");
+            String songDir = NbPreferences.forModule(MainApp.class).get(Options.OptSongDir, "");
             sD = new File(songDir);
             if (sD.exists()) fc.setCurrentDirectory(sD);
         }
@@ -361,7 +362,7 @@ public class Song implements Comparable<Song> {
     public boolean saveAs() {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
-        String songDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "");
+        String songDir = NbPreferences.forModule(MainApp.class).get(Options.OptSongDir, "");
         File sD = new File(songDir);
         if (sD.exists()) {
             fc.setCurrentDirectory(sD);
@@ -392,7 +393,7 @@ public class Song implements Comparable<Song> {
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
 
-        String songDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptSongDir, "");
+        String songDir = NbPreferences.forModule(MainApp.class).get(Options.OptSongDir, "");
         File sD = new File(songDir);
         if (sD.exists()) {
             fc.setCurrentDirectory(sD);

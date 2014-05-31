@@ -21,6 +21,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
+import com.ebixio.virtmus.options.Options;
 import com.sun.opengl.util.j2d.TextRenderer;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureCoords;
@@ -39,13 +40,12 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 import java.util.Vector;
-import javax.media.opengl.glu.GLU;
 import javax.media.opengl.GL;
-import javax.media.opengl.GL.*;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
+import javax.media.opengl.glu.GLU;
 import javax.swing.WindowConstants;
 import org.jdesktop.animation.timing.*;
 
@@ -168,7 +168,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
 
         initTextRenderer();
         windowSize = new Dimension(drawable.getWidth(), drawable.getHeight());
-        windowSizeR = MainApp.findInstance().screenRot.getSize(windowSize);
+        windowSizeR = Options.findInstance().screenRot.getSize(windowSize);
         
         //IntBuffer i = IntBuffer.wrap(new int[1]);
         //gl.glGetIntegerv(GL.GL_MAX_TEXTURE_SIZE, i);
@@ -187,7 +187,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         //glu.gluLookAt(0d, 0d, cameraDist,   0d, 0d, 0d,   0d, 1d, 0d);
         glu.gluLookAt(pageShift, 0, cameraDist, pageShift, 0, 0, 0, 1d, 0);
         
-        if (MainApp.findInstance().scrollDir == MainApp.ScrollDir.Vertical) {
+        if (Options.findInstance().scrollDir == Options.ScrollDir.Vertical) {
             renderPageVertical(drawable);
         } else {
             renderPageHorizontal(drawable);
@@ -275,8 +275,8 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         GL gl = drawable.getGL();
 
         gl.glPushMatrix();
-        if (MainApp.findInstance().screenRot != MainApp.Rotation.Clockwise_0) {
-            gl.glRotatef(-MainApp.findInstance().screenRot.degrees(), 0, 0, 1);
+        if (Options.findInstance().screenRot != Options.Rotation.Clockwise_0) {
+            gl.glRotatef(-Options.findInstance().screenRot.degrees(), 0, 0, 1);
         }
         
         TexturePage tp1, tp2, tp3;
@@ -307,8 +307,8 @@ public class LiveWindowJOGL extends javax.swing.JFrame
         GL gl = drawable.getGL();
 
         gl.glPushMatrix();
-        if (MainApp.findInstance().screenRot != MainApp.Rotation.Clockwise_0) {
-            gl.glRotatef(-MainApp.findInstance().screenRot.degrees(), 0, 0, 1);
+        if (Options.findInstance().screenRot != Options.Rotation.Clockwise_0) {
+            gl.glRotatef(-Options.findInstance().screenRot.degrees(), 0, 0, 1);
         }
         
         TexturePage tp1, tp2, tp3, tp4;
@@ -390,6 +390,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
                 page++;
                 setPageShift(0);
                java.awt.EventQueue.invokeLater(new Runnable() {
+                   @Override
                    public void run() {
                         try {
                             Thread.sleep(2000);
@@ -412,7 +413,7 @@ public class LiveWindowJOGL extends javax.swing.JFrame
             if (newPage < 0 || newPage >= song.pageOrder.size()) return;
             Renderer.JobRequest request = new Renderer.JobRequest(
                     this, newPage, Math.abs(page - newPage),
-                    MainApp.findInstance().screenRot.getSize(windowSize));
+                    Options.findInstance().screenRot.getSize(windowSize));
             
             Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;

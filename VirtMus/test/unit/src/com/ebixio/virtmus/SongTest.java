@@ -6,7 +6,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Util;
-import com.ebixio.virtmus.MainApp.Rotation;
+import com.ebixio.virtmus.options.Options.Rotation;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;

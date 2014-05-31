@@ -20,7 +20,7 @@
 
 package com.ebixio.virtmus.imgsrc;
 
-import com.ebixio.virtmus.MainApp.Rotation;
+import com.ebixio.virtmus.options.Options.Rotation;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.VirtMusKernel;

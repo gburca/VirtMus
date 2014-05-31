@@ -20,6 +20,7 @@
 package com.ebixio.util;
 
 import com.ebixio.virtmus.MainApp;
+import com.ebixio.virtmus.options.Options;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -109,16 +110,16 @@ public class Log {
         Preferences pref = NbPreferences.forModule(MainApp.class);
         
         // Assign an InstallId if it's not set.
-        long installId = pref.getLong(MainApp.OptInstallId, 0);
+        long installId = pref.getLong(Options.OptInstallId, 0);
         if (installId == 0) {
             Random r = new Random();
             while (installId <= 0) installId = r.nextLong();
-            pref.putLong(MainApp.OptInstallId, installId);
+            pref.putLong(Options.OptInstallId, installId);
         }
         
         // If prevVersion != MainApp.VERSION we know this is an upgrade
-        String prevVersion = pref.get(MainApp.OptAppVersion, "0.00");
-        pref.put(MainApp.OptAppVersion, MainApp.VERSION);
+        String prevVersion = pref.get(Options.OptAppVersion, "0.00");
+        pref.put(Options.OptAppVersion, MainApp.VERSION);
 
         LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
         rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
@@ -126,9 +127,9 @@ public class Log {
         
         Preferences corePref = NbPreferences.root().node("org/netbeans/core");
         
-        if (pref.getBoolean(MainApp.OptLogVersion, true)) {
+        if (pref.getBoolean(Options.OptLogVersion, true)) {
             if (!corePref.getBoolean("usageStatisticsEnabled", true)) {
-                pref.putBoolean(MainApp.OptLogVersion, false);
+                pref.putBoolean(Options.OptLogVersion, false);
                 Log.logVersion(installId, prevVersion, false);
             } else {
                 Log.logVersion(installId, prevVersion, true);

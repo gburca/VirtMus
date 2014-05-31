@@ -166,7 +166,7 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Normal"/>
             <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="MainApp.Rotation.Clockwise_0.toString()" type="code"/>
+              <Connection code="Options.Rotation.Clockwise_0.toString()" type="code"/>
             </Property>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
@@ -182,7 +182,7 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Clockwise 90"/>
             <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="MainApp.Rotation.Clockwise_90.toString()" type="code"/>
+              <Connection code="Options.Rotation.Clockwise_90.toString()" type="code"/>
             </Property>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
@@ -198,7 +198,7 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Upside Down"/>
             <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="MainApp.Rotation.Clockwise_180.toString()" type="code"/>
+              <Connection code="Options.Rotation.Clockwise_180.toString()" type="code"/>
             </Property>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
@@ -215,7 +215,7 @@
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Clockwise 270"/>
             <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="MainApp.Rotation.Clockwise_270.toString()" type="code"/>
+              <Connection code="Options.Rotation.Clockwise_270.toString()" type="code"/>
             </Property>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
@@ -340,7 +340,7 @@
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Vertical"/>
                 <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="MainApp.ScrollDir.Vertical.toString()" type="code"/>
+                  <Connection code="Options.ScrollDir.Vertical.toString()" type="code"/>
                 </Property>
               </Properties>
             </Component>
@@ -351,7 +351,7 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Horizontal"/>
                 <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="MainApp.ScrollDir.Horizontal.toString()" type="code"/>
+                  <Connection code="Options.ScrollDir.Horizontal.toString()" type="code"/>
                 </Property>
               </Properties>
             </Component>

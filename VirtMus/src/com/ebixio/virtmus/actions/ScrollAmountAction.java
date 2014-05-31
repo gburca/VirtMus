@@ -5,6 +5,7 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.virtmus.MainApp;
+import com.ebixio.virtmus.options.Options;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -108,9 +109,9 @@ public class ScrollAmountAction extends CallableSystemAction {
             String selectedStr = item.getText();
 
             if (selectedStr.equals("50%")) {
-                NbPreferences.forModule(MainApp.class).put(MainApp.OptPageScrollAmount, "50.0" );
+                NbPreferences.forModule(MainApp.class).put(Options.OptPageScrollAmount, "50.0" );
             } else if (selectedStr.equals("100%")) {
-                NbPreferences.forModule(MainApp.class).put(MainApp.OptPageScrollAmount, "100.0" );
+                NbPreferences.forModule(MainApp.class).put(Options.OptPageScrollAmount, "100.0" );
             }
         }
     }

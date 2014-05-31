@@ -20,6 +20,7 @@ package com.ebixio.virtmus.actions;
 
 import com.ebixio.util.Log;
 import com.ebixio.virtmus.*;
+import com.ebixio.virtmus.options.Options;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -45,7 +46,7 @@ public final class GoLive extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
         LiveWindowJOGL lw = null;
         //Log.log("Java.Library.Path = " + System.getProperty("java.library.path", "NOT SET"));
-        Boolean openGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(MainApp.OptUseOpenGL, "false"));
+        Boolean openGL = Boolean.parseBoolean(NbPreferences.forModule(MainApp.class).get(Options.OptUseOpenGL, "false"));
         
         if (openGL) {
             try {

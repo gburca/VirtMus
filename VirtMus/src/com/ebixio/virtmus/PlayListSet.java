@@ -9,6 +9,7 @@ package com.ebixio.virtmus;
 import com.ebixio.util.Log;
 import com.ebixio.util.PropertyChangeSupportUnique;
 import com.ebixio.util.WeakPropertyChangeListener;
+import com.ebixio.virtmus.options.Options;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -152,7 +153,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         switch (evt.getKey()) {
-            case MainApp.OptSongDir:
+            case Options.OptSongDir:
                 Log.log("Preference SongDir changed");
 
                 /* We need the synchronization because we could be in the middle
@@ -164,7 +165,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
                     playLists.get(1).addAllSongs(new File(evt.getNewValue()), true);
                 }
                 break;
-            case MainApp.OptPlayListDir:
+            case Options.OptPlayListDir:
                 addAllPlayLists(false);
                 break;
         }
@@ -311,7 +312,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
                 playLists.add(pl);
                 fire(PROP_NEW_PL_ADDED, null, pl);
 
-                File dir = new File(pref.get(MainApp.OptPlayListDir, ""));
+                File dir = new File(pref.get(Options.OptPlayListDir, ""));
                 if (dir.exists() && dir.canRead() && dir.isDirectory()) {
 
                     FilenameFilter filter = new FilenameFilter() {
@@ -339,7 +340,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
                 pl.type = PlayList.Type.AllSongs;
                 incrPlayListsLoading();
                 pl.addPropertyChangeListener(PlayList.PROP_LOADED, new WeakPropertyChangeListener(PlayListSet.this, pl));
-                pl.addAllSongs(new File(pref.get(MainApp.OptSongDir, "")), true);
+                pl.addAllSongs(new File(pref.get(Options.OptSongDir, "")), true);
                 playLists.add(pl);
                 fire(PROP_NEW_PL_ADDED, null, pl);
 

@@ -25,6 +25,7 @@ import com.ebixio.util.NotifyUtil;
 import com.ebixio.util.PropertyChangeSupportUnique;
 import com.ebixio.util.Util;
 import com.ebixio.virtmus.filefilters.PlayListFilter;
+import com.ebixio.virtmus.options.Options;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
@@ -277,7 +278,7 @@ public class PlayList implements Comparable<PlayList> {
     public boolean saveAs() {
         final  Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
-        String playlistDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptPlayListDir, "");
+        String playlistDir = NbPreferences.forModule(MainApp.class).get(Options.OptPlayListDir, "");
         File pD = new File(playlistDir);
         if (pD.exists()) {
             fc.setCurrentDirectory(pD);
@@ -307,7 +308,7 @@ public class PlayList implements Comparable<PlayList> {
         final JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setMultiSelectionEnabled(false);
-        String playlistDir = NbPreferences.forModule(MainApp.class).get(MainApp.OptPlayListDir, "");
+        String playlistDir = NbPreferences.forModule(MainApp.class).get(Options.OptPlayListDir, "");
         File pD = new File(playlistDir);
         if (pD.exists()) {
             fc.setCurrentDirectory(pD);

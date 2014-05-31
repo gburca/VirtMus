@@ -19,6 +19,7 @@
  */
 package com.ebixio.virtmus;
 
+import com.ebixio.virtmus.options.Options;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -75,7 +76,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 
     /** Do we shift/animate the pages, or just display the next page. */
     private final boolean pageAnimationNeeded;
-    private final AffineTransform xform = MainApp.findInstance().screenRot.getTransform(displaySize.getSize());
+    private final AffineTransform xform = Options.findInstance().screenRot.getTransform(displaySize.getSize());
     private boolean fullyPainted = false;
 
     /** Maximum number of "previous" pages to keep cached. For example, if the user is
@@ -136,7 +137,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
             }
         });
 
-        pageIncrement = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(MainApp.OptPageScrollAmount, "100.0")) / 100;
+        pageIncrement = Float.parseFloat(NbPreferences.forModule(MainApp.class).get(Options.OptPageScrollAmount, "100.0")) / 100;
         if (pageIncrement == 0) {
             pageAnimationNeeded = false;
         } else {
@@ -368,7 +369,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
      */
     protected void paintDispatch() {
         if (pageAnimationNeeded) {
-            if (MainApp.findInstance().scrollDir == MainApp.ScrollDir.Vertical) {
+            if (Options.findInstance().scrollDir == Options.ScrollDir.Vertical) {
                 paintAnimatedVertical(graph2D);
             } else {
                 paintAnimatedHorizontal(graph2D);
@@ -397,7 +398,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         BufferedImage img = pageCache.get(page);
         AffineTransform origXform = g.getTransform();
         g.setTransform(xform);
-        Dimension d = MainApp.findInstance().screenRot.getSize(displaySize.getSize());
+        Dimension d = Options.findInstance().screenRot.getSize(displaySize.getSize());
 
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, d.width, d.height);
@@ -435,7 +436,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         AffineTransform origXform = g.getTransform();
         g.setTransform(xform);
 
-        Dimension d = MainApp.findInstance().screenRot.getSize(displaySize.getSize());
+        Dimension d = Options.findInstance().screenRot.getSize(displaySize.getSize());
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, d.width, d.height);
 
@@ -492,7 +493,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
         AffineTransform origXform = g.getTransform();
         g.setTransform(xform);
 
-        Dimension d = MainApp.findInstance().screenRot.getSize(displaySize.getSize());
+        Dimension d = Options.findInstance().screenRot.getSize(displaySize.getSize());
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, d.width, d.height);
 
@@ -677,7 +678,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                 continue;
             }
             renderFailed.remove(new Integer(newPage));
-            Renderer.JobRequest request = new Renderer.JobRequest(this, newPage, priority++, MainApp.findInstance().screenRot.getSize(displaySize.getSize()));
+            Renderer.JobRequest request = new Renderer.JobRequest(this, newPage, priority++, Options.findInstance().screenRot.getSize(displaySize.getSize()));
             Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;
         }
@@ -694,7 +695,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                 return;
             }
             renderFailed.remove(new Integer(newPage));
-            Renderer.JobRequest request = new Renderer.JobRequest(this, newPage, Math.abs(page - newPage), MainApp.findInstance().screenRot.getSize(displaySize.getSize()));
+            Renderer.JobRequest request = new Renderer.JobRequest(this, newPage, Math.abs(page - newPage), Options.findInstance().screenRot.getSize(displaySize.getSize()));
             Renderer.requestRendering(request, song.pageOrder.get(newPage));
             this.waitingForImage = true;
         }

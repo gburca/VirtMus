@@ -7,6 +7,7 @@ package com.ebixio.virtmus.imgsrc;
 
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
+import com.ebixio.virtmus.options.Options;
 import com.ebixio.virtmus.xml.FileConverter;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import java.awt.Color;
@@ -44,7 +45,7 @@ public abstract class ImgSrc {
      * @return The full image size (unscaled).
      */
     public abstract Dimension getDimension();
-    public abstract BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize, MusicPage page);
+    public abstract BufferedImage getImage(Dimension containerSize, Options.Rotation rotation, boolean fillSize, MusicPage page);
     /**
      * Used by Annotation component (not by thumbs, they use getImage)
      * @return The full unscaled image (the size should match what getDimension()

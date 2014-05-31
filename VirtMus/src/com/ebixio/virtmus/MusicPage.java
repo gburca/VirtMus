@@ -23,6 +23,7 @@ package com.ebixio.virtmus;
 import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
+import com.ebixio.virtmus.options.Options;
 import com.ebixio.virtmus.shapes.VmShape;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Dimension;
@@ -48,7 +49,7 @@ import javax.swing.event.ChangeListener;
  */
 @XStreamAlias("page")
 public abstract class MusicPage {
-    public MainApp.Rotation rotation = MainApp.Rotation.Clockwise_0;
+    public Options.Rotation rotation = Options.Rotation.Clockwise_0;
     private String name = null;
     public static int thumbW = 130, thumbH = 200;
     public volatile ImgSrc imgSrc;
@@ -168,12 +169,12 @@ public abstract class MusicPage {
     }
     
     
-    protected BufferedImage getImage(Dimension containerSize, MainApp.Rotation rotation, boolean fillSize) {
+    protected BufferedImage getImage(Dimension containerSize, Options.Rotation rotation, boolean fillSize) {
         return imgSrc.getImage(containerSize, rotation, fillSize, this);
     }
         
-    private RenderedOp rotate(RenderedOp srcImg, MainApp.Rotation rotation) {
-        if (rotation == MainApp.Rotation.Clockwise_0) return srcImg;
+    private RenderedOp rotate(RenderedOp srcImg, Options.Rotation rotation) {
+        if (rotation == Options.Rotation.Clockwise_0) return srcImg;
         
         Interpolation interp = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         
@@ -196,8 +197,8 @@ public abstract class MusicPage {
      */
     public void saveImg(final File file, final String format) {
         Dimension displaySize = Utils.getScreenSize();
-        Dimension rotatedSize = MainApp.findInstance().screenRot.getSize(displaySize);
-        BufferedImage img = this.getImage(rotatedSize, MainApp.Rotation.Clockwise_0, false);
+        Dimension rotatedSize = Options.findInstance().screenRot.getSize(displaySize);
+        BufferedImage img = this.getImage(rotatedSize, Options.Rotation.Clockwise_0, false);
         
         // Let's find out what the most efficient format is...
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();

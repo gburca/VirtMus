@@ -33,7 +33,7 @@ import org.openide.windows.WindowManager;
 final class VirtmusPanel extends javax.swing.JPanel {
     
     private final VirtmusOptionsPanelController controller;
-    private Preferences pref = NbPreferences.forModule(MainApp.class);
+    private final Preferences pref = NbPreferences.forModule(MainApp.class);
     
     VirtmusPanel(VirtmusOptionsPanelController controller) {
         this.controller = controller;
@@ -100,21 +100,21 @@ final class VirtmusPanel extends javax.swing.JPanel {
         orientationButtonGroup.add(jToggleButton1);
         jToggleButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/ebixio/virtmus/resources/Clef-000.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jToggleButton1, "Normal");
-        jToggleButton1.setActionCommand(MainApp.Rotation.Clockwise_0.toString());
+        jToggleButton1.setActionCommand(Options.Rotation.Clockwise_0.toString());
         jToggleButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jToggleButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         orientationButtonGroup.add(jToggleButton2);
         jToggleButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/ebixio/virtmus/resources/Clef-090.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jToggleButton2, "Clockwise 90");
-        jToggleButton2.setActionCommand(MainApp.Rotation.Clockwise_90.toString());
+        jToggleButton2.setActionCommand(Options.Rotation.Clockwise_90.toString());
         jToggleButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jToggleButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         orientationButtonGroup.add(jToggleButton3);
         jToggleButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/ebixio/virtmus/resources/Clef-180.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jToggleButton3, "Upside Down");
-        jToggleButton3.setActionCommand(MainApp.Rotation.Clockwise_180.toString());
+        jToggleButton3.setActionCommand(Options.Rotation.Clockwise_180.toString());
         jToggleButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jToggleButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
@@ -122,7 +122,7 @@ final class VirtmusPanel extends javax.swing.JPanel {
         jToggleButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/ebixio/virtmus/resources/Clef-270.png"))); // NOI18N
         jToggleButton4.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jToggleButton4, "Clockwise 270");
-        jToggleButton4.setActionCommand(MainApp.Rotation.Clockwise_270.toString());
+        jToggleButton4.setActionCommand(Options.Rotation.Clockwise_270.toString());
         jToggleButton4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jToggleButton4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
@@ -134,11 +134,11 @@ final class VirtmusPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToggleButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToggleButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .addComponent(jToggleButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 105, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToggleButton4, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                .addComponent(jToggleButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 107, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -175,11 +175,11 @@ final class VirtmusPanel extends javax.swing.JPanel {
         scrollDirGroup.add(scrollVertical);
         scrollVertical.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(scrollVertical, "Vertical");
-        scrollVertical.setActionCommand(MainApp.ScrollDir.Vertical.toString());
+        scrollVertical.setActionCommand(Options.ScrollDir.Vertical.toString());
 
         scrollDirGroup.add(scrollHorizontal);
         org.openide.awt.Mnemonics.setLocalizedText(scrollHorizontal, "Horizontal");
-        scrollHorizontal.setActionCommand(MainApp.ScrollDir.Horizontal.toString());
+        scrollHorizontal.setActionCommand(Options.ScrollDir.Horizontal.toString());
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -199,7 +199,7 @@ final class VirtmusPanel extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(scrollVertical)
                     .addComponent(scrollHorizontal))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         jLabel3.setLabelFor(pageScrollPercentage);
@@ -293,8 +293,8 @@ final class VirtmusPanel extends javax.swing.JPanel {
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(playListDir, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
-                            .addComponent(songDir, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                            .addComponent(playListDir, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                            .addComponent(songDir, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(songDirChange, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -304,8 +304,8 @@ final class VirtmusPanel extends javax.swing.JPanel {
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
-                            .addComponent(svgEditor, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE))
+                            .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                            .addComponent(svgEditor, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(svgEditorChange)))
                 .addContainerGap())
@@ -388,18 +388,18 @@ final class VirtmusPanel extends javax.swing.JPanel {
             inkscape = "";
         }
 
-        playListDir.setText(pref.get(MainApp.OptPlayListDir, ""));
-        songDir.setText(pref.get(MainApp.OptSongDir, ""));
-        svgEditor.setText(pref.get(MainApp.OptSvgEditor, inkscape));
-        pageScrollPercentage.setValue(Float.parseFloat(pref.get(MainApp.OptPageScrollAmount, "100.0")));
+        playListDir.setText(pref.get(Options.OptPlayListDir, ""));
+        songDir.setText(pref.get(Options.OptSongDir, ""));
+        svgEditor.setText(pref.get(Options.OptSvgEditor, inkscape));
+        pageScrollPercentage.setValue(Float.parseFloat(pref.get(Options.OptPageScrollAmount, "100.0")));
         
-        String orientation = pref.get(MainApp.OptScreenRot, MainApp.findInstance().screenRot.toString());
+        String orientation = pref.get(Options.OptScreenRot, Options.findInstance().screenRot.toString());
         enableOptionButton(orientationButtonGroup.getElements(), orientation);
 
-        String scrollDir = pref.get(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString());
+        String scrollDir = pref.get(Options.OptPageScrollDir, Options.findInstance().scrollDir.toString());
         enableOptionButton(scrollDirGroup.getElements(), scrollDir);
         
-        useOpenGL.setSelected(Boolean.parseBoolean(pref.get(MainApp.OptUseOpenGL, "false")));
+        useOpenGL.setSelected(Boolean.parseBoolean(pref.get(Options.OptUseOpenGL, "false")));
     }
     
     private void enableOptionButton(Enumeration<AbstractButton> buttonEnum, String option) {
@@ -415,31 +415,31 @@ final class VirtmusPanel extends javax.swing.JPanel {
     void store() {
         // Save changes only if it's different so that we only trigger listener
         // notification if a change was really made.
-        if (! pref.get(MainApp.OptPlayListDir, "").equals(playListDir.getText()) ) {
-            pref.put(MainApp.OptPlayListDir, playListDir.getText());
+        if (! pref.get(Options.OptPlayListDir, "").equals(playListDir.getText()) ) {
+            pref.put(Options.OptPlayListDir, playListDir.getText());
         }
-        if (! pref.get(MainApp.OptSongDir, "").equals(songDir.getText()) ) {
-            pref.put(MainApp.OptSongDir, songDir.getText());
+        if (! pref.get(Options.OptSongDir, "").equals(songDir.getText()) ) {
+            pref.put(Options.OptSongDir, songDir.getText());
         }
-        if (! pref.get(MainApp.OptSvgEditor, "").equals(svgEditor.getText()) ) {
-            pref.put(MainApp.OptSvgEditor, svgEditor.getText());
+        if (! pref.get(Options.OptSvgEditor, "").equals(svgEditor.getText()) ) {
+            pref.put(Options.OptSvgEditor, svgEditor.getText());
         }
         
-        float scrollPercentage = Float.parseFloat(pref.get(MainApp.OptPageScrollAmount, "0"));
+        float scrollPercentage = Float.parseFloat(pref.get(Options.OptPageScrollAmount, "0"));
         Number currentScroll = (Number) pageScrollPercentage.getValue();
         if (scrollPercentage != currentScroll.floatValue()) {
-            pref.put(MainApp.OptPageScrollAmount, Float.toString(currentScroll.floatValue()) );
+            pref.put(Options.OptPageScrollAmount, Float.toString(currentScroll.floatValue()) );
         }
         
-        MainApp.findInstance().screenRot = MainApp.Rotation.valueOf(
-                saveOption(MainApp.OptScreenRot, MainApp.findInstance().screenRot.toString(), orientationButtonGroup));
+        Options.findInstance().screenRot = Options.Rotation.valueOf(
+                saveOption(Options.OptScreenRot, Options.findInstance().screenRot.toString(), orientationButtonGroup));
         
-        MainApp.findInstance().scrollDir = MainApp.ScrollDir.valueOf(
-                saveOption(MainApp.OptPageScrollDir, MainApp.findInstance().scrollDir.toString(), scrollDirGroup));
+        Options.findInstance().scrollDir = Options.ScrollDir.valueOf(
+                saveOption(Options.OptPageScrollDir, Options.findInstance().scrollDir.toString(), scrollDirGroup));
         
-        Boolean oldUseOpenGL = Boolean.parseBoolean(pref.get(MainApp.OptUseOpenGL, "false"));
+        Boolean oldUseOpenGL = Boolean.parseBoolean(pref.get(Options.OptUseOpenGL, "false"));
         if (oldUseOpenGL != useOpenGL.isSelected()) {
-            pref.put(MainApp.OptUseOpenGL, Boolean.toString(useOpenGL.isSelected()));
+            pref.put(Options.OptUseOpenGL, Boolean.toString(useOpenGL.isSelected()));
         }
     }
     

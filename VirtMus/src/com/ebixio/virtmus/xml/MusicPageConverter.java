@@ -18,7 +18,7 @@
 
 package com.ebixio.virtmus.xml;
 
-import com.ebixio.virtmus.MainApp.Rotation;
+import com.ebixio.virtmus.options.Options.Rotation;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageSVG;
 import com.ebixio.virtmus.imgsrc.PdfImg;

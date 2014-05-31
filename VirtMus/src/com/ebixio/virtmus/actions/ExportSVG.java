@@ -26,6 +26,7 @@ import com.ebixio.util.Log;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.MusicPageSVG;
+import com.ebixio.virtmus.options.Options;
 import java.io.File;
 import javax.swing.SwingWorker;
 import org.openide.awt.ActionID;
@@ -53,7 +54,7 @@ public final class ExportSVG extends CookieAction {
         MusicPageSVG mp = (MusicPageSVG)activatedNodes[0].getLookup().lookup(MusicPage.class);
 
         // Obtain the path to the SVG editor from the user options.
-        String svgEditor = NbPreferences.forModule(MainApp.class).get(MainApp.OptSvgEditor, "");
+        String svgEditor = NbPreferences.forModule(MainApp.class).get(Options.OptSvgEditor, "");
         File editor = new File(svgEditor);
         if (!editor.canExecute()) {
             Log.log("Could not execute SVG editor: " + svgEditor);

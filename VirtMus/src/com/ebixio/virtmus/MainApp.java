@@ -21,20 +21,15 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
-import java.util.Date;
-import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -45,95 +40,6 @@ public final class MainApp {
     private static MainApp instance;
 
     public static final String VERSION = "4.00";
-
-    public static enum Rotation {
-        Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
-        // <editor-fold defaultstate="collapsed" desc=" Rotation Behaviors ">
-        double radians() {
-            switch(this) {
-                case Clockwise_90: return Math.PI / 2;
-                case Clockwise_180: return Math.PI;
-                case Clockwise_270: return Math.PI / 2 * 3;
-                case Clockwise_0:
-                default:
-                    return 0;
-            }
-        }
-        int degrees() {
-            switch(this) {
-                case Clockwise_90: return 90;
-                case Clockwise_180: return 180;
-                case Clockwise_270: return 270;
-                case Clockwise_0:
-                default:
-                    return 0;
-            }
-        }
-        public AffineTransform getTransform(Dimension d) {
-            switch (this) {
-                case Clockwise_90:
-                    /**
-                     * Writes on surface of dimension d at 90 degrees clockwise
-                     * [ 0  -1  width ]
-                     * [ 1   0    0   ]
-                     * [ 0   0    1   ]
-                     *
-                     * x' = width - y
-                     * y' = x
-                     */
-                    return new AffineTransform(0, 1, -1, 0, d.width, 0);
-                case Clockwise_180:
-                    /**
-                     * Writes upside down
-                     * [ -1  0  width ]
-                     * [  0 -1  height]
-                     * [  0  0     1  ]
-                     *
-                     * x' = width - x
-                     * y' = height - y
-                     */
-                    return new AffineTransform(-1, 0, 0, -1, d.width, d.height);
-                case Clockwise_270:
-                    /**
-                     * [  0  1    0    ]
-                     * [ -1  0  height ]
-                     * [  0  0    1    ]
-                     *
-                     * x' = y
-                     * y' = height - x
-                     */
-                    return new AffineTransform(0, -1, 1, 0, 0, d.height);
-                case Clockwise_0:
-                default:
-                    return new AffineTransform();
-            }
-        }
-        /** Rotates the dimension (if needed) */
-        Dimension getSize(Dimension d) {
-            switch(this) {
-                case Clockwise_90:
-                case Clockwise_270:
-                    return new Dimension(d.height, d.width);
-                default:
-                    return new Dimension(d);
-            }
-        }
-        // </editor-fold>
-    }
-    public static enum ScrollDir { Vertical, Horizontal }
-    public Rotation screenRot;
-    public ScrollDir scrollDir;
-
-    public static final String OptPlayListDir       = "PlayListDirectory";
-    public static final String OptSongDir           = "SongDirectory";
-    public static final String OptScreenRot         = "LiveScreenOrientation";
-    public static final String OptPageScrollAmount  = "PageScrollPercentage";
-    public static final String OptPageScrollDir     = "ScrollDirection";
-    public static final String OptUseOpenGL         = "UseOpenGL";
-    public static final String OptSvgEditor         = "SvgEditor";
-    public static final String OptInstallId         = "InstallId";
-    public static final String OptLogVersion        = "LogVersion";
-    public static final String OptAppVersion        = "AppVersion";
 
     /** Creates a new instance of MainApp */
     private MainApp() {
@@ -146,11 +52,6 @@ public final class MainApp {
 
         //System.setProperty("nb.show.statistics.ui", "true");
         //System.getProperties().put("nb.show.statistics.ui", "true");
-
-        Preferences pref = NbPreferences.forModule(MainApp.class);
-
-        screenRot = Rotation.valueOf( pref.get(OptScreenRot, Rotation.Clockwise_0.toString()) );
-        scrollDir = ScrollDir.valueOf( pref.get(OptPageScrollDir, ScrollDir.Horizontal.toString()) );
 
         addSelectionListeners();
 
@@ -215,7 +116,4 @@ public final class MainApp {
         });
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" Listeners ">
-
-    // </editor-fold>
 }

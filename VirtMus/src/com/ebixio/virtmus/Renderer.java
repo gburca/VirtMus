@@ -22,6 +22,7 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.util.NamedThreadFactory;
+import com.ebixio.virtmus.options.Options;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
@@ -103,7 +104,7 @@ public class Renderer {
         public JobRequester requester;
         public Integer priority;
         public Dimension dim;
-        public MainApp.Rotation rotation = MainApp.Rotation.Clockwise_0;
+        public Options.Rotation rotation = Options.Rotation.Clockwise_0;
         public boolean fillSize = false;
 
         /**
