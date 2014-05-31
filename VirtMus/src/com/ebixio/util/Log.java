@@ -117,9 +117,7 @@ public class Log {
             pref.putLong(Options.OptInstallId, installId);
         }
         
-        // If prevVersion != MainApp.VERSION we know this is an upgrade
-        String prevVersion = pref.get(Options.OptAppVersion, "0.00");
-        pref.put(Options.OptAppVersion, MainApp.VERSION);
+        String prevVersion = pref.get(Options.OptPrevAppVersion, "0.00");
 
         LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
         rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
@@ -200,7 +198,7 @@ public class Log {
 
     public static void logVersion(long installId, String prevVersion, boolean statsEnabled) {
         try {
-            URL url = new URL("http://ebixio.com:8001/virtmus/analytics");
+            URL url = new URL("http://ebixio.com/virtmus/analytics");
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setReadTimeout(10 * 1000);
             conn.setDoOutput(true);
@@ -221,7 +219,6 @@ public class Log {
             }
             
             StringBuilder rsp = new StringBuilder();            
-            int rspCode = conn.getResponseCode();
             InputStreamReader isr = new InputStreamReader(conn.getInputStream());
             BufferedReader br = new BufferedReader(isr);
             String buff;
@@ -229,8 +226,9 @@ public class Log {
                 rsp.append(buff);
             }
             
+            //Log.log("HTTP Response: " + conn.getResponseCode() + " " + rsp.toString());
+
             // This can be used to notify the user that a newer version is available
-            Log.log("HTTP Response: " + rspCode + " " + rsp.toString());
             if (rsp.length() > 0) {
                 File f = File.createTempFile("VersionPost", "html");
                 f.deleteOnExit();
@@ -278,7 +276,7 @@ public class Log {
                 log.addHandler(mHandler);
                 log.setLevel(Level.ALL);
             }
-        } catch (Exception ex) {
+        } catch (IOException | SecurityException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
         }
     }

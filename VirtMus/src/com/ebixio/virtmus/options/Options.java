@@ -32,6 +32,7 @@ public class Options {
     public static final String OptPageScrollAmount = "PageScrollPercentage";
     public static final String OptSvgEditor = "SvgEditor";
     public static final String OptAppVersion = "AppVersion";
+    public static final String OptPrevAppVersion = "PrevAppVersion";
     public static final String OptInstallId = "InstallId";
     public static final String OptPlayListDir = "PlayListDirectory";
     public static final String OptSongDir = "SongDirectory";

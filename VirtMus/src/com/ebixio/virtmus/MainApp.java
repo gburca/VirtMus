@@ -21,15 +21,18 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
+import com.ebixio.virtmus.options.Options;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -43,6 +46,21 @@ public final class MainApp {
 
     /** Creates a new instance of MainApp */
     private MainApp() {
+
+        Preferences pref = NbPreferences.forModule(MainApp.class);
+        String version = pref.get(Options.OptAppVersion, "0.00");
+        if (! VERSION.equals(version)) {
+            pref.put(Options.OptPrevAppVersion, version);
+            pref.put(Options.OptAppVersion, VERSION);
+
+            // v4.00 is the first one that kept track of versions.
+            if ("0.00".equals(version)) {
+                // This is a fresh install, or an upgrade from pre-4.00
+            } else {
+                // This is an upgrade from post-4.00
+            }
+        }
+
         Log.configUiLog();
         //Log.enableDebugLogs();
         Log.log("MainApp::MainApp start");
