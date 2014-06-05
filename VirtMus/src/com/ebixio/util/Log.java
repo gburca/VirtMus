@@ -169,8 +169,11 @@ public class Log {
      * control when or how often the logs are submitted. We also can't control
      * the post-upload behavior. We must return some bogus HTML or else the logs
      * that were just submitted are not erased. Etc...
+     *
+     * UI logs get uploaded after 1000 logs, or 20Mb (UIHandler.java)
+     * Metrics logs get uploaded after 400 logs, 33+rand(14) days, or 10Mb (MetricsHandler.java)
      */
-    private void submitUiLogs() {
+    public static void submitUiLogs() {
         (new SwingWorker<String, Object>() {
             @Override
             protected String doInBackground() throws Exception {
@@ -258,8 +261,15 @@ public class Log {
     public static void enableDebugLogs() {
         // Pick the loggers to enable
         //Enumeration<String> loggers = LogManager.getLogManager().getLoggerNames();
-        String[] loggers = {"org.netbeans.modules.options.OptionsDisplayerImpl",
-                            "org.netbeans.core.windows.services.NbPresenter"};
+        String[] loggers = {
+            //"org.netbeans.modules.options.OptionsDisplayerImpl",
+            //"org.netbeans.core.windows.services.NbPresenter"
+            "org.netbeans.modules.uihandler",
+            "org.netbeans.modules.uihandler.Installer",
+            "org.netbeans.modules.uihandler.Installer.class",
+            //"com.ebixio.virtmus.metrics",   // From branding
+            //"org.netbeans.ui"               // From branding
+        };
                             
         try {
             boolean append = false;
@@ -268,8 +278,8 @@ public class Log {
             Handler mHandler = new MemoryHandler(fHandler, 1000, Level.SEVERE);
 
             Logger log = Logger.getLogger("org.netbeans");
-            log.addHandler(mHandler);
-            log.setLevel(Level.ALL);
+            //log.addHandler(mHandler);
+            //log.setLevel(Level.ALL);
             
             for (String lgr: loggers) {
                 log = Logger.getLogger(lgr);

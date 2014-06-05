@@ -63,6 +63,7 @@ public final class MainApp {
 
         Log.configUiLog();
         //Log.enableDebugLogs();
+        Log.submitUiLogs();
         Log.log("MainApp::MainApp start");
 
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
