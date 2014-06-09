@@ -77,7 +77,7 @@ public class Utils {
         return sizes.toArray(new Dimension[sizes.size()]);
     }
 
-    static int getNumberOfScreens() {
+    public static int getNumberOfScreens() {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         try {
             GraphicsDevice[] gs = ge.getScreenDevices();

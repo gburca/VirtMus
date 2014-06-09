@@ -26,6 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.Random;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -133,6 +134,22 @@ public final class MainApp {
                 StatusDisplayer.getDefault().setStatusText(msg);
             }
         });
+    }
+
+    /** Get the random ID that identifies this VirtMus installation.
+     * @return  A random ID that's unique to this installation. */
+    public static long getInstallId() {
+        Preferences pref = NbPreferences.forModule(MainApp.class);
+
+        // Assign an InstallId if it's not set.
+        long installId = pref.getLong(Options.OptInstallId, 0);
+        if (installId == 0) {
+            Random r = new Random();
+            while (installId <= 0) installId = r.nextLong();
+            pref.putLong(Options.OptInstallId, installId);
+        }
+
+        return installId;
     }
 
 }

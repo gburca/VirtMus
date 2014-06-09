@@ -31,14 +31,20 @@ public class Options {
     public static final String OptUseOpenGL = "UseOpenGL";
     public static final String OptPageScrollAmount = "PageScrollPercentage";
     public static final String OptSvgEditor = "SvgEditor";
+    // The current application version
     public static final String OptAppVersion = "AppVersion";
+    // The previous application version
     public static final String OptPrevAppVersion = "PrevAppVersion";
+    // A unique ID to identify this installation
     public static final String OptInstallId = "InstallId";
     public static final String OptPlayListDir = "PlayListDirectory";
     public static final String OptSongDir = "SongDirectory";
     public static final String OptScreenRot = "LiveScreenOrientation";
     public static final String OptPageScrollDir = "ScrollDirection";
+    // Set to true if the user allowed the logging of app version
     public static final String OptLogVersion = "LogVersion";
+    // What log file set (A or B) we're currently writing to (see StatsLogger)
+    public static final String OptLogSet = "LogFileSet";
 
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;

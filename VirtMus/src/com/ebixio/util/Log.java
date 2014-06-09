@@ -21,19 +21,10 @@ package com.ebixio.util;
 
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.options.Options;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileWriter;
+import com.ebixio.virtmus.stats.StatsLogger;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Random;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -44,9 +35,7 @@ import java.util.logging.SimpleFormatter;
 import java.util.prefs.Preferences;
 import javax.swing.SwingWorker;
 import org.netbeans.modules.uihandler.api.Controller;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  * Log various operational info to var/log/messages.log in the user's
@@ -109,13 +98,7 @@ public class Log {
         Controller.getDefault().setEnableExceptionHandler(false);
         Preferences pref = NbPreferences.forModule(MainApp.class);
         
-        // Assign an InstallId if it's not set.
-        long installId = pref.getLong(Options.OptInstallId, 0);
-        if (installId == 0) {
-            Random r = new Random();
-            while (installId <= 0) installId = r.nextLong();
-            pref.putLong(Options.OptInstallId, installId);
-        }
+        long installId = MainApp.getInstallId();
         
         String prevVersion = pref.get(Options.OptPrevAppVersion, "0.00");
 
@@ -124,13 +107,15 @@ public class Log {
         Log.uiLog(rec);
         
         Preferences corePref = NbPreferences.root().node("org/netbeans/core");
+
+        StatsLogger sl = new StatsLogger();
         
         if (pref.getBoolean(Options.OptLogVersion, true)) {
             if (!corePref.getBoolean("usageStatisticsEnabled", true)) {
                 pref.putBoolean(Options.OptLogVersion, false);
-                Log.logVersion(installId, prevVersion, false);
+                StatsLogger.logVersion(prevVersion, false);
             } else {
-                Log.logVersion(installId, prevVersion, true);
+                StatsLogger.logVersion(prevVersion, true);
             }
         }
     }
@@ -197,56 +182,6 @@ public class Log {
                 return null;
             }
         }).execute();
-    }
-
-    public static void logVersion(long installId, String prevVersion, boolean statsEnabled) {
-        try {
-            URL url = new URL("http://ebixio.com/virtmus/analytics");
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            conn.setReadTimeout(10 * 1000);
-            conn.setDoOutput(true);
-            conn.setDoInput(true);  // To read the response
-            conn.setUseCaches(false);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("User-Agent", "VirtMus-" + MainApp.VERSION);
-            
-            try (DataOutputStream outS = new DataOutputStream(conn.getOutputStream())) {
-                String postData =
-                        "version="          + URLEncoder.encode(MainApp.VERSION, "UTF-8") +
-                        "&installId="       + String.valueOf(installId) +
-                        "&prevVersion="      + URLEncoder.encode(prevVersion, "UTF-8") +
-                        "&statsEnabled="    + Boolean.toString(statsEnabled);
-                outS.writeBytes(postData);
-                outS.flush();
-            }
-            
-            StringBuilder rsp = new StringBuilder();            
-            InputStreamReader isr = new InputStreamReader(conn.getInputStream());
-            BufferedReader br = new BufferedReader(isr);
-            String buff;
-            while ((buff = br.readLine()) != null && rsp.length() < 1e6) {
-                rsp.append(buff);
-            }
-            
-            //Log.log("HTTP Response: " + conn.getResponseCode() + " " + rsp.toString());
-
-            // This can be used to notify the user that a newer version is available
-            if (rsp.length() > 0) {
-                File f = File.createTempFile("VersionPost", "html");
-                f.deleteOnExit();
-                try (FileWriter w = new FileWriter(f)) {
-                    w.write(rsp.toString());
-                    URL rspUrl = Utilities.toURI(f).toURL();
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(rspUrl);
-                }
-            }
-            
-        } catch (MalformedURLException ex) {
-            uiLog(ex);
-        } catch (IOException ex) {
-            uiLog(ex);
-        }
     }
 
     /** Turns on full NetBeans logging for debug purposes.

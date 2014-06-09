@@ -18,7 +18,6 @@
 
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListSet;
 import org.openide.awt.ActionID;
