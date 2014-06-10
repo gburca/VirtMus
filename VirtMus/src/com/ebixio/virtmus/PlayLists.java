@@ -40,7 +40,7 @@ public class PlayLists extends Children.Keys<PlayList> implements PropertyChange
     1 pending rescan task besides the one that's currently executing. Any more
     would be superfluous.
     */
-    ThreadPoolExecutor tpe = new ThreadPoolExecutor(1, 1, 5, TimeUnit.SECONDS, new ArrayBlockingQueue(1), new ThreadPoolExecutor.DiscardPolicy());
+    ThreadPoolExecutor tpe = new ThreadPoolExecutor(1, 1, 5L, TimeUnit.SECONDS, new ArrayBlockingQueue(1), new ThreadPoolExecutor.DiscardPolicy());
 
     /**
      * Creates a new instance of PlayLists.

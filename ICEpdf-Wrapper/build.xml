@@ -10,14 +10,21 @@
     <property name="original.project.jar"
           value="${original.project.dir}/dist/ICEpdf.jar"/>
 
-    <target name="release">
+    <target name="release" depends="basic-init">
         <echo message="Building ${original.project.dir}"/>
         <ant dir="${original.project.dir}" usenativebasedir="true"
             antfile="nbbuild.xml"
             target="jar" inheritall="false" inheritrefs="false"/>
         <echo message="Done building ${original.project.dir}"/>
 
+        <!-- ${cluster} is the suite build directory (/build/cluster) -->
         <copy todir="${cluster}/modules/ext" file="${original.project.jar}"/>
+        <!--
+        See notes on release.dir: Dynamically generated cluster content should
+        be placed directly in ${cluster} as part of a netbeans-extra target,
+        and be sure to mention such files in ${extra.module.files}
+
+        copy todir="${basedir}/release/modules/ext" file="${original.project.jar}"/ -->
     </target>
 
 

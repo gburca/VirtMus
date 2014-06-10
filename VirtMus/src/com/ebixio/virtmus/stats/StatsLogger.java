@@ -40,6 +40,8 @@ import java.util.logging.Logger;
 import java.util.logging.XMLFormatter;
 import java.util.prefs.Preferences;
 import java.util.zip.GZIPOutputStream;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONStringer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.Places;
@@ -108,6 +110,7 @@ public class StatsLogger {
             }
         };
 
+        HttpClient client = new DefaultHttpClient();
         for (File f: logsDir.listFiles(filter)) {
             GZIPOutputStream gzip; // line 1287
         }
