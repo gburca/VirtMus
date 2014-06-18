@@ -5,4 +5,27 @@
 <project name="com.ebixio.mavenjars" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project com.ebixio.mavenjars.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <property name="original.project.dir" value="../MavenJARs"/>
+
+    <target name="release" depends="basic-init">
+        <echo message="Building ${original.project.dir}"/>
+        <ant dir="${original.project.dir}" usenativebasedir="true"
+            antfile="build.xml"
+            target="jar" inheritall="false" inheritrefs="false"/>
+        <echo message="Done building ${original.project.dir}"/>
+
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext" overwrite="true">
+            <fileset dir="${original.project.dir}/dist/" excludes="**/MavenJARs.jar"/>
+        </copy>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean">
+        <echo message="Cleaning ${original.project.dir}"/>
+        <ant dir="${original.project.dir}" usenativebasedir="true"
+            antfile="build.xml"
+            target="clean" inheritall="false" inheritrefs="false"/>
+        <echo message="Done cleaning ${original.project.dir}"/>
+    </target>
 </project>
