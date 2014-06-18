@@ -45,7 +45,7 @@ public class Tags extends Children.Keys<String> implements PropertyChangeListene
     1 pending rescan task besides the one that's currently executing. Any more
     would be superfluous.
     */
-    ThreadPoolExecutor tpe = new ThreadPoolExecutor(1, 1, 5L, TimeUnit.SECONDS, new ArrayBlockingQueue(1), new ThreadPoolExecutor.DiscardPolicy());
+    ThreadPoolExecutor tpe = new ThreadPoolExecutor(1, 1, 5L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1), new ThreadPoolExecutor.DiscardPolicy());
 
     public Tags() {
     }
