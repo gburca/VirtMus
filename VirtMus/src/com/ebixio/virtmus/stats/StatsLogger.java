@@ -183,7 +183,7 @@ public class StatsLogger {
             handler.setFormatter(new XMLFormatter());
             handler.setEncoding("utf-8");
         } catch (IOException | SecurityException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.FINEST, null, ex);
         }
         return handler;
     }
@@ -215,7 +215,7 @@ public class StatsLogger {
 
     public static void logVersion(String prevVersion, boolean statsEnabled) {
         try {
-            URL url = new URL("http://ebixio.com/virtmus/analytics2");
+            URL url = new URL("http://ebixio.com/virtmus/analytics");
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setReadTimeout(10 * 1000);
             conn.setDoOutput(true);
@@ -247,6 +247,10 @@ public class StatsLogger {
             }
 
             //Log.log("HTTP Response: " + conn.getResponseCode() + " " + rsp.toString());
+            if (conn.getResponseCode() == 200 && !statsEnabled) {
+                Preferences pref = NbPreferences.forModule(MainApp.class);
+                pref.putBoolean(Options.OptLogVersion, false);
+            }
 
             // This can be used to notify the user that a newer version is available
             if (rsp.length() > 0) {
@@ -258,10 +262,10 @@ public class StatsLogger {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(rspUrl);
                 }
             }
-        }   catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.FINEST, null, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.FINEST, null, ex);
         }
     }
 

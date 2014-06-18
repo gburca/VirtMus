@@ -109,10 +109,9 @@ public class Log {
         Preferences corePref = NbPreferences.root().node("org/netbeans/core");
 
         StatsLogger sl = new StatsLogger();
-        
+
         if (pref.getBoolean(Options.OptLogVersion, true)) {
             if (!corePref.getBoolean("usageStatisticsEnabled", true)) {
-                pref.putBoolean(Options.OptLogVersion, false);
                 StatsLogger.logVersion(prevVersion, false);
             } else {
                 StatsLogger.logVersion(prevVersion, true);
