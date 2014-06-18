@@ -264,6 +264,11 @@
                 <runtime-relative-path>ext/commons-codec-1.6.jar</runtime-relative-path>
                 <binary-origin>../MavenJARs/dist/commons-codec-1.6</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/httpmime-4.3.4.jar</runtime-relative-path>
+                <binary-origin>../MavenJARs/dist/httpmime-4.3.4.jar</binary-origin>
+            </class-path-extension>
+
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>Burca</word>

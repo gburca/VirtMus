@@ -85,6 +85,10 @@
             <dependency groupid="org.apache.httpcomponents" artifactid="httpclient" version="4.3.4"/>
             <localRepository refid="local.repository"/>
         </artifact:dependencies>
+        <artifact:dependencies fileSetId="maven-ant-tasks.dependency.fileset">
+            <dependency groupid="org.apache.httpcomponents" artifactid="httpmime" version="4.3.4"/>
+            <localRepository refid="local.repository"/>
+        </artifact:dependencies>
 
         <!-- Copy them to the suite build directory -->
         <copy verbose="true" flatten="true" todir="${dist.dir}">
