@@ -18,6 +18,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
+import com.ebixio.virtmus.stats.StatsLogger;
 import java.awt.EventQueue;
 import org.openide.awt.ToolbarPool;
 import org.openide.modules.ModuleInstall;
@@ -35,6 +36,7 @@ public class Installer extends ModuleInstall {
 
                     @Override
                     public void run() {
+                        StatsLogger.findInstance().startingUp();
                         Log.log("VirtMus module: restored");
                         ToolbarPool.getDefault().setConfiguration("StandardToolbar");
                         MainApp.findInstance();

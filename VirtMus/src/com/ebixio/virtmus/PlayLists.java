@@ -32,7 +32,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
- *
+ * Represents the PlayList nodes in the PlayList window.
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PlayLists extends Children.Keys<PlayList> implements PropertyChangeListener {

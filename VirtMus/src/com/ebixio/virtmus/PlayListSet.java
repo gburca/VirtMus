@@ -1,15 +1,27 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.util.PropertyChangeSupportUnique;
 import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.options.Options;
+import com.ebixio.virtmus.stats.StatsLogger;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -23,12 +35,11 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
  * The set of all the PlayLists that VirtMus knows about.
- * @author gburca
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class PlayListSet implements PreferenceChangeListener, PropertyChangeListener {
     private static PlayListSet instance;
@@ -272,7 +283,6 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
     class AddPlayLists extends Thread {
         Preferences pref;
         boolean clearSongs;
-        private final Object eraseme = new Object();
 
         public AddPlayLists(Preferences pref, boolean clearSongs) {
             this.pref = pref;
@@ -280,17 +290,6 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
 
             setName("addPlayLists");
             setPriority(Thread.MIN_PRIORITY);
-        }
-
-        // TODO: Remove this if finished debugging
-        private void pause(long time) {
-            synchronized(eraseme) {
-                try {
-                    eraseme.wait(time);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
         }
 
         @Override
@@ -302,7 +301,6 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
                 if (!promptForSave("Save all changes before loading new playlists?")) return;
 
                 playLists.clear();
-                //pause(5000);
 
                 // Discard all the songs so they get re-loaded when the playlist is re-created
                 if (clearSongs) Song.clearInstantiated();
@@ -326,7 +324,6 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
                     for (File f : Utils.listFiles(dir, filter, true)) {
                         incrPlayListsLoading();
                         pl = PlayList.deserialize(f, new WeakPropertyChangeListener(PlayListSet.this, pl));
-                        //pause(3000);
                         if (pl == null) {
                             decrPlayListsLoading();
                         } else {
@@ -346,7 +343,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
 
                 LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_PLAYLISTS");
                 rec.setParameters(new Object[] {playLists.size()});
-                Log.uiLog(rec);
+                StatsLogger.log(rec);
 
                 Collections.sort(playLists);
 

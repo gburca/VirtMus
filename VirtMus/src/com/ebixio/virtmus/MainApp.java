@@ -22,11 +22,14 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.virtmus.options.Options;
+import com.ebixio.virtmus.stats.StatsLogger;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -48,11 +51,22 @@ public final class MainApp {
     /** Creates a new instance of MainApp */
     private MainApp() {
 
+        Log.log("MainApp::MainApp start");
+        //Log.enableDebugLogs();
+
         Preferences pref = NbPreferences.forModule(MainApp.class);
         String version = pref.get(Options.OptAppVersion, "0.00");
         if (! VERSION.equals(version)) {
             pref.put(Options.OptPrevAppVersion, version);
             pref.put(Options.OptAppVersion, VERSION);
+
+            // Reset counter to re-prompt user to contribute stats
+            pref.putInt(Options.OptStartCounter, 1);
+            pref.putBoolean(Options.OptCheckVersion, true);
+
+            LogRecord lr = new LogRecord(Level.INFO, "VIRTMUS_UPGRADE");
+            lr.setParameters(new Object[]{getInstallId(), version, VERSION});
+            StatsLogger.log(lr);
 
             // v4.00 is the first one that kept track of versions.
             if ("0.00".equals(version)) {
@@ -62,16 +76,11 @@ public final class MainApp {
             }
         }
 
-        Log.configUiLog();
-        //Log.enableDebugLogs();
-        Log.submitUiLogs();
-        Log.log("MainApp::MainApp start");
+        // Figure out the new version before calling startedUp().
+        StatsLogger.findInstance().startedUp();
 
         System.getProperties().put("org.icepdf.core.scaleImages", "false");
         System.getProperties().put("org.icepdf.core.awtFontLoading", "true");
-
-        //System.setProperty("nb.show.statistics.ui", "true");
-        //System.getProperties().put("nb.show.statistics.ui", "true");
 
         addSelectionListeners();
 

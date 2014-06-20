@@ -63,7 +63,7 @@ public class Songs extends Children.Keys<Song> implements PropertyChangeListener
 
     @Override
     protected void addNotify() {
-        Log.log("Songs::addNotify", Level.FINEST);
+        Log.log(Level.FINEST, "Songs::addNotify");
         setKeys(getKeys());
     }
 

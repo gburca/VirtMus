@@ -127,7 +127,7 @@ public class ImageDisplay extends JComponent {
         if ( source == null ) return;
 
         //Log.log("ImageDisplay", Level.INFO, true);
-        Log.log("ImageDisplay", Level.FINEST);
+        Log.log(Level.FINEST, "ImageDisplay");
         try {
             componentWidth  = source.getWidth();
             componentHeight = source.getHeight();
@@ -135,7 +135,7 @@ public class ImageDisplay extends JComponent {
             // Invalid image file
             return;
         }
-        Log.log("ImageDisplay::initialize Init 2", Level.FINEST);
+        Log.log(Level.FINEST, "ImageDisplay::initialize Init 2");
 
         setPreferredSize(new Dimension(componentWidth, componentHeight));
 

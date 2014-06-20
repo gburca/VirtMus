@@ -26,6 +26,7 @@ import com.ebixio.util.PropertyChangeSupportUnique;
 import com.ebixio.util.Util;
 import com.ebixio.virtmus.filefilters.PlayListFilter;
 import com.ebixio.virtmus.options.Options;
+import com.ebixio.virtmus.stats.StatsLogger;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
@@ -237,7 +238,7 @@ public class PlayList implements Comparable<PlayList> {
                 params[idx++] = hm.get(k);
             }
             rec.setParameters(params);
-            Log.uiLog(rec);
+            StatsLogger.log(rec);
 
             setFullyLoaded(true);
             notifyListeners();
@@ -416,7 +417,7 @@ public class PlayList implements Comparable<PlayList> {
                             msg += " No replacement found.";
                             pl.missingSongs = true;
                         }
-                        Log.log(msg, Level.WARNING);
+                        Log.log(Level.WARNING, msg);
                     }
                     Song s = Song.deserialize(sf);
                     if (s != null) {

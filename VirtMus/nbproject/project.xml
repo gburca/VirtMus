@@ -79,14 +79,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.lib.uihandler</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.40.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -102,14 +94,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.uihandler</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>2.30.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -233,19 +217,22 @@
                     <name>qa-functional</name>
                 </test-type -->
             </test-dependencies>
-            <public-packages>
-                <package>com.ebixio.util</package>
-                <package>com.ebixio.virtmus</package>
-                <package>com.ebixio.virtmus.imgsrc</package>
-                <package>com.ebixio.virtmus.options</package>
-                <package>com.ebixio.virtmus.shapes</package>
-            </public-packages>
             <!--
                 These class-path-extension entries were added manually so that
                 NB code completion could find the JARs and not highlight "import"
                 statements as errors. The project builds and runs just fine without
                 them, but the IDE errors are annoying.
             -->
+            <public-packages>
+                <package>com.ebixio.util</package>
+                <package>com.ebixio.virtmus</package>
+                <package>com.ebixio.virtmus.imgsrc</package>
+                <package>com.ebixio.virtmus.options</package>
+                <package>com.ebixio.virtmus.shapes</package>
+                <package>com.ebixio.virtmus.stats</package>
+                <package>org.json</package>
+                <package>org.json.zip</package>
+            </public-packages>
             <class-path-extension>
                 <!-- Deployed path, relative to dir containing module: -->
                 <runtime-relative-path>ext/httpclient-4.3.4.jar</runtime-relative-path>
@@ -262,13 +249,12 @@
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/commons-codec-1.6.jar</runtime-relative-path>
-                <binary-origin>../MavenJARs/dist/commons-codec-1.6</binary-origin>
+                <binary-origin>../MavenJARs/dist/commons-codec-1.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/httpmime-4.3.4.jar</runtime-relative-path>
                 <binary-origin>../MavenJARs/dist/httpmime-4.3.4.jar</binary-origin>
             </class-path-extension>
-
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>Burca</word>

@@ -1,17 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 package com.ebixio.virtmus.stats;
 
+import com.ebixio.util.Log;
 import com.ebixio.virtmus.MainApp;
-import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.options.Options;
-import java.awt.Dimension;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -22,16 +30,9 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -39,115 +40,296 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.XMLFormatter;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
+import javax.swing.JOptionPane;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONStringer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.Places;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
-import org.openide.util.io.NullOutputStream;
 
 /**
+ * Logs anonymous statistics.
+ *
+ * Every time VirtMus starts up, the logSet is swapped (between A/B) and the set
+ * that is not currently in use is a candidate for uploading if the user agreed
+ * to it. This class handles the swapping/rotation, compression, and upload.
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class StatsLogger {
-    private static final Logger LOG = Logger.getLogger(StatsLogger.class.getName());
-    private static final Logger statsLog = Logger.getLogger("com.ebixio.virtmus.stats");
+    private static StatsLogger instance = null;
+    private final Logger statsLog = Logger.getLogger("com.ebixio.virtmus.stats");
     private String logSet;
-    private Handler logHandler;
-    private Preferences pref = NbPreferences.forModule(StatsLogger.class);
+    private Handler logHandler = null;
+    private static Preferences pref = NbPreferences.forModule(MainApp.class);
 
-    //static final String UI_LOGGER = NbBundle.getMessage(Installer.class, "UI_LOGGER_NAME");
-    // OK, Maybe Later, Never
+    // What did the user say when we asked them to upload the stats?
+    private static enum UploadStats {Yes, No,
+        // Ask the user at a later time
+        Maybe,
+        // The user was never asked
+        Unknown};
 
-    public StatsLogger() {
+    private StatsLogger() {
         try {
 
             statsLog.setUseParentHandlers(false);
             statsLog.setLevel(Level.ALL);
 
+            Logger uiLogger = Logger.getLogger("org.netbeans.ui");
+            // org.netbeans.ui.focus = maybe too much info
+
+            uiLogger.setUseParentHandlers(false);
+            uiLogger.setLevel(Level.ALL);
+
             logSet = pref.get(Options.OptLogSet, "A");
-            logHandler = makeLogHandler(logSet);
-            if (logHandler != null) {
-                statsLog.addHandler(logHandler);
-                //log.removeHandler(fHandler);
-            } else {
-                LOG.log(Level.INFO, "Stats logging init failed.");
+            if (! changeHandler(makeLogHandler(logSet))) {
+                Log.log("Stats logging init failed.");
                 statsLog.setLevel(Level.OFF);
+                uiLogger.setLevel(Level.OFF);
             }
-
-            //log.addHandler(new StatsLoggerHandler());
-
-            statsLog.log(getCpuInfo());
-            statsLog.log(getScreenSizeInfo());
-            // TODO: Log memory, java version, etc...
-
+            
         } catch (SecurityException ex) {
-            LOG.log(Level.FINEST, null, ex);
+            Log.log(ex);
         }
     }
 
-    public void submitLogs() {
-        String oldLogSet = rotate();
-        uploadLogs(oldLogSet);
+    public static synchronized StatsLogger findInstance() {
+        if (instance == null) {
+            instance = new StatsLogger();
+        }
+        return instance;
     }
 
-    private boolean uploadLogs(final String oldLogSet) {
-        if (oldLogSet == null) return false;
+    public static void log(final LogRecord rec) {
+        StatsLogger.findInstance().statsLog.log(rec);
+    }
+
+    /** Called when VirtMus is starting up.
+     * Should only be called once per startup, and before we do any logging. */
+    public void startingUp() {
+        // At this time, everything we need to do has been done by the singleton ctor.
+        // In the future we may need to do additional handling here.
+    }
+
+    /** Called after VirtMus has started up.
+     * Should only be called once per startup, and after we've detected the new
+     * and old app version (if this was an upgrade).
+     */
+    public void startedUp() {
+        int launch = pref.getInt(Options.OptStartCounter, 1);
+        pref.putInt(Options.OptStartCounter, launch + 1);
+
+        UploadStats upload = UploadStats.valueOf(
+                pref.get(Options.OptUploadStats, UploadStats.Unknown.name()) );
+        
+        // Only ask the 2nd time the user starts up the app
+        if (launch > 1) {
+            if ( upload == UploadStats.Unknown ||
+                (upload == UploadStats.Maybe && (launch % 10 == 0)) ||
+                (upload == UploadStats.No && (launch % 100 == 0))
+            ) {
+
+                UploadStats newUpload = promptUser();
+                if (newUpload != upload) {
+                    pref.put(Options.OptUploadStats, newUpload.name());
+                    upload = newUpload;
+                }
+            }
+        }
+
+        long installId = MainApp.getInstallId();
+        String prevVersion = pref.get(Options.OptPrevAppVersion, "0.00");
+        if (pref.getBoolean(Options.OptCheckVersion, true)) {
+            StatsLogger.checkForNewVersion(installId, prevVersion, upload);
+        }
+
+        if (upload != UploadStats.No) {
+
+            LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
+            rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
+            StatsLogger.log(rec);
+
+            StatsCollector.logStartup(statsLog);
+            // TODO: Log uptime, etc...
+        }
+
+        if (upload == UploadStats.Yes) {
+            uploadLogs();
+        }
+    }
+
+    /**
+     * Ask the user if they want to help by uploading stats logs.
+     */
+    private UploadStats promptUser() {
+        String yes = NbBundle.getMessage(StatsLogger.class, "BTN_Yes"),
+                maybeLater = NbBundle.getMessage(StatsLogger.class, "BTN_MaybeLater"),
+                never = NbBundle.getMessage(StatsLogger.class, "BTN_Never");
+
+        int userChoice = JOptionPane.showOptionDialog(null,
+                NbBundle.getMessage(StatsLogger.class, "MSG_Text"),
+                NbBundle.getMessage(StatsLogger.class, "MSG_Title"),
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                null, new Object[]{yes, maybeLater, never}, yes);
+
+        switch (userChoice) {
+            case 0: return UploadStats.Yes;
+            case 2: return UploadStats.No;
+            case 1: return UploadStats.Maybe;
+            case -1: // User closed the dialog. Leave it as "Unknown".
+            default:
+                return UploadStats.Unknown;
+        }
+    }
+
+    /**
+     * Submits stats logs to the server. Spawns a separate thread to do all the
+     * work so that we don't block the UI if the server doesn't respond.
+     */
+    private void uploadLogs() {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                String oldLogSet = rotate();
+                uploadLogs(oldLogSet);
+            }
+        };
+        Thread t = new Thread(r);
+        t.setName("SubmitLogs");
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
+    }
+
+    /** Should only be called from uploadLogs(). Compresses all files that belong
+     to the given log set, and uploads all compressed files to the server. */
+    private boolean uploadLogs(final String logSet) {
+        if (logSet == null) return false;
 
         File logsDir = getLogsDir();
         if (logsDir == null) return false;
+        gzipLogs(logsDir, logSet);
 
-        FilenameFilter filter = new FilenameFilter() {
+        // Uploading only gz'd files
+        FilenameFilter gzFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.startsWith("VirtMus-" + oldLogSet + "-") &&
-                        name.endsWith(".log");
+                return name.toLowerCase().endsWith(".gz");
             }
         };
 
-        HttpClient client = new DefaultHttpClient();
-        for (File f: logsDir.listFiles(filter)) {
-            GZIPOutputStream gzip; // line 1287
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost("http://ebixio.com/virtmus/analytics-upload");
+        post.setHeader("User-Agent", "VirtMus-" + MainApp.VERSION);
+
+        MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+        entity.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        entity.addPart("InstallId", new StringBody(String.valueOf(MainApp.getInstallId()), ContentType.TEXT_PLAIN));
+
+        ContentType ct = ContentType.create("x-application/gzip");
+        File[] toUpload = logsDir.listFiles(gzFilter);
+        for (File f: toUpload) {
+            entity.addPart("VirtMusStats", new FileBody(f, ct, f.getName()));
         }
 
-        return true;
-    }
-
-    private boolean upload1Log(File logFile) {
+        post.setEntity(entity.build());
         try {
-            URL url = new URL("http://ebixio.com/virtmus/analytics2");
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            conn.setReadTimeout(10 * 1000);
-            conn.setDoOutput(true);
-            conn.setDoInput(true);  // To read the response
-            conn.setUseCaches(false);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "x-application/gzip");
-            conn.setRequestProperty("User-Agent", "VirtMus-" + MainApp.VERSION);
+            HttpResponse response = client.execute(post);
 
-            DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-            GZIPOutputStream gzip = new GZIPOutputStream(os);
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(logFile))) {
-
+            int status = response.getStatusLine().getStatusCode();
+            Log.log(Level.INFO, "Log upload result: {0}", status);
+            if (status == HttpStatus.SC_OK) { // Success (200)
+                for (File f: toUpload) {
+                    f.delete();
+                }
             }
-            gzip.finish();
-            os.flush();
-            os.close();
 
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            HttpEntity rspEntity = response.getEntity();
+            EntityUtils.consume(rspEntity);
+            client.close();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Log.log(ex);
         }
 
         return true;
     }
 
+    /**
+     * Gzips log files. It is safe to run this more than once on the same directory.
+     * @param logsDir The directory to search for un-zipped logs.
+     * @param logSet The log set to zip up.
+     */
+    private static void gzipLogs(File logsDir, final String logSet) {
+        FilenameFilter logFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                // VirtMus-A-0.log, VirtMus-A-0.log.1
+                return Pattern.matches("VirtMus-" + logSet + "-\\d+\\.log(\\.\\d+)*", name);
+            }
+        };
+
+        // Zip up log files to be uploaded
+        int counter = 0;
+        for (File f: logsDir.listFiles(logFilter)) {
+            String newName;
+            File newFile;
+            do {
+                newName = String.format("%s%sVirtMus-%03d.gz", f.getParent(), File.separator, ++counter);
+                newFile = new File(newName);
+            } while (newFile.exists());
+
+            if (gzipFile(f, newName)) {
+                f.delete();
+            }
+        }
+
+
+    }
+
+    /**
+     * Compresses a file using gzip. The original file is left un-touched.
+     *
+     * @param orig The file to compress
+     * @param gz The name of the compressed file (should end in .gz)
+     * @return true if the compression succeeded.
+     */
+    private static boolean gzipFile(File orig, String gz) {
+        try (
+            FileInputStream fis = new FileInputStream(orig);
+            FileOutputStream fos = new FileOutputStream(gz);
+            GZIPOutputStream gzos = new GZIPOutputStream(fos);
+        ) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while((len = fis.read(buffer)) != -1) {
+                gzos.write(buffer, 0, len);
+            }
+            return true;
+        } catch (FileNotFoundException ex) {
+            Log.log(ex);
+        } catch (IOException ex) {
+            Log.log(ex);
+        }
+
+        return false;
+    }
+
+    /** Rotates the log files/sets. */
     private synchronized String rotate() {
         String oldLogSet = logSet;
 
@@ -159,20 +341,37 @@ public class StatsLogger {
         }
 
         Handler newLogHandler = makeLogHandler(logSet);
-        if (newLogHandler != null) {
-            statsLog.removeHandler(logHandler);
-            statsLog.addHandler(newLogHandler);
-            logHandler.close();
-            logHandler = newLogHandler;
+        if (changeHandler(newLogHandler)) {
             pref.put(Options.OptLogSet, logSet);
+            return oldLogSet;
         } else {
             logSet = oldLogSet;
             return null;
         }
-
-        return oldLogSet;
     }
 
+    /** Called when the log handler changes (when the logs are rotated). */
+    private synchronized boolean changeHandler(Handler newLogHandler) {
+        if (newLogHandler == null) return false;
+
+        Logger uiLogger = Logger.getLogger("org.netbeans.ui");
+
+        if (logHandler != null) {
+            statsLog.removeHandler(logHandler);
+            uiLogger.removeHandler(logHandler);
+            logHandler.close();
+        }
+
+        statsLog.addHandler(newLogHandler);
+        uiLogger.addHandler(newLogHandler);
+
+        logHandler = newLogHandler;
+        return true;
+    }
+
+    /** Creates a log handler for the stats logging.
+     * @param newLogSet An identifier: "A" or "B".
+     */
     private Handler makeLogHandler(String newLogSet) {
         Handler handler = null;
         try {
@@ -183,37 +382,18 @@ public class StatsLogger {
             handler.setFormatter(new XMLFormatter());
             handler.setEncoding("utf-8");
         } catch (IOException | SecurityException ex) {
-            LOG.log(Level.FINEST, null, ex);
+            Log.log(ex);
         }
         return handler;
     }
 
-    static LogRecord getCpuInfo() {
-        LogRecord log = new LogRecord(Level.INFO, "CPU Info");
-        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        Object [] params = new Object[]{os.getAvailableProcessors(), os.getArch()};
-        log.setParameters(params);
-        return log;
-    }
-
-    static LogRecord getScreenSizeInfo() {
-        LogRecord log = new LogRecord(Level.INFO, "Screen Size");
-        List<Object> params = new ArrayList<>();
-
-        int screens = Utils.getNumberOfScreens();
-        params.add(screens);
-
-        Dimension[] sizes = Utils.getScreenSizes();
-        for (Dimension d: sizes) {
-            params.add(d.width);
-            params.add(d.height);
-        }
-
-        log.setParameters(params.toArray());
-        return log;
-    }
-
-    public static void logVersion(String prevVersion, boolean statsEnabled) {
+    /**
+     * Check for new versions of VirtMus.
+     * @param installId The random ID identifying this install.
+     * @param prevVersion The previous version of VirtMus installed.
+     * @param statsEnabled Set to true if the user is participating in stats collection.
+     */
+    private static void checkForNewVersion(long installId, String prevVersion, UploadStats statsEnabled) {
         try {
             URL url = new URL("http://ebixio.com/virtmus/analytics");
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -226,12 +406,13 @@ public class StatsLogger {
             conn.setRequestProperty("User-Agent", "VirtMus-" + MainApp.VERSION);
 
             try (DataOutputStream outS = new DataOutputStream(conn.getOutputStream())) {
+                // TODO: Use http://wiki.fasterxml.com/JacksonHome to avoid warnings?
                 String postData = new JSONStringer()
                     .object()
                         .key("version").value(MainApp.VERSION)
-                        .key("installId").value(MainApp.getInstallId())
+                        .key("installId").value(installId)
                         .key("prevVersion").value(prevVersion)
-                        .key("statsEnabled").value(statsEnabled)
+                        .key("statsEnabled").value(statsEnabled.name())
                     .endObject().toString();
 
                 outS.writeBytes(postData);
@@ -246,14 +427,14 @@ public class StatsLogger {
                 rsp.append(buff);
             }
 
-            //Log.log("HTTP Response: " + conn.getResponseCode() + " " + rsp.toString());
-            if (conn.getResponseCode() == 200 && !statsEnabled) {
-                Preferences pref = NbPreferences.forModule(MainApp.class);
-                pref.putBoolean(Options.OptLogVersion, false);
+            if (conn.getResponseCode() == 200 && statsEnabled == UploadStats.No) {
+                // If the user doesn't want to participate, he probably doesn't
+                // want to be checking for new releases either, so disable it.
+                pref.putBoolean(Options.OptCheckVersion, false);
             }
 
-            // This can be used to notify the user that a newer version is available
-            if (rsp.length() > 0) {
+            // This is used to notify the user that a newer version is available
+            if (rsp.length() > 0 && statsEnabled != UploadStats.No) {
                 File f = File.createTempFile("VersionPost", "html");
                 f.deleteOnExit();
                 try (FileWriter w = new FileWriter(f)) {
@@ -263,14 +444,14 @@ public class StatsLogger {
                 }
             }
         } catch (MalformedURLException ex) {
-            LOG.log(Level.FINEST, null, ex);
+            Log.log(ex);
         } catch (IOException ex) {
-            LOG.log(Level.FINEST, null, ex);
+            Log.log(ex);
         }
     }
 
     /** The directory where the logs are stored. */
-    private File getLogsDir() {
+    public static File getLogsDir() {
         File userDir = Places.getUserDirectory();
         if (userDir != null) {
             return new File(new File(userDir, "var"), "log");
@@ -280,7 +461,7 @@ public class StatsLogger {
     }
 
     /** This is the file we will log to (and upload). */
-    private File getLogFile(String pattern) {
+    public static File getLogFile(String pattern) {
         if (pattern == null) {
             pattern = "VirtMus.log";
         }
@@ -289,87 +470,6 @@ public class StatsLogger {
             return new File(logsDir, pattern);
         } else {
             return null;
-        }
-    }
-
-    private class StatsLoggerHandler extends Handler {
-        private File logFile;
-        private OutputStream os;
-        private ExecutorService executor;
-
-        public StatsLoggerHandler() {
-            logFile = getLogFile();
-            if (logFile != null) {
-                try {
-                    logFile.getParentFile().mkdirs();
-                    boolean append = true;
-                    os = new BufferedOutputStream(new FileOutputStream(logFile, append));
-                } catch (FileNotFoundException ex) {
-                    LOG.log(Level.FINEST, null, ex);
-                    os = new NullOutputStream();
-                }
-            } else {
-                os = new NullOutputStream();
-            }
-
-            // How do we want the log messages formatted
-            this.setFormatter(new XMLFormatter());
-
-            executor = Executors.newSingleThreadExecutor();
-        }
-
-        @Override
-        public void publish(LogRecord record) {
-
-            writeLog(os, record);
-        }
-
-        @Override
-        public void flush() {
-            try {
-                os.flush();
-            } catch (IOException ex) {
-                LOG.log(Level.FINEST, null, ex);
-            }
-        }
-
-        @Override
-        public void close() throws SecurityException {
-            try {
-                os.close();
-            } catch (IOException ex) {
-                LOG.log(Level.FINEST, null, ex);
-            }
-        }
-
-        /** The directory where the logs are stored. */
-        private File getLogsDir() {
-            File userDir = Places.getUserDirectory();
-            if (userDir != null) {
-                return new File(new File(userDir, "var"), "log");
-            } else {
-                return null;
-            }
-        }
-
-        /** This is the file we will log to (and upload). */
-        private File getLogFile() {
-            File logsDir = getLogsDir();
-            if (logsDir != null) {
-                return new File(logsDir, "VirtMus.log");
-            } else {
-                return null;
-            }
-        }
-
-        private void writeLog(OutputStream os, LogRecord rec) {
-            try {
-                String log = this.getFormatter().format(rec);
-                os.write(log.getBytes("utf-8"));
-                os.flush();
-            } catch (IOException ignore) {
-                LOG.log(Level.FINEST, null, ignore);
-            }
         }
     }
 }

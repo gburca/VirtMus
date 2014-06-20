@@ -41,10 +41,17 @@ public class Options {
     public static final String OptSongDir = "SongDirectory";
     public static final String OptScreenRot = "LiveScreenOrientation";
     public static final String OptPageScrollDir = "ScrollDirection";
-    // Set to true if the user allowed the logging of app version
-    public static final String OptLogVersion = "LogVersion";
-    // What log file set (A or B) we're currently writing to (see StatsLogger)
+
+    //<editor-fold defaultstate="collapsed" desc="StatsLogger related options">
+    // Set to true if the user wants to check for new app versions (bool)
+    public static final String OptCheckVersion = "CheckVersion";
+    // Set to one of the values in StatsLogger.UploadStats (String)
+    public static final String OptUploadStats = "UploadStats";
+    // What log file set ("A" or "B") we're currently writing to (String)
     public static final String OptLogSet = "LogFileSet";
+    // How many times did we launch this version of the app (int)
+    public static final String OptStartCounter = "StartCounter";
+    //</editor-fold>
 
     public static enum Rotation {
         Clockwise_0, Clockwise_90, Clockwise_180, Clockwise_270;
@@ -132,8 +139,8 @@ public class Options {
     private Options() {
         Preferences pref = NbPreferences.forModule(MainApp.class);
 
-        screenRot = Rotation.valueOf( pref.get(Options.OptScreenRot, Rotation.Clockwise_0.toString()) );
-        scrollDir = ScrollDir.valueOf( pref.get(Options.OptPageScrollDir, ScrollDir.Horizontal.toString()) );
+        screenRot = Rotation.valueOf( pref.get(Options.OptScreenRot, Rotation.Clockwise_0.name()) );
+        scrollDir = ScrollDir.valueOf( pref.get(Options.OptPageScrollDir, ScrollDir.Horizontal.name()) );
     }
 
     public static synchronized Options findInstance() {

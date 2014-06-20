@@ -19,8 +19,6 @@
  */
 package com.ebixio.util;
 
-import com.ebixio.virtmus.MainApp;
-import com.ebixio.virtmus.options.Options;
 import com.ebixio.virtmus.stats.StatsLogger;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,10 +30,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.MemoryHandler;
 import java.util.logging.SimpleFormatter;
-import java.util.prefs.Preferences;
-import javax.swing.SwingWorker;
-import org.netbeans.modules.uihandler.api.Controller;
-import org.openide.util.NbPreferences;
 
 /**
  * Log various operational info to var/log/messages.log in the user's
@@ -47,12 +41,18 @@ public class Log {
     private static final Logger logger = Logger.getLogger("com.ebixio.virtmus");
     private static final boolean ENABLED = true;
 
+    /** Log an INFO message.
+     * @param msg Message */
     public static void log(String msg) {
         log(msg, Level.INFO, false);
     }
     
-    public static void log(String msg, Level lev) {
+    public static void log(Level lev, String msg) {
         log(msg, lev, false);
+    }
+
+    public static void log(Level level, String msg, Object param) {
+        logger.log(level, msg, param);
     }
     
     public static void log(String msg, Level lev, boolean printStackDump) {
@@ -71,6 +71,15 @@ public class Log {
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         log(sw.toString());
+        
+        //Exceptions.printStackTrace(t);
+        LogRecord rec = new LogRecord(Level.WARNING, "VIRTMUS_EX");
+        rec.setThrown(t);
+        StatsLogger.log(rec);
+
+        // Could also do:
+        //Logger logger = Logger.getLogger("org.netbeans.ui.virtmus");
+        //logger.log(Level.SEVERE, "Example exception record", t);
     }
        
     public static String getStackTrace() {
@@ -84,107 +93,8 @@ public class Log {
         return res.toString();
     }
 
-    /** Configures the UI Gesture logging. */
-    public static void configUiLog() {
-        /* When enabled, it prompts the user to upload exceptions to ERROR_URL.
-        This creates a dialog box that includes a Username/Password field as well
-        as an offer to register. We don't support userid's and registration, so
-        disable it to prevent confusion.
-        
-        See:
-            org/netbeans/modules/exceptions/Bundle.properties
-            File system: uihandler.exceptionreporter
-        */
-        Controller.getDefault().setEnableExceptionHandler(false);
-        Preferences pref = NbPreferences.forModule(MainApp.class);
-        
-        long installId = MainApp.getInstallId();
-        
-        String prevVersion = pref.get(Options.OptPrevAppVersion, "0.00");
-
-        LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
-        rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
-        Log.uiLog(rec);
-        
-        Preferences corePref = NbPreferences.root().node("org/netbeans/core");
-
-        StatsLogger sl = new StatsLogger();
-
-        if (pref.getBoolean(Options.OptLogVersion, true)) {
-            if (!corePref.getBoolean("usageStatisticsEnabled", true)) {
-                StatsLogger.logVersion(prevVersion, false);
-            } else {
-                StatsLogger.logVersion(prevVersion, true);
-            }
-        }
-    }
-    
-    /** Adds an entry to the UI Gesture log. This log is uploaded to
-     * virtmus.com only if the user allows it.
-     * @param rec A log record to log. */
-    public static void uiLog(final LogRecord rec) {
-        /* This logger should match branding/.../Bundle.properties UI_LOGGER_NAME
-        since that's what is submitted to the web server. Changes to this code,
-        or to Bundle.properties generally require a clean+rebuild.
-
-        If UI_LOGGER_NAME is com.ebixio.virtmus.ui, we won't get some of the info
-        NetBeans already logs (memory available, etc...). See:
-            http://wiki.netbeans.org/UILoggingInPlatform
-        */
-        //Logger logger = Logger.getLogger("com.ebixio.virtmus.ui");
-        Logger.getLogger("org.netbeans.ui.virtmus").log(rec);
-    }
-    
-    /** Adds an entry to the UI Gesture log.
-     * @param t Exception to log. */
-    public static void uiLog(final Throwable t) {
-        //Exceptions.printStackTrace(t);
-        LogRecord rec = new LogRecord(Level.WARNING, "VIRTMUS_EX");
-        rec.setThrown(t);
-        uiLog(rec);
-
-        // Could also do:
-        //Logger logger = Logger.getLogger("org.netbeans.ui.virtmus");
-        //logger.log(Level.SEVERE, "Example exception record", t);
-    }
-
-    /** For debug purposes, we can force a UI Gesture log submission.
-     * The UI Gesture module is not flexible enough for our purposes. We can't
-     * control when or how often the logs are submitted. We also can't control
-     * the post-upload behavior. We must return some bogus HTML or else the logs
-     * that were just submitted are not erased. Etc...
-     *
-     * UI logs get uploaded after 1000 logs, or 20Mb (UIHandler.java)
-     * Metrics logs get uploaded after 400 logs, 33+rand(14) days, or 10Mb (MetricsHandler.java)
-     */
-    public static void submitUiLogs() {
-        (new SwingWorker<String, Object>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                Controller ctrlr = Controller.getDefault();
-
-                /* Auto-submit should be true after the first submit, since in the
-                HTML form, we only give the user the option to auto-submit, so once
-                they submit, auto-submit is enabled. */
-                Log.log("RecCnt = " + ctrlr.getLogRecordsCount() +
-                    " Auto-submit: " + ctrlr.isAutomaticSubmit());
-
-                /* Only the UI Gesture logs (not the metrics) are submitted this
-                way, because Controller.submit() calls:
-                    Installer.displaySummary("WELCOME_URL", true, false, true);
-                Which then calls:
-                    displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE, null, null);
-                This also forces the dialog to display, even if auto-submit was
-                previously selected.
-                */
-                ctrlr.submit();
-                return null;
-            }
-        }).execute();
-    }
-
     /** Turns on full NetBeans logging for debug purposes.
-     * This creates a VirtMus.log file (typically in the app's root directory)
+     * This creates a VirtMus.log file (typically in the app's var/log directory)
      * which contains just the SEVERE entries. Everything else can be found in
      * ~/.virtmus/var/log/messages.log (or build/testuserdir/var/log/messages.log)
      * and in the IDE log.
@@ -198,20 +108,23 @@ public class Log {
         String[] loggers = {
             //"org.netbeans.modules.options.OptionsDisplayerImpl",
             //"org.netbeans.core.windows.services.NbPresenter"
-            "org.netbeans.modules.uihandler",
-            "org.netbeans.modules.uihandler.Installer",
-            "org.netbeans.modules.uihandler.Installer.class",
+            //"org.netbeans.ui",
+            //"org.netbeans.modules.uihandler",
+            //"org.netbeans.modules.uihandler.Installer",
+            //"org.netbeans.modules.uihandler.Installer.class",
             //"com.ebixio.virtmus.metrics",   // From branding
             //"org.netbeans.ui"               // From branding
         };
                             
         try {
             boolean append = false;
-            FileHandler fHandler = new FileHandler("VirtMus.log", append);
+            String fn = StatsLogger.getLogFile("VirtMusDebug-%g.log").getPath();
+            FileHandler fHandler = new FileHandler(fn, append);
             fHandler.setFormatter(new SimpleFormatter());
             Handler mHandler = new MemoryHandler(fHandler, 1000, Level.SEVERE);
 
-            Logger log = Logger.getLogger("org.netbeans");
+            Logger log;
+            //log = Logger.getLogger("org.netbeans");
             //log.addHandler(mHandler);
             //log.setLevel(Level.ALL);
             
