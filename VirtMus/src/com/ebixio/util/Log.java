@@ -34,7 +34,7 @@ import java.util.logging.SimpleFormatter;
 /**
  * Log various operational info to var/log/messages.log in the user's
  * .virtmus directory.
- * 
+ *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class Log {
@@ -46,7 +46,7 @@ public class Log {
     public static void log(String msg) {
         log(msg, Level.INFO, false);
     }
-    
+
     public static void log(Level lev, String msg) {
         log(msg, lev, false);
     }
@@ -54,7 +54,7 @@ public class Log {
     public static void log(Level level, String msg, Object param) {
         logger.log(level, msg, param);
     }
-    
+
     public static void log(String msg, Level lev, boolean printStackDump) {
         if (!ENABLED) return;
         //logger.log(lev, getElapsedTime() + " - " + msg);
@@ -66,22 +66,22 @@ public class Log {
     public static void log(Throwable t) {
         // The stack trace includes the exception info. No need to log it.
         //log(t.toString());
-        
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         log(sw.toString());
-        
+
         //Exceptions.printStackTrace(t);
-        LogRecord rec = new LogRecord(Level.WARNING, "VIRTMUS_EX");
+        LogRecord rec = new LogRecord(Level.WARNING, "VirtMus Exception");
         rec.setThrown(t);
-        StatsLogger.log(rec);
+        StatsLogger.getLogger().log(rec);
 
         // Could also do:
         //Logger logger = Logger.getLogger("org.netbeans.ui.virtmus");
         //logger.log(Level.SEVERE, "Example exception record", t);
     }
-       
+
     public static String getStackTrace() {
         StringBuilder res = new StringBuilder();
         StackTraceElement[] ste = (new Throwable()).getStackTrace();
@@ -98,7 +98,7 @@ public class Log {
      * which contains just the SEVERE entries. Everything else can be found in
      * ~/.virtmus/var/log/messages.log (or build/testuserdir/var/log/messages.log)
      * and in the IDE log.
-     * 
+     *
      * To log to VirtMus.log:
      *  Logger.getLogger("org.netbeans").log(Level.SEVERE, "Test log msg");
      */
@@ -115,7 +115,7 @@ public class Log {
             //"com.ebixio.virtmus.metrics",   // From branding
             //"org.netbeans.ui"               // From branding
         };
-                            
+
         try {
             boolean append = false;
             String fn = StatsLogger.getLogFile("VirtMusDebug-%g.log").getPath();
@@ -127,7 +127,7 @@ public class Log {
             //log = Logger.getLogger("org.netbeans");
             //log.addHandler(mHandler);
             //log.setLevel(Level.ALL);
-            
+
             for (String lgr: loggers) {
                 log = Logger.getLogger(lgr);
                 log.addHandler(mHandler);

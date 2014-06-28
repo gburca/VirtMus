@@ -12,7 +12,7 @@ import java.io.InputStream;
 import javax.xml.validation.Validator;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -165,6 +165,10 @@ public class PlayListTest {
 
             // Adding name (but no songs)
             instance.setName("Some playlist name");
+            instance.serialize(toFile);
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
+
+            instance.setTags("t1, t2, t3");
             instance.serialize(toFile);
             assertEquals(true, Util.validateXml(toFile, xsdValidator));
 

@@ -36,7 +36,7 @@ public class ToolFreehand extends DrawingTool {
     }
 
     @Override
-        public void mouseClicked(MouseEvent e) {
+    public void mouseClicked(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             Point p = getAbsolutePoint(e.getPoint());
 

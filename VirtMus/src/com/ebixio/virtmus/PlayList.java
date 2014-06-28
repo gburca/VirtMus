@@ -219,26 +219,27 @@ public class PlayList implements Comparable<PlayList> {
                 for (Song s: songs) {
                     for (MusicPage mp: s.pageOrder) {
                         String ext = Utils.getFileExtension(mp.imgSrc.sourceFile).toLowerCase();
-                        if (hm.containsKey(ext)) {
-                            hm.put(ext, hm.get(ext) + 1);
-                        } else {
-                            hm.put(ext, 1);
+                        if (mp instanceof MusicPageSVG) {
+                            MusicPageSVG svg = (MusicPageSVG)mp;
+                            if (svg.hasAnnotations()) {
+                                ext += "+svg";
+                            }
                         }
+                        hm.put(ext, hm.getOrDefault(ext, 0) + 1);
                     }
                 }
             }
 
             // Log the page stats
-            LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_SONGS");
-            Object[] params = new Object[1 + hm.size() * 2];
-            params[0] = songs.size();
+            LogRecord rec = new LogRecord(Level.INFO, "VirtMus Songs");
+            Object[] params = new Object[1 + hm.size()];
+            params[0] = "Songs: " + songs.size();
             int idx = 1;
             for (String k: hm.keySet()) {
-                params[idx++] = k;
-                params[idx++] = hm.get(k);
+                params[idx++] = k + ": " + hm.get(k);
             }
             rec.setParameters(params);
-            StatsLogger.log(rec);
+            StatsLogger.getLogger().log(rec);
 
             setFullyLoaded(true);
             notifyListeners();

@@ -341,9 +341,9 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
                 playLists.add(pl);
                 fire(PROP_NEW_PL_ADDED, null, pl);
 
-                LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS_PLAYLISTS");
+                LogRecord rec = new LogRecord(Level.INFO, "VirtMus PlayLists");
                 rec.setParameters(new Object[] {playLists.size()});
-                StatsLogger.log(rec);
+                StatsLogger.getLogger().log(rec);
 
                 Collections.sort(playLists);
 

@@ -103,7 +103,7 @@ public class StatsLogger {
                 statsLog.setLevel(Level.OFF);
                 uiLogger.setLevel(Level.OFF);
             }
-            
+
         } catch (SecurityException ex) {
             Log.log(ex);
         }
@@ -116,8 +116,12 @@ public class StatsLogger {
         return instance;
     }
 
-    public static void log(final LogRecord rec) {
-        StatsLogger.findInstance().statsLog.log(rec);
+    /** This is the stats logger. If we provide a log(LogRecord r) method instead,
+     * all logs show this StatsLogger/log() as the class/method name.
+     * @return A logger for anonymous stats.
+     */
+    public static Logger getLogger() {
+        return StatsLogger.findInstance().statsLog;
     }
 
     /** Called when VirtMus is starting up.
@@ -137,7 +141,7 @@ public class StatsLogger {
 
         UploadStats upload = UploadStats.valueOf(
                 pref.get(Options.OptUploadStats, UploadStats.Unknown.name()) );
-        
+
         // Only ask the 2nd time the user starts up the app
         if (launch > 1) {
             if ( upload == UploadStats.Unknown ||
@@ -161,9 +165,9 @@ public class StatsLogger {
 
         if (upload != UploadStats.No) {
 
-            LogRecord rec = new LogRecord(Level.INFO, "VIRTMUS");
-            rec.setParameters(new Object[]{MainApp.VERSION, installId, prevVersion});
-            StatsLogger.log(rec);
+            LogRecord rec = new LogRecord(Level.INFO, "VirtMus Version");
+            rec.setParameters(new Object[]{MainApp.VERSION, prevVersion, installId});
+            statsLog.log(rec);
 
             StatsCollector.logStartup(statsLog);
             // TODO: Log uptime, etc...

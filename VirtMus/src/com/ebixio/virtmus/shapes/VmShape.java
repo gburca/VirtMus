@@ -35,6 +35,10 @@ public abstract class VmShape {
     public void setAlpha(float alpha) {
         this.alpha = alpha;
     }
+
+    public String getName() {
+        return this.getClass().getSimpleName();
+    }
     
     public abstract void paint(Graphics2D g);
     

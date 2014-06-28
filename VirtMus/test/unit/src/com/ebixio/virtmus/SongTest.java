@@ -7,16 +7,13 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Util;
 import com.ebixio.virtmus.options.Options.Rotation;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.swing.event.ChangeListener;
 import javax.xml.validation.Validator;
-import org.apache.fop.pdf.PDFFileSpec;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -305,6 +302,10 @@ public class SongTest {
             assertEquals(true, Util.validateXml(toFile, xsdValidator));
 
             instance.setName("Some song name");
+            assertEquals(true, instance.serialize(toFile));
+            assertEquals(true, Util.validateXml(toFile, xsdValidator));
+
+            instance.setTags("tag1, tag2, tag3");
             assertEquals(true, instance.serialize(toFile));
             assertEquals(true, Util.validateXml(toFile, xsdValidator));
 

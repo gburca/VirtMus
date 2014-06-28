@@ -252,13 +252,13 @@ public class MusicPageSVG extends MusicPage {
         try {
             out = new OutputStreamWriter(new FileOutputStream(toFile), "UTF-8");
             out.write(export2SvgStr());
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Log.log(ex);
         } finally {
             try {
-                out.close();
+                if (out != null) out.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Log.log(ex);
             }
         }        
     }
@@ -316,6 +316,9 @@ public class MusicPageSVG extends MusicPage {
     
     @Override
     public void clearAnnotations() {
+        for (VmShape s: shapes) {
+            song.removeAnnotStats(s);
+        }
         shapes.clear();
         svgDocument = null;
         graphicsNode = null;
@@ -326,7 +329,9 @@ public class MusicPageSVG extends MusicPage {
     @Override
     public void popAnnotation() {
         if (!shapes.isEmpty()) {
-            shapes.remove(shapes.size() - 1);
+            int idx = shapes.size() - 1;
+            song.removeAnnotStats(shapes.get(idx));
+            shapes.remove(idx);
             setDirty(true);
             song.notifyListeners();
         }
@@ -336,6 +341,7 @@ public class MusicPageSVG extends MusicPage {
     public void addAnnotation(VmShape s) {
         shapes.add(s);
         setDirty(true);
+        song.addAnnotStats(s);
         song.notifyListeners();
     }
     

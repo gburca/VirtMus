@@ -50,10 +50,10 @@ public class StatsCollector {
 
     /** Creates a LogRecord with the JRE info. */
     static LogRecord getSystemConfig() {
-        LogRecord log = new LogRecord(Level.INFO, "SYSTEM_CONFIG");
+        LogRecord log = new LogRecord(Level.INFO, "System Config");
         String os = System.getProperty("os.name", "unknown name") + ", " + System.getProperty("os.version", "unknown version") + ", " + System.getProperty("os.arch", "unknown arch");
         String vm = System.getProperty("java.vm.name", "unknown VM name") + ", " + System.getProperty("java.vm.version", "unknown VM version") + ", " + System.getProperty("java.runtime.name", "unknown RT name") + ", " + System.getProperty("java.runtime.version", "unknown RT version");
-        Object[] params = new Object[]{os, vm};
+        Object[] params = new Object[]{"OS: " + os, "JVM: " + vm};
         log.setParameters(params);
         return log;
     }
@@ -62,20 +62,21 @@ public class StatsCollector {
     static LogRecord getCpuInfo() {
         LogRecord log = new LogRecord(Level.INFO, "CPU Info");
         OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        Object[] params = new Object[]{os.getAvailableProcessors(), os.getArch()};
+        Object[] params = new Object[]{"Cores: " + os.getAvailableProcessors(),
+            "Arch: " + os.getArch()};
         log.setParameters(params);
         return log;
     }
 
     /** Creates a LogRecord with the amount of physical memory present. */
     static LogRecord getMemInfo() {
-        LogRecord log = new LogRecord(Level.INFO, "MEMORY");
+        LogRecord log = new LogRecord(Level.INFO, "Memory");
         try {
             OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
             Method m = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
             m.setAccessible(true);
-            long freeMem = (Long) m.invoke(osBean);
-            log.setParameters(new Object[]{freeMem});
+            long memSz = (Long) m.invoke(osBean);
+            log.setParameters(new Object[]{memSz});
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Log.log(ex);
         }
@@ -90,8 +91,7 @@ public class StatsCollector {
         params.add(screens);
         Dimension[] sizes = Utils.getScreenSizes();
         for (Dimension d : sizes) {
-            params.add(d.width);
-            params.add(d.height);
+            params.add(String.valueOf(d.width) + "x" + String.valueOf(d.height));
         }
         log.setParameters(params.toArray());
         return log;

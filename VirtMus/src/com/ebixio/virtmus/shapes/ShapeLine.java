@@ -24,6 +24,7 @@ import java.awt.geom.GeneralPath;
  */
 public class ShapeLine extends VmShape {
     protected GeneralPath path = new GeneralPath();
+    protected int segments = 0;
     
     public ShapeLine(Paint color, float alpha, int thickness, Point start) {
         super(color, alpha, thickness);
@@ -32,6 +33,16 @@ public class ShapeLine extends VmShape {
     
     public void addEnd(Point end) {
         path.lineTo(end.x, end.y);
+        segments++;
+    }
+
+    @Override
+    public String getName() {
+        if (segments > 1) {
+            return "ShapeFreehand";
+        } else {
+            return "ShapeStraightLine";
+        }
     }
 
     @Override

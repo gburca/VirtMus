@@ -66,7 +66,7 @@ public final class MainApp {
 
             LogRecord lr = new LogRecord(Level.INFO, "VIRTMUS_UPGRADE");
             lr.setParameters(new Object[]{getInstallId(), version, VERSION});
-            StatsLogger.log(lr);
+            StatsLogger.getLogger().log(lr);
 
             // v4.00 is the first one that kept track of versions.
             if ("0.00".equals(version)) {
