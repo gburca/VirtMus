@@ -18,13 +18,18 @@
 package com.ebixio.virtmus.stats;
 
 import com.ebixio.util.Log;
+import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.Utils;
+import com.ebixio.virtmus.shapes.VmShape;
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -35,7 +40,20 @@ import java.util.logging.Logger;
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public class StatsCollector {
+public class StatsCollector implements PropertyChangeListener {
+    private static StatsCollector instance = null;
+    private HashMap<Song, HashMap<String, Integer> > annotStats = new HashMap<>();
+
+    private StatsCollector() {
+
+    }
+
+    public static synchronized StatsCollector findInstance() {
+        if (instance == null) {
+            instance = new StatsCollector();
+        }
+        return instance;
+    }
 
     /**
      * Logs a bunch of configurations/settings every time VirtMus is started.
@@ -95,5 +113,46 @@ public class StatsCollector {
         }
         log.setParameters(params.toArray());
         return log;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource().getClass() == Song.class) {
+            Song s = (Song)evt.getSource();
+            HashMap<String, Integer> songStats;
+
+            if (Song.PROP_ANNOT.equals(evt.getPropertyName())) {
+                annotStats.putIfAbsent(s, new HashMap<String, Integer>());
+                songStats = annotStats.get(s);
+
+                VmShape shapeO = (VmShape)evt.getOldValue();
+                VmShape shapeN = (VmShape)evt.getNewValue();
+                if (shapeO == null && shapeN != null) { // shape added
+                    String sName = shapeN.getName();
+                    songStats.put(sName, songStats.getOrDefault(sName, 0) + 1);
+                } else if (shapeO != null && shapeN == null) { // shape removed
+                    String sName = shapeO.getName();
+                    songStats.put(sName, songStats.getOrDefault(sName, 0) - 1);
+                }
+            } else if (Song.PROP_DIRTY.equals(evt.getPropertyName())) {
+                // Use isDirty true->false as a proxy for isBeingSaved
+                Boolean saved = (Boolean)evt.getOldValue();
+                // Record how many shapes were drawn on this song's pages
+                if (saved && annotStats.containsKey(s) && !annotStats.get(s).isEmpty()) {
+                    songStats = annotStats.get(s);
+
+                    LogRecord shapesLog = new LogRecord(Level.INFO, "Page Annotations");
+                    Object[] params = new Object[songStats.size()];
+                    int idx = 0;
+                    // TODO: concurrency handling
+                    for (String k: songStats.keySet()) {
+                        params[idx++] = k + ": " + songStats.get(k);
+                    }
+                    shapesLog.setParameters(params);
+                    StatsLogger.getLogger().log(shapesLog);
+                    annotStats.remove(s);
+                }
+            }
+        }
     }
 }

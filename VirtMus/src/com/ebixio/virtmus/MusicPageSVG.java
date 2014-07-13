@@ -317,7 +317,7 @@ public class MusicPageSVG extends MusicPage {
     @Override
     public void clearAnnotations() {
         for (VmShape s: shapes) {
-            song.removeAnnotStats(s);
+            song.removedAnnot(this, s);
         }
         shapes.clear();
         svgDocument = null;
@@ -330,7 +330,7 @@ public class MusicPageSVG extends MusicPage {
     public void popAnnotation() {
         if (!shapes.isEmpty()) {
             int idx = shapes.size() - 1;
-            song.removeAnnotStats(shapes.get(idx));
+            song.removedAnnot(this, shapes.get(idx));
             shapes.remove(idx);
             setDirty(true);
             song.notifyListeners();
@@ -341,7 +341,7 @@ public class MusicPageSVG extends MusicPage {
     public void addAnnotation(VmShape s) {
         shapes.add(s);
         setDirty(true);
-        song.addAnnotStats(s);
+        song.addedAnnot(this, s);
         song.notifyListeners();
     }
     

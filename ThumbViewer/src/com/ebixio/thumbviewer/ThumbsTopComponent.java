@@ -20,8 +20,19 @@
 
 package com.ebixio.thumbviewer;
 
-import com.ebixio.virtmus.*;
-import java.awt.*;
+import com.ebixio.virtmus.CommonExplorers;
+import com.ebixio.virtmus.DraggableThumbnail;
+import com.ebixio.virtmus.MusicPage;
+import com.ebixio.virtmus.MusicPageNode;
+import com.ebixio.virtmus.Song;
+import com.ebixio.virtmus.SongNode;
+import com.ebixio.virtmus.Thumbnail;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
@@ -34,7 +45,13 @@ import net.java.swingfx.jdraggable.DragPolicy;
 import net.java.swingfx.jdraggable.DraggableManager;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.util.*;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 

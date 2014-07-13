@@ -32,7 +32,7 @@ import com.ebixio.virtmus.imgsrc.PdfImg;
 import com.ebixio.virtmus.imgsrc.PdfViewImg;
 import com.ebixio.virtmus.options.Options;
 import com.ebixio.virtmus.shapes.VmShape;
-import com.ebixio.virtmus.stats.StatsLogger;
+import com.ebixio.virtmus.stats.StatsCollector;
 import com.ebixio.virtmus.xml.MusicPageConverter;
 import com.ebixio.virtmus.xml.PageOrderConverter;
 import com.thoughtworks.xstream.XStream;
@@ -61,8 +61,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -124,12 +122,13 @@ public class Song implements Comparable<Song> {
 
     public static final String PROP_TAGS = "tagsProp";
     public static final String PROP_NAME = "nameProp";
+    public static final String PROP_ANNOT = "annotProp"; // Annotations add/rm
+    public static final String PROP_DIRTY = "dirtyProp";
 
     private transient PropertyChangeSupportUnique pcs = new PropertyChangeSupportUnique(this);
     private transient final Object pcsMutex = new Object();
     // Could change this to EventListenerList if we had more than 1 event type
     private transient List<ChangeListener> pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
-    private transient HashMap<String, Integer> annotStats = new HashMap<>();
 
     /* We should instantiate each song only once.
      * That way when a page is added/removed from it the change will be reflected in all playlists containing the song. */
@@ -160,7 +159,10 @@ public class Song implements Comparable<Song> {
     /** Creates a new Song instance.
      * This constructor is NOT called when the object is deserialized.
      */
-    public Song() {}
+    public Song() {
+        addPropertyChangeListener(PROP_ANNOT, StatsCollector.findInstance());
+        addPropertyChangeListener(PROP_DIRTY, StatsCollector.findInstance());
+    }
 
     /** Creates a new instance of Song from a file, or a directory of files.
      * This constructor is NOT called when the object is deserialized.
@@ -168,16 +170,21 @@ public class Song implements Comparable<Song> {
      */
     public Song(File f) {
         addPage(f);
+        addPropertyChangeListener(PROP_ANNOT, StatsCollector.findInstance());
+        addPropertyChangeListener(PROP_DIRTY, StatsCollector.findInstance());
     }
 
     /** Constructors are not called (and transients are not initialized)
      * when the object is deserialized !!! */
     private Object readResolve() {
-        annotStats = new HashMap<>();
         pcs = new PropertyChangeSupportUnique(this);
         pageListeners = Collections.synchronizedList(new LinkedList<ChangeListener>());
         savable = null;
         version = MainApp.VERSION;
+
+        addPropertyChangeListener(PROP_ANNOT, StatsCollector.findInstance());
+        addPropertyChangeListener(PROP_DIRTY, StatsCollector.findInstance());
+
         return this;
     }
 
@@ -191,6 +198,7 @@ public class Song implements Comparable<Song> {
                 savable = new SongSavable(this);
                 VirtMusLookup.getInstance().add(savable);
                 notifyListeners();
+                fire(PROP_DIRTY, false, true);
             }
         } else {
             if (savable != null) {
@@ -199,6 +207,7 @@ public class Song implements Comparable<Song> {
                 VirtMusLookup.getInstance().remove(savable);
                 savable = null;
                 notifyListeners();
+                fire(PROP_DIRTY, true, false);
             }
         }
     }
@@ -360,16 +369,15 @@ public class Song implements Comparable<Song> {
 
     /** Keeps track of how many annotations were made to this song. Used for
      * statistical reports.
+     * @param page
      * @param s
      */
-    public void addAnnotStats(VmShape s) {
-        String sName = s.getName();
-        annotStats.put(sName, annotStats.getOrDefault(sName, 0) + 1);
+    public void addedAnnot(MusicPage page, VmShape s) {
+        fire(PROP_ANNOT, null, s);
     }
 
-    public void removeAnnotStats(VmShape s) {
-        String sName = s.getName();
-        annotStats.put(sName, annotStats.getOrDefault(sName, 0) - 1);
+    public void removedAnnot(MusicPage page, VmShape s) {
+        fire(PROP_ANNOT, s, null);
     }
 
     public boolean save() {
@@ -464,19 +472,6 @@ public class Song implements Comparable<Song> {
         // Give each page a chance to do house cleaning before being saved.
         for (MusicPage mp: pageOrder) {
             mp.prepareToSave();
-        }
-
-        // Record how many shapes were drawn on this song's pages
-        if (!annotStats.isEmpty()) {
-            LogRecord shapesLog = new LogRecord(Level.INFO, "Page Annotations");
-            Object[] params = new Object[annotStats.size()];
-            int idx = 0;
-            for (String k: annotStats.keySet()) {
-                params[idx++] = k + ": " + annotStats.get(k);
-            }
-            shapesLog.setParameters(params);
-            StatsLogger.getLogger().log(shapesLog);
-            annotStats.clear();
         }
 
         boolean debug = false;

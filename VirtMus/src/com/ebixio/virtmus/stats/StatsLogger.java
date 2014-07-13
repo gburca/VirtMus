@@ -63,7 +63,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
- * Logs anonymous statistics.
+ * Logs anonymous statistics to a file, and optionally uploads the logs.
  *
  * Every time VirtMus starts up, the logSet is swapped (between A/B) and the set
  * that is not currently in use is a candidate for uploading if the user agreed
