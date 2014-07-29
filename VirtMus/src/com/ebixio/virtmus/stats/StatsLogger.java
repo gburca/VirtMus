@@ -414,7 +414,13 @@ public class StatsLogger {
                 String postData = new JSONStringer()
                     .object()
                         .key("version").value(MainApp.VERSION)
-                        .key("installId").value(installId)
+                        /* installId MUST be sent as string since JS on the server
+                        side only has 64-bit float values and can't represent
+                        all long int values, leading to truncation of some digits
+                        since the JS float mantisa has only 53 bits (not 64).
+                        See: http://www.2ality.com/2012/07/large-integers.html
+                        */
+                        .key("installId").value(String.valueOf(installId))
                         .key("prevVersion").value(prevVersion)
                         .key("statsEnabled").value(statsEnabled.name())
                     .endObject().toString();
