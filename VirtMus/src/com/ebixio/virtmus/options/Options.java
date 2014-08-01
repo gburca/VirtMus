@@ -51,6 +51,10 @@ public class Options {
     public static final String OptLogSet = "LogFileSet";
     // How many times did we launch this version of the app (int)
     public static final String OptStartCounter = "StartCounter";
+    // Where to upload the stats
+    public static final String OptStatsUploadUrl = "StatsUploadUrl";
+    // What URL to use for checking for new versions
+    public static final String OptCheckVersionUrl = "VersionCheckUrl";
     //</editor-fold>
 
     public static enum Rotation {

@@ -203,7 +203,6 @@ public class Song implements Comparable<Song> {
         } else {
             if (savable != null) {
                 savable.saved();
-                // TODO: Don't we have to remove it from the VirtMusLookup?
                 VirtMusLookup.getInstance().remove(savable);
                 savable = null;
                 notifyListeners();

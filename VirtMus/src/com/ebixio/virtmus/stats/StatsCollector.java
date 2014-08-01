@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  */
 public class StatsCollector implements PropertyChangeListener {
     private static StatsCollector instance = null;
-    private HashMap<Song, HashMap<String, Integer> > annotStats = new HashMap<>();
+    private final HashMap<Song, HashMap<String, Integer> > annotStats = new HashMap<>();
 
     private StatsCollector() {
 
