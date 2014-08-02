@@ -68,6 +68,7 @@ import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONStringer;
@@ -187,7 +188,7 @@ public class StatsLogger {
         long installId = MainApp.getInstallId();
         String prevVersion = pref.get(Options.OptPrevAppVersion, "0.00");
         if (pref.getBoolean(Options.OptCheckVersion, true)) {
-            StatsLogger.checkForNewVersion(installId, prevVersion, upload, null);
+            StatsLogger.checkForNewVersion(installId, prevVersion, upload);
         }
 
         if (upload != UploadStats.No) {
@@ -299,15 +300,11 @@ public class StatsLogger {
     /**
      * We need to monitor the HTTP redirects and if it is a permanent redirection
      * we need to update the options so we don't keep going to the old URI.
+     *
+     * We use the LaxRedirectStrategy so that POST redirects can be handled.
      */
-    class HttpRedirectStrategy extends DefaultRedirectStrategy {
-        private final String optionStr;
-        private String newUri = null;
-        private boolean permanent = false;
-
-        public HttpRedirectStrategy(String optionStr) {
-            this.optionStr = optionStr;
-        }
+    static abstract class HttpRedirectStrategy extends LaxRedirectStrategy {
+        protected String newUri = null;
 
         @Override
         public HttpUriRequest getRedirect(HttpRequest request,
@@ -317,68 +314,82 @@ public class StatsLogger {
             HttpUriRequest redirect = super.getRedirect(request, response, ctxt);
 
             int status = response.getStatusLine().getStatusCode();
-            String oldUri = request.getRequestLine().getUri();
             newUri = redirect.getURI().toString();
 
-            if (status == HttpStatus.SC_MOVED_PERMANENTLY || status == 308) {
-                if (!oldUri.equals(newUri)) {
-                    pref.put(optionStr, newUri);
-                    permanent = true;
-                }
+            switch (status) {
+                case HttpStatus.SC_MOVED_PERMANENTLY:
+                case 308:
+                    handlePermanentRedirect(request, response, redirect);
+                    break;
+                case HttpStatus.SC_MOVED_TEMPORARILY:
+                case HttpStatus.SC_TEMPORARY_REDIRECT:
+                    handleTemporaryRedirect(request, response, redirect);
+                    break;
             }
 
             return redirect;
         }
 
-        public boolean isPermanent() {
-            return permanent;
-        }
-
         public String getNewUri() {
             return newUri;
         }
+
+        public abstract void handlePermanentRedirect(HttpRequest request,
+                HttpResponse response, HttpUriRequest redirect);
+
+        public abstract void handleTemporaryRedirect(HttpRequest request,
+                HttpResponse response, HttpUriRequest redirect);
     }
 
+    /** Figure out where we should upload the logs.
+     *
+     * We don't want to post/send the entire log only to be redirected at the end.
+     * We'll do a HEAD request instead (assuming that both HEAD and POST are
+     * redirected the same way) to see if there is any redirection, and if there
+     * is, this gives us a chance to POST to the new URI.
+     */
     private String getUploadUrl() {
-        String url = pref.get(Options.OptStatsUploadUrl, "http://ebixio.com/virtmus/analytics-upload");
+        final String url = pref.get(Options.OptStatsUploadUrl, "http://ebixio.com/virtmus/analytics-upload");
         String newURL = url;
 
-        //CloseableHttpClient client = HttpClients.createDefault();
-        CloseableHttpClient client = HttpClientBuilder.create()
-                .setRedirectStrategy(new HttpRedirectStrategy(Options.OptStatsUploadUrl))
-                .build();
+        HttpRedirectStrategy httpRedirect = new HttpRedirectStrategy() {
+            @Override
+            public void handlePermanentRedirect(HttpRequest request,
+                    HttpResponse response, HttpUriRequest redirect)
+            {
+                if (!Utils.isNullOrEmpty(newUri) && !newUri.equals(url)) {
+                    pref.put(Options.OptStatsUploadUrl, newUri);
+                }
+            }
 
+            @Override
+            public void handleTemporaryRedirect(HttpRequest request,
+                    HttpResponse response, HttpUriRequest redirect) {}
+        };
+
+        CloseableHttpClient client = HttpClientBuilder.create()
+                .setRedirectStrategy(httpRedirect)
+                .build();
         HttpHead head = new HttpHead(url);
         head.setHeader("User-Agent", "VirtMus-" + MainApp.VERSION);
 
         try (CloseableHttpResponse response = client.execute(head)) {
             int status = response.getStatusLine().getStatusCode();
-            Header newLocation;
 
-            switch (status) {
-                case HttpStatus.SC_MOVED_PERMANENTLY:
-                case 308:
-                    newLocation = response.getFirstHeader("Location");
-                    if (newLocation != null) {
-                        newURL = newLocation.getValue();
-                        if (Utils.isNullOrEmpty(newURL)) {
-                            newURL = url;
-                        } else if (!url.equals(newURL)) {
-                            pref.put(Options.OptStatsUploadUrl, newURL);
-                        }
-                    }
-                    break;
-
-                case HttpStatus.SC_MOVED_TEMPORARILY:
-                case HttpStatus.SC_TEMPORARY_REDIRECT:
-                    newLocation = response.getFirstHeader("Location");
-                    if (newLocation != null) {
-                        newURL = newLocation.getValue();
-                        if (Utils.isNullOrEmpty(newURL)) {
-                            newURL = url;
-                        }
-                    }
-                    break;
+            if (status == HttpStatus.SC_OK) {
+                // Let's see if we had any redirections
+                newURL = httpRedirect.getNewUri();
+                if (Utils.isNullOrEmpty(newURL)) {
+                    // There was no redirection.
+                    newURL = url;
+                }
+            } else {
+                /* This means either we got an error either at the original URI
+                or somewhere along the redirection chain. Either way, we restore
+                the original URI in case one of the redirects caused us to update
+                the options. */
+                pref.put(Options.OptStatsUploadUrl, url);
+                newURL = url;
             }
 
             HttpEntity entity = response.getEntity();
@@ -643,12 +654,85 @@ public class StatsLogger {
      * @param statsEnabled Set to true if the user is participating in stats collection.
      * @param urlStr When not null, the given URL is used instead of the default.
      */
-    private static void checkForNewVersion(long installId, String prevVersion, UploadStats statsEnabled, String urlStr) {
+    private static void checkForNewVersion(long installId, String prevVersion, UploadStats statsEnabled) {
+        final String urlStr = pref.get(Options.OptVersionCheckUrl, "http://ebixio.com/virtmus/analytics");
+
+        // Catch redirects.
+        HttpRedirectStrategy httpRedirect = new HttpRedirectStrategy() {
+            @Override
+            public void handlePermanentRedirect(HttpRequest request,
+                    HttpResponse response, HttpUriRequest redirect)
+            {
+                if (!Utils.isNullOrEmpty(newUri) && !newUri.equals(urlStr)) {
+                    pref.put(Options.OptVersionCheckUrl, newUri);
+                }
+            }
+
+            @Override
+            public void handleTemporaryRedirect(HttpRequest request,
+                    HttpResponse response, HttpUriRequest redirect) {}
+        };
+
+        // TODO: Use http://wiki.fasterxml.com/JacksonHome to avoid warnings?
+        String postData = new JSONStringer()
+            .object()
+                .key("version").value(MainApp.VERSION)
+                /* installId MUST be sent as string since JS on the server
+                side only has 64-bit float values and can't represent
+                all long int values, leading to truncation of some digits
+                since the JS float mantisa has only 53 bits (not 64).
+                See: http://www.2ality.com/2012/07/large-integers.html
+                */
+                .key("installId").value(String.valueOf(installId))
+                .key("prevVersion").value(prevVersion)
+                .key("statsEnabled").value(statsEnabled.name())
+            .endObject().toString();
+
+        try {
+            CloseableHttpClient client = HttpClientBuilder.create()
+                    .setRedirectStrategy(httpRedirect).build();
+
+            HttpPost post = new HttpPost(urlStr);
+            post.setHeader("User-Agent", "VirtMus-" + MainApp.VERSION);
+            StringEntity entity = new StringEntity(postData, "application/json");
+            post.setEntity(entity);
+            HttpResponse response = client.execute(post);
+
+            int status = response.getStatusLine().getStatusCode();
+            if (status == HttpStatus.SC_OK) {  // 200
+                if (statsEnabled == UploadStats.No) {
+                    // If the user doesn't want to participate, he probably doesn't
+                    // want to be checking for new releases either, so disable it.
+                    pref.putBoolean(Options.OptCheckVersion, false);
+                }
+
+                // This is used to notify the user that a newer version is available
+                HttpEntity rspEntity = response.getEntity();
+                if (rspEntity != null && statsEnabled != UploadStats.No) {
+                    File f = File.createTempFile("VersionPost", "html");
+                    f.deleteOnExit();
+                    Files.copy(rspEntity.getContent(), f.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    URL rspUrl = Utilities.toURI(f).toURL();
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(rspUrl);
+                }
+            } else {
+                Log.log(Level.INFO, "CheckVersion result: {0}", status);
+            }
+
+        } catch (MalformedURLException ex) {
+            Log.log(ex);
+        } catch (IOException ex) {
+            Log.log(ex);
+        }
+    }
+
+    private static void checkForNewVersionOld(long installId, String prevVersion, UploadStats statsEnabled, String urlStr) {
         try {
             if (urlStr == null) {
                 urlStr = pref.get(Options.OptVersionCheckUrl, "http://ebixio.com/virtmus/analytics");
             }
             URL url = new URL(urlStr);
+            // TODO: Use the same logic as the file uploads, so we can catch redirects.
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setReadTimeout(10 * 1000);
             conn.setDoOutput(true);
@@ -718,7 +802,7 @@ public class StatsLogger {
                     newURL = conn.getHeaderField("Location");
                     if (!newURL.equals(urlStr)) {
                         pref.put(Options.OptVersionCheckUrl, newURL);
-                        checkForNewVersion(installId, prevVersion, statsEnabled, null);
+                        checkForNewVersionOld(installId, prevVersion, statsEnabled, null);
                         return;
                     }
                     break;
@@ -727,7 +811,7 @@ public class StatsLogger {
                 case HttpStatus.SC_TEMPORARY_REDIRECT:  // 307
                     newURL = conn.getHeaderField("Location");
                     if (!newURL.equals(urlStr)) {
-                        checkForNewVersion(installId, prevVersion, statsEnabled, newURL);
+                        checkForNewVersionOld(installId, prevVersion, statsEnabled, newURL);
                         return;
                     }
                     break;
