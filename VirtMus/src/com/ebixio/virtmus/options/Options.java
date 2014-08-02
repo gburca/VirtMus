@@ -54,7 +54,7 @@ public class Options {
     // Where to upload the stats
     public static final String OptStatsUploadUrl = "StatsUploadUrl";
     // What URL to use for checking for new versions
-    public static final String OptVersionCheckUrl = "VersionCheckUrl";
+    public static final String OptCheckVersionUrl = "VersionCheckUrl";
     //</editor-fold>
 
     public static enum Rotation {
