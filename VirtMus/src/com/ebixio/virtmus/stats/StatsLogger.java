@@ -283,8 +283,8 @@ public class StatsLogger {
         }
 
         if (newUrl == null) {
-            LogRecord rec = new LogRecord(Level.INFO, "HTTP Err");
-            rec.setParameters(new Object[]{url, "Status: " + status,
+            LogRecord rec = new LogRecord(Level.INFO, "HTTP Error");
+            rec.setParameters(new Object[]{"URL: " + url, "Status: " + status,
                 "Redirect: " + httpRedirect.wasRedirected()});
             getLogger().log(rec);
         }
@@ -349,9 +349,9 @@ public class StatsLogger {
         }
         post.setEntity(entity.build());
 
-        boolean success = false;
+        int status = 0;
         try (CloseableHttpResponse response = client.execute(post)) {
-            int status = response.getStatusLine().getStatusCode();
+            status = response.getStatusLine().getStatusCode();
             Log.log(Level.INFO, "Log upload result: {0}", status);
             if (status == HttpStatus.SC_OK) {  // 200
                 for (File f: toUpload) {
@@ -359,13 +359,7 @@ public class StatsLogger {
                         f.delete();
                     } catch (SecurityException ex) {}
                 }
-                success = true;
-            } else {
-                LogRecord rec = new LogRecord(Level.INFO, "Server Err");
-                rec.setParameters(new Object[]{url, "Status: " + status});
-                getLogger().log(rec);
             }
-
 
             HttpEntity rspEntity = response.getEntity();
             EntityUtils.consume(rspEntity);
@@ -374,8 +368,15 @@ public class StatsLogger {
             Log.log(ex);
         }
 
-        keepRecents(toUpload, 100); // In case of exceptions or errors
-        return success;
+        if (status != HttpStatus.SC_OK) {
+            LogRecord rec = new LogRecord(Level.INFO, "Server Err");
+            rec.setParameters(new Object[]{url, "Status: " + status});
+            getLogger().log(rec);
+            keepRecents(toUpload, 100);
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -562,6 +563,7 @@ public class StatsLogger {
                 .key("statsEnabled").value(statsEnabled.name())
             .endObject().toString();
 
+        int status = 0;
         try {
             CloseableHttpClient client = HttpClientBuilder.create()
                     .setRedirectStrategy(httpRedirect).build();
@@ -572,7 +574,7 @@ public class StatsLogger {
             post.setEntity(entity);
             HttpResponse response = client.execute(post);
 
-            int status = response.getStatusLine().getStatusCode();
+            status = response.getStatusLine().getStatusCode();
             if (status == HttpStatus.SC_OK) {  // 200
                 if (statsEnabled == UploadStats.No) {
                     // If the user doesn't want to participate, he probably doesn't
@@ -599,6 +601,12 @@ public class StatsLogger {
             Log.log(ex);
         } catch (IOException ex) {
             Log.log(ex);
+        }
+
+        if (status != HttpStatus.SC_OK) {
+            LogRecord rec = new LogRecord(Level.INFO, "Server Err");
+            rec.setParameters(new Object[]{urlStr, "Status: " + status});
+            getLogger().log(rec);
         }
     }
 
