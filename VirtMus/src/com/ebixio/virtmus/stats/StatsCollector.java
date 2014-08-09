@@ -122,17 +122,27 @@ public class StatsCollector implements PropertyChangeListener {
             HashMap<String, Integer> songStats;
 
             if (Song.PROP_ANNOT.equals(evt.getPropertyName())) {
-                annotStats.putIfAbsent(s, new HashMap<String, Integer>());
+                if (!annotStats.containsKey(s)) {
+                    annotStats.put(s, new HashMap<String, Integer>());
+                }
                 songStats = annotStats.get(s);
 
                 VmShape shapeO = (VmShape)evt.getOldValue();
                 VmShape shapeN = (VmShape)evt.getNewValue();
                 if (shapeO == null && shapeN != null) { // shape added
                     String sName = shapeN.getName();
-                    songStats.put(sName, songStats.getOrDefault(sName, 0) + 1);
+                    if (songStats.containsKey(sName)) {
+                        songStats.put(sName, songStats.get(sName) + 1);
+                    } else {
+                        songStats.put(sName, 1);
+                    }
                 } else if (shapeO != null && shapeN == null) { // shape removed
                     String sName = shapeO.getName();
-                    songStats.put(sName, songStats.getOrDefault(sName, 0) - 1);
+                    if (songStats.containsKey(sName)) {
+                        songStats.put(sName, songStats.get(sName) - 1);
+                    } else {
+                        songStats.put(sName, 0);
+                    }
                 }
             } else if (Song.PROP_DIRTY.equals(evt.getPropertyName())) {
                 // Use isDirty true->false as a proxy for isBeingSaved

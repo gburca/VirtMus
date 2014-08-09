@@ -225,7 +225,11 @@ public class PlayList implements Comparable<PlayList> {
                                 ext += "+svg";
                             }
                         }
-                        hm.put(ext, hm.getOrDefault(ext, 0) + 1);
+                        if (hm.containsKey(ext)) {
+                            hm.put(ext, hm.get(ext) + 1);
+                        } else {
+                            hm.put(ext, 1);
+                        }
                     }
                 }
             }
