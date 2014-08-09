@@ -211,7 +211,7 @@ public class PlayListNode extends AbstractNode
         if (playList.isFullyLoaded()) {
             name = "<font color='!textText'>" + name + "</font>";
         } else {
-            name = "<font color='!controlShadow'>" + name + "</font>";
+            name = "<font color='!controlShadow'>" + name + " (loading)</font>";
         }
         
         if (playList.isDirty()) {

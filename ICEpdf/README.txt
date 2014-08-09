@@ -1,4 +1,4 @@
-- The icepdf directory comes from the ICDpdf-x.x.x-src.zip package. All other
+- The icepdf directory comes from the ICEpdf-x.x.x-src.zip package. All other
   directories and files are created by NetBeans. When upgrading to a new
   version, only the icepdf directory needs to be erased and replaed with the
   new upstream source code.

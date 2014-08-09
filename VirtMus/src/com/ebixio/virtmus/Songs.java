@@ -42,7 +42,7 @@ public class Songs extends Children.Keys<Song> implements PropertyChangeListener
 {
     private final PlayList playList;
 
-    /* When changes happen and we need to rescan the playlists, we only want at most
+    /* When changes happen and we need to rescan the songs, we only want at most
     1 pending rescan task besides the one that's currently executing. Any more
     would be superfluous.
     */
@@ -53,7 +53,6 @@ public class Songs extends Children.Keys<Song> implements PropertyChangeListener
      * @param playList The PlayList this song belongs to. */
     public Songs(PlayList playList) {
         tpe.allowCoreThreadTimeOut(true);
-
         this.playList = playList;
     }
 

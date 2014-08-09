@@ -129,11 +129,4 @@
         </javadoc>
         <nbbrowse file="JavaDoc/index.html"/>
     </target>
-
-    <target name="build" depends="suite.build">
-        <copy todir="build/cluster/update/download" >
-            <fileset file="org-netbeans-modules-uihandler-interactive.nbm"/>
-        </copy>
-        <echo message="copied the interactive ui handler into cluster/update/download" />
-    </target>
 </project>

@@ -28,6 +28,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
@@ -284,7 +285,8 @@ public class StatsLogger {
             HttpEntity entity = response.getEntity();
             EntityUtils.consume(entity);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            // Ignore it. We don't have a network connection
+            // TODO: Distinguish b/w no network and ebixio.com being down?
         }
 
         if (newUrl == null) {

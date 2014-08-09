@@ -14,3 +14,7 @@ Details
 =======
 
 See the http://virtmus.com/ website for more details and full documentation.
+
+git submodule init
+update
+Java 8
