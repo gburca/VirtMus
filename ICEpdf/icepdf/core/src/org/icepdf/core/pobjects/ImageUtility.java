@@ -20,6 +20,8 @@ import org.icepdf.core.pobjects.graphics.*;
 import org.icepdf.core.tag.Tagger;
 import org.icepdf.core.util.Defs;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.color.ColorSpace;
@@ -28,6 +30,10 @@ import java.awt.image.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,13 +103,16 @@ public class ImageUtility {
 
 
     // default cmyk value,  > 255 will lighten the image.
-    private static float blackRatio;
+    private float blackRatio;
 
     // JDK 1.5 imaging order flag and b/r switch
     private static int redIndex = 0;
     private static int blueIndex = 2;
 
     private static boolean scaleQuality;
+
+    // disable icc color profile lookups as they can be slow. n
+    private static boolean disableICCCmykColorSpace;
 
     static {
         // sniff out jdk 1.5 version
@@ -113,13 +122,34 @@ public class ImageUtility {
             blueIndex = 0;
         }
 
-        // black ratio
-        blackRatio = Defs.intProperty("org.icepdf.core.cmyk.image.black", 255);
+        disableICCCmykColorSpace = Defs.booleanProperty("org.icepdf.core.cmyk.disableICCProfile", false);
 
         // decide if large images will be scaled
         scaleQuality =
                 Defs.booleanProperty("org.icepdf.core.imageMaskScale.quality",
                         true);
+    }
+
+    private static ImageUtility imageUtility;
+
+    private ImageUtility() {
+        // black ratio
+        blackRatio = Defs.intProperty("org.icepdf.core.cmyk.image.black", 255);
+    }
+
+    public static ImageUtility getInstance() {
+        if (imageUtility == null) {
+            imageUtility = new ImageUtility();
+        }
+        return imageUtility;
+    }
+
+    public float getBlackRatio() {
+        return blackRatio;
+    }
+
+    public void setBlackRatio(float blackRatio) {
+        this.blackRatio = blackRatio;
     }
 
     protected static BufferedImage alterBufferedImage(BufferedImage bi, BufferedImage smaskImage, BufferedImage maskImage, int[] maskMinRGB, int[] maskMaxRGB) {
@@ -253,7 +283,7 @@ public class ImageUtility {
                 // lessen the amount of black, standard 255 fraction is too dark
                 // increasing the denominator has the same affect of lighting up
                 // the image.
-                inBlack = (values[3] / blackRatio);
+                inBlack = (values[3] / ImageUtility.getInstance().blackRatio);
 
                 if (!(inCyan == lastCyan && inMagenta == lastMagenta &&
                         inYellow == lastYellow && inBlack == lastBlack)) {
@@ -317,7 +347,7 @@ public class ImageUtility {
                 // lessen the amount of black, standard 255 fraction is too dark
                 // increasing the denominator has the same affect of lighting up
                 // the image.
-                inBlack = (values[3] / blackRatio);
+                inBlack = (values[3] / ImageUtility.getInstance().blackRatio);
 
                 if (!(inCyan == lastCyan && inMagenta == lastMagenta &&
                         inYellow == lastYellow && inBlack == lastBlack)) {
@@ -392,7 +422,11 @@ public class ImageUtility {
                     @Override
                     public void paint(Graphics g_) {
                         super.paint(g_);
+                        g_.setColor(Color.green);
+                        g_.fillRect(0, 0, 800, 800);
                         g_.drawImage(bi, 0, 0, f);
+                        g_.setColor(Color.red);
+                        g_.drawRect(0, 0, bi.getWidth() - 2, bi.getHeight() - 2);
                     }
                 };
                 image.setPreferredSize(new Dimension(bi.getWidth(), bi.getHeight()));
@@ -1058,7 +1092,7 @@ public class ImageUtility {
      * @param baseImage base image in which the mask weill be applied to
      * @param maskImage image mask to be applied to base image.
      */
-    protected static BufferedImage applyExplicitMask(BufferedImage baseImage, BufferedImage maskImage) {
+    public static BufferedImage applyExplicitMask(BufferedImage baseImage, BufferedImage maskImage) {
         // check to see if we need to scale the mask to match the size of the
         // base image.
         int baseWidth = baseImage.getWidth();
@@ -1118,14 +1152,7 @@ public class ImageUtility {
      *
      * @param baseImage base image in which the mask weill be applied to
      */
-    protected static BufferedImage applyExplicitSMask(BufferedImage baseImage, BufferedImage sMaskImage) {
-        // check to see if we need to scale the mask to match the size of the
-        // base image.
-        int baseWidth = baseImage.getWidth();
-        int baseHeight = baseImage.getHeight();
-
-        final int maskWidth = sMaskImage.getWidth();
-        final int maskHeight = sMaskImage.getHeight();
+    public static BufferedImage applyExplicitSMask(BufferedImage baseImage, BufferedImage sMaskImage) {
 
         // check to make sure the mask and the image are the same size.
         BufferedImage[] images = scaleImagesToSameSize(baseImage, sMaskImage);
@@ -1133,11 +1160,16 @@ public class ImageUtility {
         sMaskImage = images[1];
         // apply the mask by simply painting white to the base image where
         // the mask specified no colour.
-        baseWidth = baseImage.getWidth();
-        baseHeight = baseImage.getHeight();
+        int baseWidth = baseImage.getWidth();
+        int baseHeight = baseImage.getHeight();
 
-        BufferedImage argbImage = new BufferedImage(baseWidth,
-                baseHeight, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage argbImage;
+        if (hasAlpha(baseImage)) {
+            argbImage = baseImage;
+        } else {
+            argbImage = new BufferedImage(baseWidth,
+                    baseHeight, BufferedImage.TYPE_INT_ARGB);
+        }
         int[] srcBand = new int[baseWidth];
         int[] sMaskBand = new int[baseWidth];
         // iterate over each band to apply the mask
@@ -1174,8 +1206,13 @@ public class ImageUtility {
         int baseWidth = baseImage.getWidth();
         int baseHeight = baseImage.getHeight();
 
-        BufferedImage imageMask = new BufferedImage(baseWidth, baseHeight,
-                BufferedImage.TYPE_INT_ARGB);
+        BufferedImage imageMask;
+        if (hasAlpha(baseImage)) {
+            imageMask = baseImage;
+        } else {
+            imageMask = new BufferedImage(baseWidth,
+                    baseHeight, BufferedImage.TYPE_INT_ARGB);
+        }
 
         // apply the mask by simply painting white to the base image where
         // the mask specified no colour.
@@ -1221,6 +1258,116 @@ public class ImageUtility {
         ColorModel cm = new IndexColorModel(bitspercomponent, cmap.length, cmap, 0, false, -1, db.getDataType());
         img = new BufferedImage(cm, wr, false, null);
         return img;
+    }
+
+    protected static BufferedImage proJbig2Decode(ImageInputStream imageInputStream,
+                                                  HashMap decodeParms,
+                                                  Stream globalsStream)
+            throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, IOException, ClassNotFoundException, InstantiationException {
+        BufferedImage tmpImage = null;
+
+        // ICEpdf-pro has a commercial license of the levigo library but the OS library can use it to if the project
+        // can comply with levigo's open source licence.
+        Class levigoJBIG2ImageReaderClass = Class.forName("com.levigo.jbig2.JBIG2ImageReader");
+        Class jbig2ImageReaderSpiClass = Class.forName("com.levigo.jbig2.JBIG2ImageReaderSpi");
+        Class jbig2GlobalsClass = Class.forName("com.levigo.jbig2.JBIG2Globals");
+        Object jbig2ImageReaderSpi = jbig2ImageReaderSpiClass.newInstance();
+        Constructor levigoJbig2DecoderClassConstructor =
+                levigoJBIG2ImageReaderClass.getDeclaredConstructor(javax.imageio.spi.ImageReaderSpi.class);
+        Object levigoJbig2Reader = levigoJbig2DecoderClassConstructor.newInstance(jbig2ImageReaderSpi);
+        // set the input
+        Class partypes[] = new Class[1];
+        partypes[0] = Object.class;
+        Object arglist[] = new Object[1];
+        arglist[0] = imageInputStream;
+        Method setInput =
+                levigoJBIG2ImageReaderClass.getMethod("setInput", partypes);
+        setInput.invoke(levigoJbig2Reader, arglist);
+        // apply deocde params if any.
+        if (decodeParms != null) {
+            if (globalsStream != null) {
+                byte[] globals = globalsStream.getDecodedStreamBytes(0);
+                if (globals != null && globals.length > 0) {
+                    partypes = new Class[1];
+                    partypes[0] = javax.imageio.stream.ImageInputStream.class;
+                    arglist = new Object[1];
+                    arglist[0] = ImageIO.createImageInputStream(new ByteArrayInputStream(globals));
+                    Method processGlobals =
+                            levigoJBIG2ImageReaderClass.getMethod("processGlobals", partypes);
+                    Object globalSegments = processGlobals.invoke(levigoJbig2Reader, arglist);
+                    if (globalSegments != null) {
+                        // invoked encoder.setGlobalData(globals);
+                        partypes = new Class[1];
+                        partypes[0] = jbig2GlobalsClass;
+                        arglist = new Object[1];
+                        arglist[0] = globalSegments;
+                        // pass the segment data back into the decoder.
+                        Method setGlobalData =
+                                levigoJBIG2ImageReaderClass.getMethod("setGlobals", partypes);
+                        setGlobalData.invoke(levigoJbig2Reader, arglist);
+                    }
+                }
+            }
+        }
+        partypes = new Class[1];
+        partypes[0] = int.class;
+        arglist = new Object[1];
+        arglist[0] = 0;
+        Method read =
+                levigoJBIG2ImageReaderClass.getMethod("read", partypes);
+        tmpImage = (BufferedImage) read.invoke(levigoJbig2Reader, arglist);
+        return tmpImage;
+    }
+
+    protected static BufferedImage jbig2Decode(byte[] data,
+                                               HashMap decodeParms,
+                                               Stream globalsStream) {
+        BufferedImage tmpImage = null;
+        try {
+            Class jbig2DecoderClass = Class.forName("org.jpedal.jbig2.JBIG2Decoder");
+            // create instance of decoder
+            Constructor jbig2DecoderClassConstructor =
+                    jbig2DecoderClass.getDeclaredConstructor();
+            Object jbig2Decoder = jbig2DecoderClassConstructor.newInstance();
+            // get the decode params form the stream
+            if (decodeParms != null) {
+                if (globalsStream != null) {
+                    byte[] globals = globalsStream.getDecodedStreamBytes(0);
+                    if (globals != null && globals.length > 0) {
+                        // invoked ecoder.setGlobalData(globals);
+                        Class partypes[] = new Class[1];
+                        partypes[0] = byte[].class;
+                        Object arglist[] = new Object[1];
+                        arglist[0] = globals;
+                        Method setGlobalData =
+                                jbig2DecoderClass.getMethod("setGlobalData", partypes);
+                        setGlobalData.invoke(jbig2Decoder, arglist);
+                    }
+                }
+            }
+            // decode the data stream, decoder.decodeJBIG2(data);
+
+            Class argTypes[] = new Class[]{byte[].class};
+            Object arglist[] = new Object[]{data};
+            Method decodeJBIG2 = jbig2DecoderClass.getMethod("decodeJBIG2", argTypes);
+            decodeJBIG2.invoke(jbig2Decoder, arglist);
+
+            // From decoding, memory usage increases more than (width*height/8),
+            // due to intermediate JBIG2Bitmap objects, used to build the final
+            // one, still hanging around. Cleanup intermediate data-structures.
+            // decoder.cleanupPostDecode();
+            Method cleanupPostDecode = jbig2DecoderClass.getMethod("cleanupPostDecode");
+            cleanupPostDecode.invoke(jbig2Decoder);
+
+            // final try an fetch the image. tmpImage = decoder.getPageAsBufferedImage(0);
+            argTypes = new Class[]{Integer.TYPE};
+            arglist = new Object[]{0};
+            Method getPageAsBufferedImage = jbig2DecoderClass.getMethod("getPageAsBufferedImage", argTypes);
+            tmpImage = (BufferedImage) getPageAsBufferedImage.invoke(jbig2Decoder, arglist);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Problem loading JBIG2 image: ", e);
+        }
+        return tmpImage;
     }
 
     protected static int getJPEGEncoding(byte[] data, int dataLength) {
@@ -1622,6 +1769,17 @@ public class ImageUtility {
                 BufferedImage bim = op.filter(baseImage, null);
                 baseImage.flush();
                 baseImage = bim;
+            } else if (width > maskWidth || height > maskHeight) {
+                // calculate scale factors.
+                double scaleX = width / (double) maskWidth;
+                double scaleY = height / (double) maskHeight;
+                // scale the mask to match the base image.
+                AffineTransform tx = new AffineTransform();
+                tx.scale(scaleX, scaleY);
+                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                BufferedImage bim = op.filter(maskImage, null);
+                maskImage.flush();
+                maskImage = bim;
             }
             return new BufferedImage[]{baseImage, maskImage};
         } else {

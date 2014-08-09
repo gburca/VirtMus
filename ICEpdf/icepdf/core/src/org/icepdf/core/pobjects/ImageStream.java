@@ -40,7 +40,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -89,6 +88,7 @@ public class ImageStream extends Stream {
     private static boolean forceJaiccittfax;
 
     private PColorSpace colourSpace;
+    private final Object colorSpaceAssignmentLock = new Object();
 
     private static boolean isLevigoJBIG2ImageReaderClass;
 
@@ -164,21 +164,23 @@ public class ImageStream extends Stream {
      * @return new image object
      */
     // was synchronized, not think it is needed?
-    public BufferedImage getImage(Color fill, Resources resources) {
+    public synchronized BufferedImage getImage(Color fill, Resources resources) {
         if (Tagger.tagging)
             Tagger.tagImage("Filter=" + getNormalisedFilterNames());
 
-        // parse colour space
-        colourSpace = null;
-        Object o = entries.get(COLORSPACE_KEY);
-        if (resources != null && o != null) {
-            colourSpace = resources.getColorSpace(o);
-        }
-        // assume b&w image is no colour space
-        if (colourSpace == null) {
-            colourSpace = new DeviceGray(library, null);
-            if (Tagger.tagging)
-                Tagger.tagImage("ColorSpace_Implicit_DeviceGray");
+        // parse colour space, lock is to insure that getColorSpace()
+        // will return only after colourSpace has been set.
+        synchronized (colorSpaceAssignmentLock) {
+            Object o = entries.get(COLORSPACE_KEY);
+            if (resources != null && o != null) {
+                colourSpace = resources.getColorSpace(o);
+            }
+            // assume b&w image is no colour space
+            if (colourSpace == null) {
+                colourSpace = new DeviceGray(library, null);
+                if (Tagger.tagging)
+                    Tagger.tagImage("ColorSpace_Implicit_DeviceGray");
+            }
         }
         if (Tagger.tagging)
             Tagger.tagImage("ColorSpace=" + colourSpace.getDescription());
@@ -695,113 +697,40 @@ public class ImageStream extends Stream {
                                       PColorSpace colourSpace, int bitspercomponent) {
         BufferedImage tmpImage = null;
 
-        // ICEpdf-pro has a commercial license of the levigo library but the OS library can use it to if the project
-        // can comply with levigo's open source licence.
+        // get the decode params form the stream
+        HashMap decodeParms = library.getDictionary(entries, DECODEPARMS_KEY);
+        Stream globalsStream = null;
+        if (decodeParms != null) {
+            Object jbigGlobals = library.getObject(decodeParms, JBIG2GLOBALS_KEY);
+            if (jbigGlobals instanceof Stream) {
+                globalsStream = (Stream) jbigGlobals;
+            }
+        }
+        // grab the data,
+        byte[] data = getDecodedStreamBytes(
+                width * height
+                        * colourSpace.getNumComponents()
+                        * bitspercomponent / 8);
+
+        // ICEpdf-pro has a commercial license of the levigo library but the OS
+        // library can use it to if the project can comply with levigo's open
+        // source licence.
         if (isLevigoJBIG2ImageReaderClass) {
             try {
-                Class levigoJBIG2ImageReaderClass = Class.forName("com.levigo.jbig2.JBIG2ImageReader");
-                Class jbig2ImageReaderSpiClass = Class.forName("com.levigo.jbig2.JBIG2ImageReaderSpi");
-                Object jbig2ImageReaderSpi = jbig2ImageReaderSpiClass.newInstance();
-                Constructor levigoJbig2DecoderClassConstructor =
-                        levigoJBIG2ImageReaderClass.getDeclaredConstructor(javax.imageio.spi.ImageReaderSpi.class);
-                Object levigoJbig2Reader = levigoJbig2DecoderClassConstructor.newInstance(jbig2ImageReaderSpi);
-                // set the input
-                Class partypes[] = new Class[1];
-                partypes[0] = Object.class;
-                Object arglist[] = new Object[1];
-                arglist[0] = ImageIO.createImageInputStream(new ByteArrayInputStream(getDecodedStreamBytes()));
-                Method setInput =
-                        levigoJBIG2ImageReaderClass.getMethod("setInput", partypes);
-                setInput.invoke(levigoJbig2Reader, arglist);
-                // apply deocde params if any.
-                HashMap decodeParms = library.getDictionary(entries, DECODEPARMS_KEY);
-                if (decodeParms != null) {
-                    Stream globalsStream = null;
-                    Object jbigGlobals = library.getObject(decodeParms, JBIG2GLOBALS_KEY);
-                    if (jbigGlobals instanceof Stream) {
-                        globalsStream = (Stream) jbigGlobals;
-                    }
-                    if (globalsStream != null) {
-                        byte[] globals = globalsStream.getDecodedStreamBytes(0);
-                        if (globals != null && globals.length > 0) {
-                            partypes = new Class[1];
-                            partypes[0] = javax.imageio.stream.ImageInputStream.class;
-                            arglist = new Object[1];
-                            arglist[0] = ImageIO.createImageInputStream(new ByteArrayInputStream(globals));
-                            Method processGlobals =
-                                    levigoJBIG2ImageReaderClass.getMethod("processGlobals", partypes);
-                            processGlobals.invoke(levigoJbig2Reader, arglist);
-                        }
-                    }
-                }
-                partypes = new Class[1];
-                partypes[0] = int.class;
-                arglist = new Object[1];
-                arglist[0] = 0;
-                Method read =
-                        levigoJBIG2ImageReaderClass.getMethod("read", partypes);
-                tmpImage = (BufferedImage) read.invoke(levigoJbig2Reader, arglist);
+                tmpImage = ImageUtility.proJbig2Decode(
+                        ImageIO.createImageInputStream(new ByteArrayInputStream(data)),
+                        decodeParms, globalsStream);
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Problem loading JBIG2 image: ", e);
+                logger.log(Level.WARNING, "Problem loading JBIG2 imageusing Levigo: ", e);
+                // fall back and try and load with the OS jbig2 implementation.
+                tmpImage = ImageUtility.jbig2Decode(
+                        data,
+                        decodeParms, globalsStream);
             }
         } else {
-
-            try {
-                Class jbig2DecoderClass = Class.forName("org.jpedal.jbig2.JBIG2Decoder");
-                // create instance of decoder
-                Constructor jbig2DecoderClassConstructor =
-                        jbig2DecoderClass.getDeclaredConstructor();
-                Object jbig2Decoder = jbig2DecoderClassConstructor.newInstance();
-
-                // get the decode params form the stream
-                HashMap decodeParms = library.getDictionary(entries, DECODEPARMS_KEY);
-                if (decodeParms != null) {
-                    Stream globalsStream = null;
-                    Object jbigGlobals = library.getObject(decodeParms, JBIG2GLOBALS_KEY);
-                    if (jbigGlobals instanceof Stream) {
-                        globalsStream = (Stream) jbigGlobals;
-                    }
-                    if (globalsStream != null) {
-                        byte[] globals = globalsStream.getDecodedStreamBytes(0);
-                        if (globals != null && globals.length > 0) {
-                            // invoked ecoder.setGlobalData(globals);
-                            Class partypes[] = new Class[1];
-                            partypes[0] = byte[].class;
-                            Object arglist[] = new Object[1];
-                            arglist[0] = globals;
-                            Method setGlobalData =
-                                    jbig2DecoderClass.getMethod("setGlobalData", partypes);
-                            setGlobalData.invoke(jbig2Decoder, arglist);
-                        }
-                    }
-                }
-                // decode the data stream, decoder.decodeJBIG2(data);
-                byte[] data = getDecodedStreamBytes(
-                        width * height
-                                * colourSpace.getNumComponents()
-                                * bitspercomponent / 8);
-                Class argTypes[] = new Class[]{byte[].class};
-                Object arglist[] = new Object[]{data};
-                Method decodeJBIG2 = jbig2DecoderClass.getMethod("decodeJBIG2", argTypes);
-                decodeJBIG2.invoke(jbig2Decoder, arglist);
-
-                // From decoding, memory usage increases more than (width*height/8),
-                // due to intermediate JBIG2Bitmap objects, used to build the final
-                // one, still hanging around. Cleanup intermediate data-structures.
-                // decoder.cleanupPostDecode();
-                Method cleanupPostDecode = jbig2DecoderClass.getMethod("cleanupPostDecode");
-                cleanupPostDecode.invoke(jbig2Decoder);
-
-                // final try an fetch the image. tmpImage = decoder.getPageAsBufferedImage(0);
-                argTypes = new Class[]{Integer.TYPE};
-                arglist = new Object[]{0};
-                Method getPageAsBufferedImage = jbig2DecoderClass.getMethod("getPageAsBufferedImage", argTypes);
-                tmpImage = (BufferedImage) getPageAsBufferedImage.invoke(jbig2Decoder, arglist);
-            } catch (ClassNotFoundException e) {
-                logger.warning("JBIG2 image library could not be found");
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Problem loading JBIG2 image: ", e);
-            }
+            tmpImage = ImageUtility.jbig2Decode(
+                    data,
+                    decodeParms, globalsStream);
         }
         // apply the fill colour and alpha if masking is enabled.
         return tmpImage;
@@ -894,6 +823,10 @@ public class ImageStream extends Stream {
         float k = library.getFloat(decodeParms, K_KEY);
         // default value is always false
         boolean blackIs1 = getBlackIs1(library, decodeParms);
+        // double check for blackIs1 in the main dictionary.
+        if (!blackIs1) {
+            blackIs1 = getBlackIs1(library, entries);
+        }
         // get value of key if it is available.
         boolean encodedByteAlign = false;
         Object encodedByteAlignObject = library.getObject(decodeParms, ENCODEDBYTEALIGN_KEY);
@@ -1193,7 +1126,9 @@ public class ImageStream extends Stream {
     }
 
     public PColorSpace getColourSpace() {
-        return colourSpace;
+        synchronized (colorSpaceAssignmentLock) {
+            return colourSpace;
+        }
     }
 
     /**

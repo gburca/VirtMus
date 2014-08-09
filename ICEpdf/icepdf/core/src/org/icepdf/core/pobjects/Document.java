@@ -631,8 +631,10 @@ public class Document {
                 } else {
                     // add more trailer data to the original
                     PTrailer nextTrailer = (PTrailer) pdfObject;
-                    documentTrailer.addNextTrailer(nextTrailer);
-                    documentTrailer = nextTrailer;
+                    if (nextTrailer.getPrev() > 0) {
+                        documentTrailer.addNextTrailer(nextTrailer);
+                        documentTrailer = nextTrailer;
+                    }
                 }
             }
         }
@@ -1198,10 +1200,15 @@ public class Document {
      * hierarchy.  The PageTree can be used to obtain detailed information about
      * the Page object which makes up the document.
      *
-     * @return PageTree specified by the document hierarchy.
+     * @return PageTree specified by the document hierarchy. Null if the document
+     *         has not yet loaded or the catalog can not be found.
      */
     public PageTree getPageTree() {
-        return catalog.getPageTree();
+        if (catalog != null) {
+            return catalog.getPageTree();
+        } else {
+            return null;
+        }
     }
 
     /**

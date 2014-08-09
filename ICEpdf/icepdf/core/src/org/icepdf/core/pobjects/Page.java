@@ -158,9 +158,6 @@ public class Page extends Dictionary {
      */
     public static final int BOUNDARY_ARTBOX = 5;
 
-    // Flag for call to init method, very simple cache
-    private boolean isInited = false;
-
     // resources for page's parent pages, default fonts, etc.
     private Resources resources;
 
@@ -205,7 +202,7 @@ public class Page extends Dictionary {
     }
 
     public boolean isInitiated() {
-        return isInited;
+        return inited;
     }
 
     private void initPageContents() throws InterruptedException {
@@ -317,7 +314,7 @@ public class Page extends Dictionary {
      * this page may trigger a call to init().
      */
     public void resetInitializedState() {
-        isInited = false;
+        inited = false;
     }
 
     /**
@@ -327,7 +324,7 @@ public class Page extends Dictionary {
     public synchronized void init() {
         try {
             // make sure we are not revisiting this method
-            if (isInited) {
+            if (inited) {
                 return;
             }
 
@@ -380,12 +377,12 @@ public class Page extends Dictionary {
                 shapes = new Shapes();
             }
             // set the initiated flag
-            isInited = true;
+            inited = true;
 
         } catch (InterruptedException e) {
             // keeps shapes vector so we can paint what we have but make init state as false
             // so we can try to re parse it later.
-            isInited = false;
+            inited = false;
             logger.log(Level.SEVERE, "Page initializing thread interrupted.", e);
         }
 
@@ -453,7 +450,7 @@ public class Page extends Dictionary {
     public void paint(Graphics g, int renderHintType, final int boundary,
                       float userRotation, float userZoom,
                       boolean paintAnnotations, boolean paintSearchHighlight) {
-        if (!isInited) {
+        if (!inited) {
             // make sure we don't do a page init on the awt thread in the viewer
             // ri, let the
             return;
@@ -524,7 +521,7 @@ public class Page extends Dictionary {
      *                             for search terms.
      */
     public void paintPageContent(Graphics g, int renderHintType, float userRotation, float userZoom, boolean paintAnnotations, boolean paintSearchHighlight) {
-        if (!isInited) {
+        if (!inited) {
             init();
         }
 
@@ -564,19 +561,23 @@ public class Page extends Dictionary {
                 // paint the sprites
                 GeneralPath textPath;
                 // iterate over the data structure.
-                for (LineText lineText : pageText.getPageLines()) {
-                    for (WordText wordText : lineText.getWords()) {
-                        // paint whole word
-                        if (wordText.isHighlighted()) {
-                            textPath = new GeneralPath(wordText.getBounds());
-                            g2.setColor(highlightColor);
-                            g2.fill(textPath);
-                        } else {
-                            for (GlyphText glyph : wordText.getGlyphs()) {
-                                if (glyph.isHighlighted()) {
-                                    textPath = new GeneralPath(glyph.getBounds());
+                if (pageText.getPageLines() != null) {
+                    for (LineText lineText : pageText.getPageLines()) {
+                        if (lineText != null) {
+                            for (WordText wordText : lineText.getWords()) {
+                                // paint whole word
+                                if (wordText.isHighlighted()) {
+                                    textPath = new GeneralPath(wordText.getBounds());
                                     g2.setColor(highlightColor);
                                     g2.fill(textPath);
+                                } else {
+                                    for (GlyphText glyph : wordText.getGlyphs()) {
+                                        if (glyph.isHighlighted()) {
+                                            textPath = new GeneralPath(glyph.getBounds());
+                                            g2.setColor(highlightColor);
+                                            g2.fill(textPath);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -696,7 +697,7 @@ public class Page extends Dictionary {
     public Annotation addAnnotation(Annotation newAnnotation) {
 
         // make sure the page annotations have been initialized.
-        if (!isInited) {
+        if (!inited) {
             try {
                 initPageAnnotations();
             } catch (InterruptedException e) {
@@ -777,7 +778,7 @@ public class Page extends Dictionary {
     public void deleteAnnotation(Annotation annot) {
 
         // make sure the page annotations have been initialized.
-        if (!isInited) {
+        if (!inited) {
             try {
                 initPageAnnotations();
             } catch (InterruptedException e) {
@@ -859,7 +860,7 @@ public class Page extends Dictionary {
         }
 
         // make sure the page annotations have been initialized.
-        if (!isInited) {
+        if (!inited) {
             try {
                 initPageAnnotations();
             } catch (InterruptedException e) {
@@ -977,6 +978,7 @@ public class Page extends Dictionary {
      * @param userZoom     zoom factor specified by the user under which the page will
      *                     be rotated.
      * @return Dimension of width and height of the page represented in point units.
+     *         or null if the boundary box is not defined.
      */
     public PDimension getSize(final int boundary, float userRotation, float userZoom) {
         float totalRotation = getTotalRotation(userRotation);
@@ -1096,7 +1098,7 @@ public class Page extends Dictionary {
      * @return bounds of page after the chain of rules have been applied.
      */
     public PRectangle getPageBoundary(final int specifiedBox) {
-        PRectangle userSpecifiedBox = null;
+        PRectangle userSpecifiedBox;
         // required property
         if (specifiedBox == BOUNDARY_MEDIABOX) {
             userSpecifiedBox = (PRectangle) getMediaBox();
@@ -1107,27 +1109,26 @@ public class Page extends Dictionary {
         }
         // optional, default value is crop box
         else if (specifiedBox == BOUNDARY_BLEEDBOX) {
-            if (bleedBox != null)
-                userSpecifiedBox = (PRectangle) getBleedBox();
+            userSpecifiedBox = (PRectangle) getBleedBox();
         }
         // optional, default value is crop box
         else if (specifiedBox == BOUNDARY_TRIMBOX) {
-            if (trimBox != null)
-                userSpecifiedBox = (PRectangle) getTrimBox();
+            userSpecifiedBox = (PRectangle) getTrimBox();
         }
         // optional, default value is crop box
         else if (specifiedBox == BOUNDARY_ARTBOX) {
-            if (artBox != null)
-                userSpecifiedBox = (PRectangle) getArtBox();
+            userSpecifiedBox = (PRectangle) getArtBox();
         }
         // encase of bad usage, default to crop box
         else {
-            userSpecifiedBox = (PRectangle) getBleedBox();
+            userSpecifiedBox = (PRectangle) getMediaBox();
         }
 
-        // just in case, make sure we return a non null boundary
+        // just in case, make sure we return a non null boundary, and the
+        // media box is marked as required and should be in either this dictionary
+        // or a parent's
         if (userSpecifiedBox == null) {
-            userSpecifiedBox = (PRectangle) getCropBox();
+            userSpecifiedBox = (PRectangle) getMediaBox();
         }
 
         return userSpecifiedBox;
@@ -1209,7 +1210,7 @@ public class Page extends Dictionary {
      * @return annotation associated with page; null, if there are no annotations.
      */
     public List<Annotation> getAnnotations() {
-        if (!isInited) {
+        if (!inited) {
             try {
                 initPageAnnotations();
             } catch (InterruptedException e) {
@@ -1267,18 +1268,22 @@ public class Page extends Dictionary {
      * @return media box boundary in user space units.
      */
     public Rectangle2D.Float getMediaBox() {
+        if (mediaBox != null) {
+            return mediaBox;
+        }
         // add all of the pages media box dimensions to a vector and process
         List boxDimensions = (List) (library.getObject(entries, MEDIABOX_KEY));
         if (boxDimensions != null) {
             mediaBox = new PRectangle(boxDimensions);
-//            System.out.println("Page - MediaBox " + mediaBox);
         }
         // If mediaBox is null check with the parent pages, as media box is inheritable
         if (mediaBox == null) {
             PageTree pageTree = getParent();
             while (pageTree != null && mediaBox == null) {
                 mediaBox = pageTree.getMediaBox();
-                pageTree = pageTree.getParent();
+                if (mediaBox == null) {
+                    pageTree = pageTree.getParent();
+                }
             }
         }
         return mediaBox;
@@ -1298,9 +1303,9 @@ public class Page extends Dictionary {
         List boxDimensions = (List) (library.getObject(entries, CROPBOX_KEY));
         if (boxDimensions != null) {
             cropBox = new PRectangle(boxDimensions);
-//            System.out.println("Page - CropBox " + cropBox);
         }
-        // If mediaBox is null check with the parent pages, as media box is inheritable
+        // If cropbox is null check with the parent pages, as media box is inheritable
+        boolean isParentCropBox = false;
         if (cropBox == null) {
             PageTree pageTree = getParent();
             while (pageTree != null && cropBox == null) {
@@ -1308,14 +1313,17 @@ public class Page extends Dictionary {
                     break;
                 }
                 cropBox = pageTree.getCropBox();
+                if (cropBox != null) {
+                    isParentCropBox = true;
+                }
                 pageTree = pageTree.getParent();
             }
         }
         // Default value of the cropBox is the MediaBox if not set implicitly
         PRectangle mediaBox = (PRectangle) getMediaBox();
-        if (cropBox == null && mediaBox != null) {
+        if ((cropBox == null || isParentCropBox) && mediaBox != null) {
             cropBox = (PRectangle) mediaBox.clone();
-        } else if (mediaBox != null) {
+        } else if (cropBox != null && mediaBox != null) {
             // PDF 1.5 spec states that the media box should be intersected with the
             // crop box to get the new box. But we only want to do this if the
             // cropBox is not the same as the mediaBox
@@ -1331,11 +1339,13 @@ public class Page extends Dictionary {
      * @return art box boundary in user space units.
      */
     public Rectangle2D.Float getArtBox() {
+        if (artBox != null) {
+            return artBox;
+        }
         // get the art box vector value
         List boxDimensions = (List) (library.getObject(entries, ARTBOX_KEY));
         if (boxDimensions != null) {
             artBox = new PRectangle(boxDimensions);
-//            System.out.println("Page - ArtBox " + artBox);
         }
         // Default value of the artBox is the bleed if not set implicitly
         if (artBox == null) {
@@ -1351,6 +1361,9 @@ public class Page extends Dictionary {
      * @return bleed box boundary in user space units.
      */
     public Rectangle2D.Float getBleedBox() {
+        if (bleedBox != null) {
+            return bleedBox;
+        }
         // get the art box vector value
         List boxDimensions = (List) (library.getObject(entries, BLEEDBOX_KEY));
         if (boxDimensions != null) {
@@ -1371,6 +1384,9 @@ public class Page extends Dictionary {
      * @return trim box boundary in user space units.
      */
     public Rectangle2D.Float getTrimBox() {
+        if (trimBox != null) {
+            return trimBox;
+        }
         // get the art box vector value
         List boxDimensions = (List) (library.getObject(entries, TRIMBOX_KEY));
         if (boxDimensions != null) {
@@ -1393,7 +1409,7 @@ public class Page extends Dictionary {
      * @return list of text sprites for the given page.
      */
     public synchronized PageText getViewText() {
-        if (!isInited) {
+        if (!inited) {
             init();
         }
         if (shapes != null) {
@@ -1413,7 +1429,7 @@ public class Page extends Dictionary {
     public synchronized PageText getText() throws InterruptedException {
 
         // we only do this once per page
-        if (isInited) {
+        if (inited) {
             if (shapes != null && shapes.getPageText() != null) {
                 return shapes.getPageText();
             }
@@ -1473,7 +1489,7 @@ public class Page extends Dictionary {
      * @return vector of Images inside the current page
      */
     public synchronized List<Image> getImages() {
-        if (!isInited) {
+        if (!inited) {
             init();
         }
         return shapes.getImages();

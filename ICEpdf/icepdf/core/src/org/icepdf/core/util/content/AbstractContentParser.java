@@ -52,7 +52,6 @@ public abstract class AbstractContentParser implements ContentParser {
         disableTransparencyGroups =
                 Defs.sysPropertyBoolean("org.icepdf.core.disableTransparencyGroup",
                         false);
-
     }
 
     public static final float OVERPAINT_ALPHA = 0.4f;
@@ -76,6 +75,10 @@ public abstract class AbstractContentParser implements ContentParser {
     // TextBlock affine transform can be altered by the "cm" operand an thus
     // the text base affine transform must be accessible outside the parsTtext method
     protected AffineTransform textBlockBase;
+
+    // when parsing a type3 font we need to keep track of the the scale factor
+    // of the device space ctm.
+    protected float glyph2UserSpaceScale = 1.0f;
 
     // stack to help with the parse
     protected Stack<Object> stack = new Stack<Object>();
@@ -329,7 +332,10 @@ public abstract class AbstractContentParser implements ContentParser {
 
     protected static void consume_sc(GraphicsState graphicState, Stack stack,
                                      Library library, Resources resources, boolean isTint) {
-        Object o = stack.peek();
+        Object o = null;
+        if (!stack.isEmpty()) {
+            o = stack.peek();
+        }
         // if a name then we are dealing with a pattern.
         if (o instanceof Name) {
             Name patternName = (Name) stack.pop();
@@ -385,7 +391,9 @@ public abstract class AbstractContentParser implements ContentParser {
             // peek and then pop until a none Float is found
             int nCount = 0;
             // set colour to max of 4 which is cymk,
-            int compLength = 4;
+            // we have a corner case where 5 components are defined and once
+            // pushed throw the function produce a valid color.
+            int compLength = 5;
             float colour[] = new float[compLength];
             // peek and pop all of the colour floats
             while (!stack.isEmpty() && stack.peek() instanceof Number &&
@@ -567,9 +575,12 @@ public abstract class AbstractContentParser implements ContentParser {
                 // slightly different then a regular xObject as we
                 // need to capture the alpha which is only possible
                 // by paint the xObject to an image.
-                if (!disableTransparencyGroups &&
+                if ((!disableTransparencyGroups ||
+                        (formXObject.getGraphicsState() != null &&
+                                formXObject.getGraphicsState().getSoftMask() != null)) &&
                         formXObject.isTransparencyGroup() &&
-                        graphicState.getFillAlpha() < 1.0f &&
+//                        graphicState.getFillAlpha() < 1.0f &&
+                        // limit size, as buffer is needed
                         (formXObject.getBBox().getWidth() < Short.MAX_VALUE &&
                                 formXObject.getBBox().getHeight() < Short.MAX_VALUE)) {
                     // add the hold form for further processing.
@@ -590,8 +601,11 @@ public abstract class AbstractContentParser implements ContentParser {
                             .applyXObjectTransform(graphicState.getCTM());
                     // add the text to the current shapes for extraction and
                     // selection purposes.
-                    shapes.getPageText().addPageLines(
-                            formXObject.getShapes().getPageText().getPageLines());
+                    PageText pageText = formXObject.getShapes().getPageText();
+                    if (pageText != null && pageText.getPageLines() != null) {
+                        shapes.getPageText().addPageLines(
+                                pageText.getPageLines());
+                    }
                 }
                 shapes.add(new NoClipDrawCmd());
             }
@@ -700,9 +714,14 @@ public abstract class AbstractContentParser implements ContentParser {
         setStroke(shapes, graphicState);
     }
 
-    protected static void consume_w(GraphicsState graphicState, Stack stack, Shapes shapes) {
-        graphicState.setLineWidth(((Number) stack.pop()).floatValue());
-        setStroke(shapes, graphicState);
+    protected static void consume_w(GraphicsState graphicState, Stack stack,
+                                    Shapes shapes, float glyph2UserSpaceScale) {
+        // apply any type3 font scalling which is set via the glyph2User space affine transform.
+        if (!stack.isEmpty()) {
+            float scale = ((Number) stack.pop()).floatValue() * glyph2UserSpaceScale;
+            graphicState.setLineWidth(scale);
+            setStroke(shapes, graphicState);
+        }
     }
 
     protected static void consume_M(GraphicsState graphicState, Stack stack, Shapes shapes) {
@@ -726,7 +745,6 @@ public abstract class AbstractContentParser implements ContentParser {
         float size = ((Number) stack.pop()).floatValue();
         Name name2 = (Name) stack.pop();
         // build the new font and initialize it.
-
         graphicState.getTextState().font = resources.getFont(name2);
         // in the rare case that the font can't be found then we try and build
         // one so the document can be rendered in some shape or form.
@@ -736,26 +754,39 @@ public abstract class AbstractContentParser implements ContentParser {
             FontFactory fontFactory = FontFactory.getInstance();
             boolean awtState = fontFactory.isAwtFontSubstitution();
             fontFactory.setAwtFontSubstitution(true);
-            // get the first pages resources, no need to lock the page, already locked.
-            Resources res = resources.getLibrary().getCatalog().getPageTree()
-                    .getPage(0).getResources();
-            // try and get a font off the first page.
-            Object pageFonts = res.getEntries().get(Resources.FONT_KEY);
-            if (pageFonts instanceof HashMap) {
-                // get first font
-                Reference fontRef = (Reference) ((HashMap) pageFonts).get(name2);
-                graphicState.getTextState().font =
-                        (org.icepdf.core.pobjects.fonts.Font) resources.getLibrary()
-                                .getObject(fontRef);
-                // might get a null pointer but we'll get on on deriveFont too
-                graphicState.getTextState().font.init();
+            try {
+                // this should almost never happen but of course we have a few
+                // corner cases:
+                // get the first pages resources, no need to lock the page, already locked.
+                Page page = resources.getLibrary().getCatalog().getPageTree().getPage(0);
+                // make sure page resources are available.
+                page.init();
+                Resources res = page.getResources();
+                // try and get a font off the first page.
+                Object pageFonts = res.getEntries().get(Resources.FONT_KEY);
+                if (pageFonts instanceof HashMap) {
+                    // get first font
+                    Reference fontRef = (Reference) ((HashMap) pageFonts).get(name2);
+                    if (fontRef != null) {
+                        graphicState.getTextState().font =
+                                (org.icepdf.core.pobjects.fonts.Font) resources.getLibrary()
+                                        .getObject(fontRef);
+                        graphicState.getTextState().font.init();
+                    }
+                }
+            } catch (Throwable throwable) {
+                // keep block protected as we don't want to accidentally turn off
+                // the font engine.
+                logger.warning("Warning could not find font by named resource " + name2);
             }
             // return factory to original state.
             fontFactory.setAwtFontSubstitution(awtState);
             // if no fonts found then we just bail and accept the null pointer
         }
-        graphicState.getTextState().currentfont =
-                graphicState.getTextState().font.getFont().deriveFont(size);
+        if (graphicState.getTextState().font != null) {
+            graphicState.getTextState().currentfont =
+                    graphicState.getTextState().font.getFont().deriveFont(size);
+        }
     }
 
     protected static void consume_Tc(GraphicsState graphicState, Stack stack) {
@@ -801,19 +832,6 @@ public abstract class AbstractContentParser implements ContentParser {
         if (textMetrics.isYstart()) {
             textMetrics.setyBTStart(tm[5]);
             textMetrics.setYstart(false);
-            if (previousBTStart != textMetrics.getyBTStart()) {
-                pageText.newLine(oCGs);
-            }
-        }
-        double newTransY = graphicState.getCTM().getTranslateY();
-        double newScaleY = graphicState.getCTM().getScaleY();
-        // f5 and f6 will dictate a horizontal or vertical shift
-        // this information could be used to detect new lines
-
-        if (Math.round(oldTransY) != Math.round(newTransY)) {
-            pageText.newLine(oCGs);
-        } else if (Math.abs(oldScaleY) != Math.abs(newScaleY)) {
-            pageText.newLine(oCGs);
         }
 
     }
@@ -847,11 +865,6 @@ public abstract class AbstractContentParser implements ContentParser {
         if (textMetrics.isYstart()) {
             textMetrics.setyBTStart(y);
             textMetrics.setYstart(false);
-        }
-        // ty will dictate the vertical shift, many pdf will use
-        // ty=0 do just do a horizontal shift for layout.
-        if (y != 0f) {
-            pageText.newLine(oCGs);
         }
     }
 
@@ -916,15 +929,6 @@ public abstract class AbstractContentParser implements ContentParser {
         if (textMetrics.isYstart()) {
             textMetrics.setyBTStart(newY);
             textMetrics.setYstart(false);
-            if (previousBTStart != textMetrics.getyBTStart()) {
-                pageText.newLine(oCGs);
-            }
-        }
-
-        // ty will dictate the vertical shift, many pdf will use
-        // ty=0 do just do a horizontal shift for layout.
-        if (y != 0 && Math.round(newY) != Math.round(oldY)) {
-            pageText.newLine(oCGs);
         }
     }
 
@@ -977,16 +981,18 @@ public abstract class AbstractContentParser implements ContentParser {
 
     protected static GeneralPath consume_c(Stack stack,
                                            GeneralPath geometricPath) {
-        float y3 = ((Number) stack.pop()).floatValue();
-        float x3 = ((Number) stack.pop()).floatValue();
-        float y2 = ((Number) stack.pop()).floatValue();
-        float x2 = ((Number) stack.pop()).floatValue();
-        float y1 = ((Number) stack.pop()).floatValue();
-        float x1 = ((Number) stack.pop()).floatValue();
-        if (geometricPath == null) {
-            geometricPath = new GeneralPath();
+        if (!stack.isEmpty()) {
+            float y3 = ((Number) stack.pop()).floatValue();
+            float x3 = ((Number) stack.pop()).floatValue();
+            float y2 = ((Number) stack.pop()).floatValue();
+            float x2 = ((Number) stack.pop()).floatValue();
+            float y1 = ((Number) stack.pop()).floatValue();
+            float x1 = ((Number) stack.pop()).floatValue();
+            if (geometricPath == null) {
+                geometricPath = new GeneralPath();
+            }
+            geometricPath.curveTo(x1, y1, x2, y2, x3, y3);
         }
-        geometricPath.curveTo(x1, y1, x2, y2, x3, y3);
         return geometricPath;
     }
 
@@ -1864,5 +1870,10 @@ public abstract class AbstractContentParser implements ContentParser {
                         alpha);
         shapes.add(new AlphaDrawCmd(alphaComposite));
     }
+
+    public void setGlyph2UserSpaceScale(float scale) {
+        glyph2UserSpaceScale = scale;
+    }
+
 }
 
