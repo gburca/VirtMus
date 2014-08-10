@@ -8,5 +8,11 @@
     import com.sun.image.codec.jpeg.JPEGImageDecoder;
   In spite of the error, the code compiles properly and the jar file is in dist/ICDpdf.jar
 
-- Use -XDignore.symbol.file when compiling the library to work around the problem with com.sun.image.*:
-  See: https://netbeans.org/bugzilla/show_bug.cgi?id=206774
+- Use -XDignore.symbol.file when compiling the library to work around the
+  problem with com.sun.image.*: See:
+  https://netbeans.org/bugzilla/show_bug.cgi?id=206774
+
+- If "Compile on Save" is enabled for this module, the Main Project clean and
+  build will fail. The setting is in the Build/Compiling section of the project
+  settings. Alternatively, the ICEpdf project can be built first before
+  building the Main Suite project.

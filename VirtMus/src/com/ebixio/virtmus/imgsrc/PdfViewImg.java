@@ -47,15 +47,18 @@ public class PdfViewImg extends PdfImg {
         dim = pdfPage.getUnstretchedSize(max, max, null);
         int rotation = pdfPage.getRotation();
 
-        List<PDFImage> imgs = pdfPage.getPageImages();
-        if (imgs.size() == 1) {
-            PDFImage img = imgs.get(0);
-            if (rotation == 90 || rotation == 270) {
-                return new Dimension(img.getHeight(), img.getWidth());
-            } else {
-                return new Dimension(img.getWidth(), img.getHeight());
-            }
-        }
+        // TODO: The new version of PDFRenderer doesn't have getPageImages().
+        // How do we work around (or do we need to).
+
+//        List<PDFImage> imgs = pdfPage.getPageImages();
+//        if (imgs.size() == 1) {
+//            PDFImage img = imgs.get(0);
+//            if (rotation == 90 || rotation == 270) {
+//                return new Dimension(img.getHeight(), img.getWidth());
+//            } else {
+//                return new Dimension(img.getWidth(), img.getHeight());
+//            }
+//        }
 
         return dim;
     }

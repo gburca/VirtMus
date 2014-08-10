@@ -313,7 +313,7 @@ public class IcePdfImg extends PdfImg {
 
     /**
      *
-     * @return true if we think we can properly render the PDF page.
+     * @return true if we think we can properly render the PDF page with ICEpef.
      */
     public boolean foogly() {
         // This class causes VirtMus to crash on some PDF types. See getPageImage()
