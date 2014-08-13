@@ -15,6 +15,12 @@ Details
 
 See the http://virtmus.com/ website for more details and full documentation.
 
+TODO
+====
+Java 8 - Broken!!! Weird exceptions and the display is all messed up (nodes don't redraw properly, etc...)
 git submodule init
 update
-Java 8
+
+Log how many pages were rendered with PDFRenderer vs ICEpdf
+Revisit the selection logic in IcePdfImg and foogly()
+Crop bounds seem to be ignored by PDFRenderer (Our Father)
