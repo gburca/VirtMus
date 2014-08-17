@@ -22,6 +22,7 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.virtmus.options.Options;
+import com.ebixio.virtmus.stats.StatsCollector;
 import com.ebixio.virtmus.stats.StatsLogger;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -161,4 +162,11 @@ public final class MainApp {
         return installId;
     }
 
+    /**
+     * This is all the code we need to execute before exiting / quitting the
+     * application. It is called from the ExitAction and VirtMusLifecycleManager.
+     */
+    public static void atExit() {
+        StatsCollector.logAtExit(StatsLogger.getLogger());
+    }
 }

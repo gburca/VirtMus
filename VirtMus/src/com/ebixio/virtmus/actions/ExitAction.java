@@ -18,6 +18,7 @@
 
 package com.ebixio.virtmus.actions;
 
+import com.ebixio.virtmus.MainApp;
 import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -38,7 +39,8 @@ public final class ExitAction extends CallableSystemAction {
     public void performAction() {
         // see: http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/LifecycleManager.html#exit()
         
-        // This effectively calls MainApp$VirtMusLifecycleManager.exit()
+        MainApp.atExit();
+
         LifecycleManager.getDefault().exit();
     }
     

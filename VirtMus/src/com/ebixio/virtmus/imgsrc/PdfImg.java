@@ -20,10 +20,11 @@
 
 package com.ebixio.virtmus.imgsrc;
 
-import com.ebixio.virtmus.options.Options.Rotation;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.Utils;
 import com.ebixio.virtmus.VirtMusKernel;
+import com.ebixio.virtmus.options.Options.Rotation;
+import com.ebixio.virtmus.stats.StatsCollector;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -237,10 +238,12 @@ public class PdfImg extends ImgSrc {
     private PdfImg getPdfSrc() {
         if (pdfSrc == null) {
             IcePdfImg icePdfSrc = new IcePdfImg(sourceFile, pageNum);
-            if (icePdfSrc.foogly()) {
+            if (icePdfSrc.canRender()) {
                 pdfSrc = icePdfSrc;
+                StatsCollector.findInstance().usingRenderer("org.icepdf");
             } else {
                 pdfSrc = new PdfViewImg(sourceFile, pageNum);
+                StatsCollector.findInstance().usingRenderer("com.sun.pdfview");
             }
         }
         return pdfSrc;

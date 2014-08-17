@@ -43,6 +43,7 @@ import java.util.logging.Logger;
 public class StatsCollector implements PropertyChangeListener {
     private static StatsCollector instance = null;
     private final HashMap<Song, HashMap<String, Integer> > annotStats = new HashMap<>();
+    private final HashMap<String, Integer> pdfRenderer = new HashMap<>();
 
     private StatsCollector() {
 
@@ -64,6 +65,12 @@ public class StatsCollector implements PropertyChangeListener {
         logger.log(getCpuInfo());
         logger.log(getMemInfo());
         logger.log(getScreenSizeInfo());
+    }
+
+    public static void logAtExit(Logger logger) {
+        StatsCollector collector = findInstance();
+
+        logger.log(collector.getPdfRenderersUsed());
     }
 
     /** Creates a LogRecord with the JRE info. */
@@ -115,6 +122,40 @@ public class StatsCollector implements PropertyChangeListener {
         return log;
     }
 
+    public void usingRenderer(String renderer) {
+        if (!pdfRenderer.containsKey(renderer)) {
+            pdfRenderer.put(renderer, 1);
+        } else {
+            pdfRenderer.put(renderer, pdfRenderer.get(renderer) + 1);
+        }
+    }
+
+    /**
+     * Creates log record with the PDF renderer used. Also resets the counters.
+     * @return
+     */
+    public LogRecord getPdfRenderersUsed() {
+        LogRecord renderersLog = new LogRecord(Level.INFO, "PDF Renderers");
+        Object[] params = new Object[pdfRenderer.size()];
+        int idx = 0;
+
+        for (String k: pdfRenderer.keySet()) {
+            params[idx++] = k + ": " + pdfRenderer.get(k);
+        }
+        renderersLog.setParameters(params);
+
+        pdfRenderer.clear();
+
+        return renderersLog;
+    }
+
+    /**
+     * Keeps track of page annotations and writes a log record when the song
+     * is saved.
+     *
+     * @param evt An event indicating annotation addition/removal or the song
+     * being saved.
+     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource().getClass() == Song.class) {

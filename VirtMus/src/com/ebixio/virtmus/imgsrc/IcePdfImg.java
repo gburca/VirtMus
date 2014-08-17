@@ -312,13 +312,13 @@ public class IcePdfImg extends PdfImg {
     }
 
     /**
+     * Selects the PDF renderer to use.
+     *
+     * This class causes VirtMus to crash on some PDF types. See getPageImage()
      *
      * @return true if we think we can properly render the PDF page with ICEpdf.
      */
-    public boolean foogly() {
-        // This class causes VirtMus to crash on some PDF types. See getPageImage()
-        // Disabling it until we get an updated library that works.
-//        return false;
+    public boolean canRender() {
         boolean result = false;
         Document doc = getDocument();
 
