@@ -22,6 +22,7 @@ package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
 import com.ebixio.util.NotifyUtil;
+import com.ebixio.util.NumberRange;
 import com.ebixio.util.PropertyChangeSupportUnique;
 import com.ebixio.util.Util;
 import com.ebixio.virtmus.filefilters.SongFilter;
@@ -211,6 +212,13 @@ public class Song implements Comparable<Song> {
         }
     }
 
+    /**
+     * Present the user with a file-open dialog to select a page image to add to
+     * this song. The user may select more than one item. Each item is passed to
+     * {@link Song#addPage(java.io.File)} to be added.
+     *
+     * @return true, unless the user canceled out.
+     */
     public boolean addPage() {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
@@ -238,6 +246,13 @@ public class Song implements Comparable<Song> {
         }
     }
 
+    /**
+     * Adds one or more pages to this song.
+     * @param f Can be a directory (of images, PDFs, etc...), or a single PDF or
+     * image file.
+     *
+     * @return
+     */
     public boolean addPage(File f) {
         if (f == null) {
             return false;
@@ -263,11 +278,11 @@ public class Song implements Comparable<Song> {
                 if (pdfPages > 0) {
                     String pageRange = JOptionPane.showInputDialog(f.getName() + "\nPage range?",
                             "1-" + pdfPages);
-                    String[] pages = pageRange.split("-");
-                    Integer p1 = Integer.decode(pages[0]);
-                    Integer p2 = Integer.decode(pages[1]);
-                    for (int p = p1; p <= p2; p++) {
-                        pageOrder.add(new MusicPageSVG(this, f, p - 1));
+                    NumberRange range = new NumberRange(pageRange);
+                    for (int p : range) {
+                        if (p > 0 && p <= pdfPages) {
+                            pageOrder.add(new MusicPageSVG(this, f, p - 1));
+                        }
                     }
                 }
             } else {

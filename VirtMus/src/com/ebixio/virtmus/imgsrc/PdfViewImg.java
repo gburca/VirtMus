@@ -1,12 +1,26 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 package com.ebixio.virtmus.imgsrc;
 
 import com.ebixio.util.Log;
 import com.ebixio.virtmus.Utils;
+import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFImage;
 import com.sun.pdfview.PDFPage;
@@ -44,12 +58,15 @@ public class PdfViewImg extends PdfImg {
         PDFPage pdfPage = getPdfPage();
         Dimension dim = getLargestDisplay();
         int max = Math.max(dim.width, dim.height);
-        dim = pdfPage.getUnstretchedSize(max, max, null);
-        int rotation = pdfPage.getRotation();
+        Dimension pdim = pdfPage.getUnstretchedSize(max, max, null);
 
-        // TODO: The new version of PDFRenderer doesn't have getPageImages().
-        // How do we work around (or do we need to).
+        int min = Math.min(pdim.width, pdim.height);
+        float pageScale = (max * 1F) / min;
 
+        return new Dimension((int)(pdim.width * pageScale), (int)(pdim.height * pageScale));
+
+// TODO: The new version of PDFRenderer doesn't have getPageImages().
+//        int rotation = pdfPage.getRotation();
 //        List<PDFImage> imgs = pdfPage.getPageImages();
 //        if (imgs.size() == 1) {
 //            PDFImage img = imgs.get(0);
@@ -59,20 +76,17 @@ public class PdfViewImg extends PdfImg {
 //                return new Dimension(img.getWidth(), img.getHeight());
 //            }
 //        }
-
-        return dim;
     }
-//    public Dimension getDimension1() {
-//        PDFPage pdfPage = getPdfPage();
-//        List<PDFCmd> cmds = pdfPage.getCommands();
-//        for (PDFCmd c : cmds) {
-//            Log.log(c.toString() + " : " + c.getDetails());
-//        }
-//        return new Dimension((int)pdfPage.getBBox().getWidth(), (int)pdfPage.getBBox().getHeight());
-//    }
 
-    // If the PDF page is a vector drawing, we try to make the smallest page
-    // dimension the same as the largest screen dimension
+    private void debug() {
+        PDFPage pdfPage = getPdfPage();
+        for (PDFCmd cmd : pdfPage.getCommands()) {
+            Log.log("CmdClass: " + cmd.getClass().getCanonicalName());
+            Log.log("Cmd: " + cmd.toString() + " Details: " + cmd.getDetails());
+        }
+    }
+
+    /** Find the largest display the page might need to be rendered for. */
     private Dimension getLargestDisplay() {
         Dimension[] dims = Utils.getScreenSizes();
         int biggest = -1, idx = -1;
@@ -84,56 +98,50 @@ public class PdfViewImg extends PdfImg {
         }
         Dimension dim = dims[idx];
         return dim;
-//        int max = Math.max(dim.width, dim.height);
-//
-//        Dimension pdim = doc.getPageDimension(pageNum, 0).toDimension();
-//
-//        int min = Math.min(pdim.width, pdim.height);
-//        pageScale = (max * 1F) / min;
-//
-//        return new Dimension((int)(pdim.width * pageScale), (int)(pdim.height * pageScale));
     }
-
 
     @Override
     public PlanarImage getFullImg() {
-        return PlanarImage.wrapRenderedImage(getFullRenderedOp());
+        RenderedOp op = getFullRenderedOp();
+        if (op == null) {
+            return null;
+        } else {
+            return PlanarImage.wrapRenderedImage(op);
+        }
     }
 
     @Override
     protected RenderedOp getFullRenderedOp() {
-        RenderedOp rend = JAI.create("AWTImage", getPageImage());
-        return rend;
+        Image img = getPageImage();
+        if (img == null) {
+            return null;
+        } else {
+            RenderedOp rend = JAI.create("AWTImage", img);
+            return rend;
+        }
     }
 
     private Image getPageImage() {
         PDFPage pdfPage = getPdfPage();
-        //get the width and height for the doc at the default zoom
-        Rectangle2D bbox = pdfPage.getBBox();
-
-        Rectangle rect1 = new Rectangle((int)bbox.getX(), (int)bbox.getY(),
-                (int)bbox.getWidth(), (int)bbox.getHeight());
+        if (pdfPage == null) return null;
 
         Dimension dim = getDimension();
-        Rectangle rect = new Rectangle(0, 0, dim.width, dim.height);
-        int rotation = pdfPage.getRotation();
-        if (rotation == 90 || rotation == 270) {
-            rect1 = new Rectangle(0, 0, rect1.height, rect1.width);
-            // TODO: Should we flip X and Y?
-            bbox = new Rectangle2D.Double(bbox.getX(), bbox.getY(), bbox.getHeight(), bbox.getWidth());
-        }
-        Log.log("ImgSizes: pg:" + pageNum + "  rot:" + rotation + "   " + rect1.getSize().toString() + "   " + rect.getSize().toString());
-
+        /*
+        Note: The crop box is in PDF coordinate space with the y-axis increasing
+        going up. PDF origin is at the bottom left of the page. Java origin is
+        at the top left of the screen.
+        */
+        Rectangle2D cbox = pdfPage.getPageBox();
+        Rectangle2D bbox = pdfPage.getBBox();
         Image img = pdfPage.getImage(
-                (int)rect.width, (int)rect.height,
-                bbox,   // clip rect
+                dim.width, dim.height,
+                cbox,   // clip rect
                 null,   // null for the ImageObserver
                 true,   // fill background with white
                 true);  // block until drawing is done
 
         return img;
     }
-
     private PDFPage getPdfPage() {
         try {
             RandomAccessFile raf = new RandomAccessFile(sourceFile, "r");
@@ -152,6 +160,7 @@ public class PdfViewImg extends PdfImg {
 
     @Override
     public File createImageFile() {
+        tmpImgFile = null;
         try {
             tmpImgFile = File.createTempFile("VirtMus", ".jpg");
             ImageIO.write(getFullRenderedOp(), "jpg", tmpImgFile);

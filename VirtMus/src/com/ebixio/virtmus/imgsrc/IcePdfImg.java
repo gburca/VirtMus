@@ -1,8 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 package com.ebixio.virtmus.imgsrc;
 
 import com.ebixio.util.Log;
@@ -83,7 +95,7 @@ public class IcePdfImg extends PdfImg {
 
             float rot = page.getTotalRotation(0);
             // When rot == 270, the "i" in the image has its dot to the left (o-)
-            // We need to rotate the image 90 degrees clockwise so its upright
+            // We need to rotate the image 90 degrees clockwise so it's upright
             pdfRotation = (Math.round((360 + 360-rot) / 90F) % 4) * 90;
 
             // All getPageBoundary numbers are in some default resolution (72dpi?)
@@ -293,14 +305,13 @@ public class IcePdfImg extends PdfImg {
             // No exception is thrown. The program just terminates.
             PageText pt = doc.getPageText(pageNum);
             txt = pt.getPageLines();
-            //txt = doc.getPageText(pageNum).getPageLines();
         } catch (Exception e) {
             return null;
         }
         if (txt == null || !txt.isEmpty()) {
             return null;
         } else {
-            ArrayList<Image> imgs = new ArrayList<Image>(doc.getPageImages(pageNum));
+            ArrayList<Image> imgs = new ArrayList<>(doc.getPageImages(pageNum));
 
             if (imgs.size() == 1) {
                 // Single image and no text == image covers whole page

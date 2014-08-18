@@ -1,7 +1,5 @@
 /*
- * Utils.java
- *
- * Copyright (C) 2006-2007  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,7 +15,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 package com.ebixio.virtmus;
 
 import com.ebixio.util.Log;
@@ -422,7 +419,7 @@ public class Utils {
     }
     
     /** Convert the song or PlayList tags into a list.
-     * @param tags The tags string. Can be null.
+     * @param tags The tags string. Can be null. Tags are separated by space or comma.
      * @return A possibly empty list of tag strings. */
     public static List<String> tags2list(String tags) {
         ArrayList<String> t = new ArrayList<>();

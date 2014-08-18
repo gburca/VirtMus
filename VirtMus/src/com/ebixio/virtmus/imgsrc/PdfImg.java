@@ -1,7 +1,5 @@
 /*
- * MusicPage.java
- *
- * Copyright (C) 2006-2011  Gabriel Burca (gburca dash virtmus at ebixio dot com)
+ * Copyright (C) 2006-2014  Gabriel Burca (gburca dash virtmus at ebixio dot com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,7 +15,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 package com.ebixio.virtmus.imgsrc;
 
 import com.ebixio.virtmus.MusicPage;
