@@ -153,10 +153,12 @@ public class MusicPageSVG extends MusicPage {
             File imgFile = imgSrc.createImageFile();
             if (imgFile == null) return doc;
 
+            Dimension imgDim = imgSrc.getDimension();
+
             Element img = doc.createElement("image");
             img.setAttribute("xlink:href", imgFile.getCanonicalPath());
-            img.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
-            img.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
+            img.setAttribute("width", Integer.toString(imgDim.width));
+            img.setAttribute("height", Integer.toString(imgDim.height));
             img.setAttribute("x", Integer.toString(0));
             img.setAttribute("y", Integer.toString(0));
             img.setAttribute("id", MusicPageSVG.SVG_BACKGROUND_ID);
@@ -176,10 +178,10 @@ public class MusicPageSVG extends MusicPage {
             }
             // If we created a new document, it won't have width/height
             if (!root.hasAttribute("width")) {
-                root.setAttribute("width", Integer.toString(imgSrc.getDimension().width));
+                root.setAttribute("width", Integer.toString(imgDim.width));
             }
             if (!root.hasAttribute("height")) {
-                root.setAttribute("height", Integer.toString(imgSrc.getDimension().height));
+                root.setAttribute("height", Integer.toString(imgDim.height));
             }
             return doc;
         } catch (IOException ex) {

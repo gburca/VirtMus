@@ -22,12 +22,11 @@ import com.ebixio.util.Log;
 import com.ebixio.virtmus.Utils;
 import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFFile;
-import com.sun.pdfview.PDFImage;
+import com.sun.pdfview.PDFObject;
 import com.sun.pdfview.PDFPage;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +34,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.List;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
@@ -55,7 +54,7 @@ public class PdfViewImg extends PdfImg {
 
     @Override
     public Dimension getDimension() {
-        PDFPage pdfPage = getPdfPage();
+        PDFPage pdfPage = getPdfPage(null);
         Dimension dim = getLargestDisplay();
         int max = Math.max(dim.width, dim.height);
         Dimension pdim = pdfPage.getUnstretchedSize(max, max, null);
@@ -79,7 +78,31 @@ public class PdfViewImg extends PdfImg {
     }
 
     private void debug() {
-        PDFPage pdfPage = getPdfPage();
+        final PDFFile pdfFile = getPDFFile();
+
+        try {
+            Iterable<String> kIt = new Iterable<String>() {
+                @Override
+                public Iterator<String> iterator() {
+                    try { return pdfFile.getMetadataKeys();
+                    } catch (IOException ex) { return null; }
+                }
+            };
+            for (String k : kIt) {
+                Log.log("Key: " + k + " = " + pdfFile.getStringMetadata(k));
+            }
+
+            PDFObject root = pdfFile.getRoot();
+            for (String k : root.getDictionary().keySet()) {
+                Log.log("RootDictKey: " + k);
+            }
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+
+        PDFPage pdfPage = getPdfPage(pdfFile);
         for (PDFCmd cmd : pdfPage.getCommands()) {
             Log.log("CmdClass: " + cmd.getClass().getCanonicalName());
             Log.log("Cmd: " + cmd.toString() + " Details: " + cmd.getDetails());
@@ -122,7 +145,8 @@ public class PdfViewImg extends PdfImg {
     }
 
     private Image getPageImage() {
-        PDFPage pdfPage = getPdfPage();
+        debug();
+        PDFPage pdfPage = getPdfPage(null);
         if (pdfPage == null) return null;
 
         Dimension dim = getDimension();
@@ -142,14 +166,25 @@ public class PdfViewImg extends PdfImg {
 
         return img;
     }
-    private PDFPage getPdfPage() {
+    private PDFPage getPdfPage(PDFFile pdfFile) {
+        if (pdfFile == null) {
+            pdfFile = getPDFFile();
+        }
+
+        if (pdfFile != null) {
+            return pdfFile.getPage(getPageNum() + 1, true);
+        } else {
+            return null;
+        }
+    }
+
+    private PDFFile getPDFFile() {
         try {
             RandomAccessFile raf = new RandomAccessFile(sourceFile, "r");
             FileChannel channel = raf.getChannel();
             ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             PDFFile pdfFile = new PDFFile(buf);
-            PDFPage pdfPage = pdfFile.getPage(getPageNum() + 1, true);
-            return pdfPage;
+            return pdfFile;
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {

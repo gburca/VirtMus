@@ -49,6 +49,7 @@ import org.apache.batik.ext.awt.RenderingHintsKeyExt;
  * A proxy class for PDF image sources. Some PDF pages render better with
  * org.icepdf, others with com.sun.pdfview. This class will try to defer to
  * one of these two implementations.
+ *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @XStreamAlias("pdfImg")
@@ -95,7 +96,7 @@ public class PdfImg extends ImgSrc {
          */
         RenderingHints renderingHints = new RenderingHints(
                 RenderingHintsKeyExt.KEY_BUFFERED_IMAGE,
-                new WeakReference<BufferedImage>(result));
+                new WeakReference<>(result));
         g.addRenderingHints(renderingHints);
 
         g.setColor(Color.BLACK);

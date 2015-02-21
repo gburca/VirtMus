@@ -98,14 +98,23 @@ public class IcePdfImg extends PdfImg {
             // We need to rotate the image 90 degrees clockwise so it's upright
             pdfRotation = (Math.round((360 + 360-rot) / 90F) % 4) * 90;
 
-            // All getPageBoundary numbers are in some default resolution (72dpi?)
-            // The crop cropBox is what Acrobat shows on the screen
+            /* All getPageBoundary numbers are in PDF units.
+            Typically, one PDF unit = 1/72 inch (unless the PDF specifies a
+            "UserUnit" which is in multiples of 1/72 inches). Except in rare
+            cases, UserUnit is not used and the default value of 1.0 applies. */
+
+            // The crop cropBox is what Acrobat shows on the screen, and what we
+            // want to display to the user.
             PRectangle cropBox = page.getPageBoundary(Page.BOUNDARY_CROPBOX);
 
-            /* This is the size of the embedded image at some default resolution
-             * (typically 72dpi), so if we scan a 5x10" at 300dpi we would get
-             * a mediaBox size of 5*72x10*72, not of 5*300x10*300.
-             */
+            /* In the case of a page that contains a single image (a scanned page)
+             * this is typically the size of the image in PDF units. If we scan a
+             * 5x10" at 300dpi, we would get a mediaBox size of 5*72x10*72, not
+             * of 5*300x10*300.
+             *
+             * The media box is what the printing press would print on the page,
+             * so this includes crop marks and color boxes that would normally
+             * be trimmed off when finishing the page. */
             PRectangle mediaBox = page.getPageBoundary(Page.BOUNDARY_MEDIABOX);
 
             // This is the page size after cropping was applied
@@ -285,21 +294,16 @@ public class IcePdfImg extends PdfImg {
      * notation software).
      *
      * If it's a single image, we extract it in its native resolution,
-     * otherwise we need to rasterize the page to a desired target resolution.
+     * otherwise we defer to PdfView to render the page since ICEPdf doesn't
+     * work with files produced by notation SW (it doesn't render the music font
+     * properly).
      * 
      * @param doc PDF document to use
      * @return An image (in the case of a single image per page) or null otherwise.
      */
-    @SuppressWarnings(value={"unchecked"})
     private Image getPageImage(Document doc) {
         ArrayList<LineText> txt;
         try {
-            int pages = doc.getNumberOfPages();
-            PageTree pageTree = doc.getCatalog().getPageTree();
-            Page pg = pageTree.getPage(pageNum);
-            if (pg != null) {
-                PageText pgTxt = pg.getText();
-            }
             // Next line causes VirtMus to crash with some PDF files.
             // ex: Mendelssohn - Wedding March - Pipe Orgam
             // No exception is thrown. The program just terminates.
@@ -308,9 +312,8 @@ public class IcePdfImg extends PdfImg {
         } catch (Exception e) {
             return null;
         }
-        if (txt == null || !txt.isEmpty()) {
-            return null;
-        } else {
+
+        if (txt == null || txt.isEmpty()) {
             ArrayList<Image> imgs = new ArrayList<>(doc.getPageImages(pageNum));
 
             if (imgs.size() == 1) {
@@ -319,6 +322,8 @@ public class IcePdfImg extends PdfImg {
             } else {
                 return null;
             }
+        } else {    // This page contains text. ICEPdf doesn't render it properly.
+            return null;
         }
     }
 
