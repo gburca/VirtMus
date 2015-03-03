@@ -40,6 +40,7 @@ import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -192,6 +193,13 @@ public class Utils {
             newSrc = newSrc.getCanonicalFile();
             String newParentName = newSrc.getParent();  // /x/y/z
             
+            // It's possible for oldTarget to come from a different OS.
+            // Convert oldTarget to use the current host OS path separator.
+            String oldFileName = oldTarget.toString();
+            oldFileName = oldFileName.replaceAll("/", Matcher.quoteReplacement(File.separator))
+                    .replaceAll("\\\\", Matcher.quoteReplacement(File.separator));
+            oldTarget = new File(oldFileName);
+            
             try {
                 // Canonical name can not be computed if drive is not mounted.
                 // Ex: oldTarget = "D:\etc..." but there's no "D:" and songs
@@ -202,7 +210,7 @@ public class Utils {
                 // Don't log it. It's just noise, and expected.
                 //Log.log(ex);
             }
-            String oldFileName = oldTarget.getName();   // /a/b/d
+            oldFileName = oldTarget.getName();   // /a/b/d
             String oldParentName = oldTarget.getParent();
             
             // See if the page files are in the same directory as the song file
