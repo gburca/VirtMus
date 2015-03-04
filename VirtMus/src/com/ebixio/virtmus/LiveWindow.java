@@ -153,9 +153,6 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                 try {
                     Robot robot = new Robot();
                     while (true) {
-                        // KeyEvent.VK_SHIFT
-                        //robot.keyPress(KeyEvent.VK_PAUSE);
-                        //robot.keyRelease(KeyEvent.VK_PAUSE);
                         robot.mouseMove((int)(Math.random() * 100),
                                         (int)(Math.random() * 100));
                         try {
@@ -231,6 +228,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                     showFirstPage();
                     break;
                 case KeyEvent.VK_PAGE_UP:
+                case KeyEvent.VK_KP_LEFT:
+                case KeyEvent.VK_LEFT:
                     //showPrevPage();
                     showPrevSection();
                     break;

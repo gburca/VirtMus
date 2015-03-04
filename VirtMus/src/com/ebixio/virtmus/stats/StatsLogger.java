@@ -41,11 +41,11 @@ import java.util.logging.XMLFormatter;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
+import javax.swing.Icon;
 import javax.swing.JOptionPane;
 import net.java.swingfx.common.Utils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -61,11 +61,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.AbstractHttpMessage;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
@@ -74,6 +70,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONStringer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.Places;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -213,11 +210,12 @@ public class StatsLogger {
                 maybeLater = NbBundle.getMessage(StatsLogger.class, "BTN_MaybeLater"),
                 never = NbBundle.getMessage(StatsLogger.class, "BTN_Never");
 
+        Icon icon = ImageUtilities.loadImageIcon("com/ebixio/virtmus/resources/VirtMus32x32.png", false);
         int userChoice = JOptionPane.showOptionDialog(null,
                 NbBundle.getMessage(StatsLogger.class, "MSG_Text"),
                 NbBundle.getMessage(StatsLogger.class, "MSG_Title"),
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, new Object[]{yes, maybeLater, never}, yes);
+                icon, new Object[]{yes, maybeLater, never}, yes);
 
         switch (userChoice) {
             case 0: return UploadStats.Yes;
