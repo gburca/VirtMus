@@ -48,14 +48,6 @@
         <!-- Copy our own virtmus.exe which has the virtmus icon in it -->
         <copy file="Installer/BrandedExe/virtmus.exe" tofile="dist/${app.name}/bin/virtmus.exe" overwrite="true"/>
 
-        <!-- Need to modify the app.conf file to allow for more memory -->
-        <copy file="${harness.dir}/etc/app.conf" tofile="dist/${app.name}/etc/${app.name}.conf" overwrite="true">
-            <filterchain>
-                <replaceregex pattern="\s*default_options.*" replace="default_options=&quot;--branding virtmus -J-Xms128m -J-Xmx512m -J-Dsun.java2d.d3d=false&quot;"/>
-                <!-- replaceregex pattern="^#\s*jdkhome=.*" replace="jdkhome=&quot;/usr/local/jdk1.6.0&quot;"/ -->
-            </filterchain>
-        </copy>
-
         <!-- Need to modify shell scripts to use UNIX (LF) line terminations -->
         <fixcrlf srcDir="dist/${app.name}/etc" includes="${app.name}.conf" eof="remove" eol="unix"/>
         <chmod file="dist/${app.name}/bin/virtmus" perm="a+x"/>
@@ -69,7 +61,16 @@
             </fileset>
         </copy>
     </target>
-
+    
+    <target name="modify-conf" depends="build-launchers">
+        <echo message="modify-conf: ${app.conf} -> ${build.launcher.dir}/etc/${app.name}.conf"/>
+    </target>
+    <target name="-pre-build-zip" depends="modify-conf"/>
+    <target name="-pre-build-mac" depends="modify-conf"/>
+    <target name="build-zip" depends="-pre-build-zip,suite.build-zip" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
+        <echo message="Running custom build-zip"/>
+    </target>
+    
     <target name="create-installer-zip" depends="build-dist" description="Creates a ZIP distribution">
         <zip destfile="Installer/${app.distname}-${app.version}.zip">
             <zipfileset dir="dist/${app.name}" prefix="${app.distname}-${app.version}"/>

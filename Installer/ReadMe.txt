@@ -1,5 +1,14 @@
 Directories:
 ============
+- VirtMus.conf
+	= A copy of NetBeans/harness/etc/app.conf customized for VirtMus to allow
+	for more memory. nbproject/project.properties points app.conf to this
+	location. A "clean" will need to be done to pick up a modified version of
+	this file because the version that ends up in the dist/ installers comes
+	from build/ if that's already present.
+	= We need to compare this with the original on new NetBeans platforms to
+	make sure we're picking up any new features or settings.
+
 - BradedExe
 	= A version of the launcher with the icon changed. The build script
 	will replace the default one with this launcher when creating the zip
@@ -13,41 +22,5 @@ Directories:
 
 To release:
 ===========
-- Set the version in the following places:
-	- Installer/VirtMus.nsi
-	- nbproject/project.properties
-	- VirtMus/src/com/ebixio/virtmus/MainApp.java
-	- Docs: VirtMus and ChangeLog tiddlers
-	- Installer/VirtMusPortable/App/AppInfo/appinfo.ini
-
-- Update the documentation ChangeLog
-
-- If needed, change the copyright year range on the splash screen
-	- branding/core/core.jar/org/netbeans/core/startup/...
-	- Docs/index.html VirtMus tiddler
-
-- Run the following targets:
-	- clean
-	- update-version-string
-	- #build-zip (is run automatically by target below)
-	- create-installers
-
-- Distribute:
-	- Installer/VirtMus-v.vv.exe
-	- Installer/VirtMus-v.vv.zip
-
-- Update virtmus.com
-	- Follow the DocMaintenance wiki page instructions
-
-- To create the PortableApps version for the USB drive
-	- Unzip the Installer/VirtMus-v.vv.zip into Installer/VirtMusPortable/App/VirtMus
-		- The executable should be in .../App/VirtMus/bin/virtmus.exe
-	- Run "PortableApps.com Launcher" from PortableApps on USB drive
-		- Point it to .../Installer/VirtMusPortable
-		- This will create Installer/VirtMusPortable/VirtMusPortable.exe
-	- Run "PortableApps.com Installer" from PortableApps on USB drive
-		- Point it to .../Installer/VirtMusPortable
-		- This will create Installer/VirtMusPortable_v.vv.paf.exe
-	- Distribute
-		- Installer/VirtMusPortable_v.vv.paf.exe
+- See the DeveloperInfo page in the WiKi
 
