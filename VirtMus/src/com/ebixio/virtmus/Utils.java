@@ -49,7 +49,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class Utils {
     private static Cursor invisibleCursor = null;
-    
+
     /** Creates a new instance of Utils */
     public Utils() {
     }
@@ -66,7 +66,7 @@ public class Utils {
         ArrayList<Dimension> sizes = new ArrayList<Dimension>();
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
-        
+
         for (int i = 0; i < gs.length; i++) {
             DisplayMode dm = gs[i].getDisplayMode();
             sizes.add(new Dimension(dm.getWidth(), dm.getHeight()));
@@ -86,7 +86,7 @@ public class Utils {
         }
     }
     // </editor-fold>
-    
+
     public static Cursor getInvisibleCursor() {
         if (invisibleCursor == null) {
             int[] pixels = new int[16 * 16];
@@ -95,37 +95,37 @@ public class Utils {
         }
         return invisibleCursor;
     }
-    
-    // <editor-fold defaultstate="collapsed" desc=" Sizing and scaling ">    
+
+    // <editor-fold defaultstate="collapsed" desc=" Sizing and scaling ">
     public static double scaleProportional(Rectangle container, Rectangle item) {
         double scaleX = (double)container.width / (double)item.width;
         double scaleY = (double)container.height / (double)item.height;
         return Math.min(scaleX, scaleY);
     }
-    
+
     public static Rectangle shrinkToFit(Rectangle container, Rectangle item) {
         double scale = scaleProportional(container, item);
         if (scale > 1) {
             return item;
         } else {
-            return new Rectangle((int)(item.width * scale), (int)(item.height * scale));        
+            return new Rectangle((int)(item.width * scale), (int)(item.height * scale));
         }
     }
-    
+
     public static Rectangle stretchToFit(Rectangle container, Rectangle item) {
         double scale = scaleProportional(container, item);
         if (scale < 1) {
             return item;
         } else {
-            return new Rectangle((int)(item.width * scale), (int)(item.height * scale));        
+            return new Rectangle((int)(item.width * scale), (int)(item.height * scale));
         }
     }
-    
+
     public static Rectangle scaleToFit(Rectangle container, Rectangle item) {
         double scale = scaleProportional(container, item);
-        return new Rectangle((int)(item.width * scale), (int)(item.height * scale));        
+        return new Rectangle((int)(item.width * scale), (int)(item.height * scale));
     }
-    
+
     public static Point centerItem(Rectangle container, Rectangle item) {
         int x = (container.width / 2) - (item.width / 2);
         int y = (container.height / 2) - (item.height / 2);
@@ -139,15 +139,15 @@ public class Utils {
         return res;
     }
     // </editor-fold>
-    
+
     /** Search for page in same relative directory. PlayLists (and Songs) store the
      * full path to the song file (or music page files). If the playlist/song is
      * moved (along with the song/musicpage files) we try to locate the songs/pages
      * by assuming they reside in the same directory relative to the playlist/song file.
-     * 
+     *
      * Since we don't know where the original PlayList resided, we can't compute
      * the true relative location of the Songs it included, so we use heuristics.
-     * 
+     *
      * If original song = /a/b/c/song.xml
      * and original page = /a/b/c/d/page.png
      * And now the song is in /x/y/z/song.xml
@@ -158,33 +158,33 @@ public class Utils {
      * /x/y/z/c/d/page.png
      * /x/y/z/b/c/d/page.png
      * /x/y/z/a/b/c/d/page.png
-     * 
+     *
      * That should account for the use case where the pages are in a subdirectory
      * of the song.
-     * 
+     *
      * If old song = /a/b/c/song.xml
      * and old page = /a/b/d/page.png
      * And now the song is in /x/y/z/song.xml
-     * 
+     *
      * We check for page as follows:
      * /x/y/d/page.png
      * /x/y/b/d/page.png
      * /x/y/a/b/d/page.png
-     * 
+     *
      * /x/d/page.png
      * /x/b/d/page.png
      * /x/a/b/d/page.png
-     * 
+     *
      * /d/page.png
      * /b/d/page.png
      * /a/b/d/page.png
-     * 
+     *
      * @param newSrc The location of the new PlayList (or Song)
      * @param oldTarget The location of the old Song (or MusicPage)
      */
     static File findFileRelative(File newSrc, File oldTarget) {
         if (newSrc == null || oldTarget == null) return null;
-        
+
         if (oldTarget.exists()) {
             return oldTarget;
         }
@@ -192,14 +192,14 @@ public class Utils {
         try {
             newSrc = newSrc.getCanonicalFile();
             String newParentName = newSrc.getParent();  // /x/y/z
-            
+
             // It's possible for oldTarget to come from a different OS.
             // Convert oldTarget to use the current host OS path separator.
             String oldFileName = oldTarget.toString();
             oldFileName = oldFileName.replaceAll("/", Matcher.quoteReplacement(File.separator))
                     .replaceAll("\\\\", Matcher.quoteReplacement(File.separator));
             oldTarget = new File(oldFileName);
-            
+
             try {
                 // Canonical name can not be computed if drive is not mounted.
                 // Ex: oldTarget = "D:\etc..." but there's no "D:" and songs
@@ -212,14 +212,14 @@ public class Utils {
             }
             oldFileName = oldTarget.getName();   // /a/b/d
             String oldParentName = oldTarget.getParent();
-            
+
             // See if the page files are in the same directory as the song file
             File testF = new File(newParentName + File.separator + oldFileName);
             if (testF.exists()) return testF;
-            
+
             String[] oDirs = splitFile(oldParentName);
             if (oDirs == null) return null;
-            
+
             if (oDirs.length > 0) {
                 String test = "";
                 for (int i = oDirs.length - 1; i >= 0; i--) {
@@ -235,7 +235,7 @@ public class Utils {
                 testF = new File(newParentName + File.separator + oldFileName);
                 if (testF.exists()) return testF;
             }
-            
+
             // We could also try different roots (drives) on Windows?
             //File[] roots = File.listRoots();
             Path oPath = oldTarget.getParentFile().toPath();
@@ -256,15 +256,15 @@ public class Utils {
                     }
                 }
             }
-            
+
         } catch (IOException | PatternSyntaxException ex) {
             Log.log(ex);
             return null;
         }
-        
+
         return null;
     }
-    
+
     /** Get the file extension (if present).
      * @param f A file object.
      * @return The file extension, or an empty string. */
@@ -277,7 +277,7 @@ public class Utils {
             return "";
         }
     }
-    
+
     public static String[] splitFile(String f) {
         String[] parts;
         if (File.separator.equals("\\")) {
@@ -288,7 +288,7 @@ public class Utils {
         }
         return parts;
     }
-    
+
     /** Attempts to launch an external browser to handle a URL.
      * @param url The URL to launch the default browser with.
      * @return <b>true</b> on success
@@ -320,23 +320,23 @@ public class Utils {
         } catch (Exception e) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /** Provides the path to the top level application folder.
-     * 
+     *
      * Due to differences in how files are laid out when running out of the NetBeans IDE
      * versus an unpacked ZIP distribution, this methods only works on Windows and Linux
      * when the application was deployed using a ZIP file.
-     * 
+     *
      * This method is not guaranteed to work on all JVMs but works on Sun JVMs.
      * @return The path to the top level application folder.
      */
     public static File getAppPath() {
         CodeSource source = MainApp.findInstance().getClass().getProtectionDomain().getCodeSource();
         if (source == null) return null;
-        
+
         File codeLoc;
         try {
             URI sourceURI = new URI(source.getLocation().toString());
@@ -344,18 +344,18 @@ public class Utils {
         } catch (URISyntaxException | IllegalArgumentException e) {
             return null;
         }
-        
+
         if (!codeLoc.isDirectory()) {
             codeLoc = codeLoc.getParentFile();
             if (codeLoc == null) return null;
         }
-        
+
         // The app root directory is two levels up in a zip distribution
         codeLoc = codeLoc.getParentFile().getParentFile();
-        
+
         return codeLoc;
     }
-    
+
     /** Doesn't work on Windows or Linux
      * @return The path to the top level application folder.
      */
@@ -366,10 +366,10 @@ public class Utils {
         } catch (IOException e) {
             return null;
         }
-        
+
         return appPath;
     }
-    
+
     /** Works on windows, but not on Linux
      * @return The path to the top level application folder.
      */
@@ -380,7 +380,7 @@ public class Utils {
         } catch (IOException e) {
             return null;
         }
-        
+
         return appPath;
     }
 
@@ -425,13 +425,13 @@ public class Utils {
         String s2 = orig.substring(orig.length() - s2len);
         return s1 + "..." + s2;
     }
-    
+
     /** Convert the song or PlayList tags into a list.
      * @param tags The tags string. Can be null. Tags are separated by space or comma.
      * @return A possibly empty list of tag strings. */
     public static List<String> tags2list(String tags) {
         ArrayList<String> t = new ArrayList<>();
-        
+
         if (tags != null && tags.length() > 0) {
             String ts[] = tags.split("[,\\s]");
             for (String tag: ts) {
@@ -440,7 +440,7 @@ public class Utils {
                 }
             }
         }
-        
+
         return t;
     }
 }

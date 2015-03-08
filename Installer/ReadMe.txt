@@ -14,6 +14,9 @@ Directories:
 	will replace the default one with this launcher when creating the zip
 	and exe installers.
 
+- GenerateMacIcons.sh
+	= Script to generate .icns file for Mac / OSX
+
 - SF-ReadMe
 	= Some ReadMe files for sourceforge.net
 

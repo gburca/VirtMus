@@ -64,11 +64,13 @@
     
     <target name="modify-conf" depends="build-launchers">
         <echo message="modify-conf: ${app.conf} -> ${build.launcher.dir}/etc/${app.name}.conf"/>
+        <copy file="Installer/BrandedExe/virtmus.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" overwrite="true"/>
+        <!-- copy file="${harness.dir}/launchers/${app.exe.prefix}app64.exe" tofile="${build.launcher.dir}/bin/${app.name}64.exe" failonerror="false" overwrite="true"/ -->
     </target>
     <target name="-pre-build-zip" depends="modify-conf"/>
     <target name="-pre-build-mac" depends="modify-conf"/>
     <target name="build-zip" depends="-pre-build-zip,suite.build-zip" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
-        <echo message="Running custom build-zip"/>
+        <echo message="Running VirtMus custom build-zip"/>
     </target>
     
     <target name="create-installer-zip" depends="build-dist" description="Creates a ZIP distribution">
