@@ -85,6 +85,7 @@
             <arg value="-f"/>
             <arg value="${basedir}/Installer/fancy-dmg/Makefile"/>
             <arg value="TEMPLATE_DMG=${basedir}/Installer/template.dmg"/>
+            <arg value="TEMPLATE_SIZE=80m"/>
             <arg value="NAME=VirtMus"/>
             <arg value="VERSION=${app.version}"/>
             <arg value="SOURCE_DIR=${dist.dir}"/>
