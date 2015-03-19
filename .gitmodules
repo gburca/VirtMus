@@ -1,3 +1,6 @@
 [submodule "VirtMus/src/org/json"]
 	path = VirtMus/src/org/json
 	url = https://github.com/douglascrockford/JSON-java.git
+[submodule "Installer/fancy-dmg"]
+	path = Installer/fancy-dmg
+	url = https://github.com/gburca/fancy-dmg.git
