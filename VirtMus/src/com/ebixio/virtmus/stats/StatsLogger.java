@@ -606,7 +606,8 @@ public class StatsLogger {
         }
     }
 
-    /** The directory where the logs are stored. */
+    /** The directory where the logs are stored.
+     * @return The directory where the logs are stored. */
     public static File getLogsDir() {
         File userDir = Places.getUserDirectory();
         if (userDir != null) {
@@ -616,7 +617,9 @@ public class StatsLogger {
         }
     }
 
-    /** This is the file we will log to (and upload). */
+    /** This is the file we will log to (and upload).
+     * @param pattern A filename pattern to use. Defaults to "VirtMus.log".
+     * @return The log file that we will log to. */
     public static File getLogFile(String pattern) {
         if (pattern == null) {
             pattern = "VirtMus.log";

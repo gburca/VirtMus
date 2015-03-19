@@ -20,8 +20,8 @@ package com.ebixio.util;
 /**
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
- * @param <T1>
- * @param <T2>
+ * @param <T1> Type of the first element
+ * @param <T2> Type of the second element
  */
 public class Pair<T1, T2> {
     public T1 first;

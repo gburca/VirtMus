@@ -56,7 +56,7 @@ import org.openide.windows.WindowManager;
 
 
 /**
- * Top component which displays something.
+ * Top component which displays the music page annotations.
  */
 public final class AnnotTopComponent extends TopComponent
         implements ComponentListener {

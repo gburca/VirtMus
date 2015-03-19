@@ -182,6 +182,7 @@
                 <path path="colorchooser/release/modules/ext/*"/>
                 <path path="swingfx/release/modules/ext/*"/>
                 <path path="batik/release/modules/ext/*"/>
+                <path path="MavenJARs/dist/*"/>
             </classpath>
 
             <group title="VirtMus Module" packages="com.ebixio.virtmus*"/>

@@ -251,7 +251,7 @@ public class Song implements Comparable<Song> {
      * @param f Can be a directory (of images, PDFs, etc...), or a single PDF or
      * image file.
      *
-     * @return
+     * @return True if the page was successfully added.
      */
     public boolean addPage(File f) {
         if (f == null) {
@@ -383,8 +383,8 @@ public class Song implements Comparable<Song> {
 
     /** Keeps track of how many annotations were made to this song. Used for
      * statistical reports.
-     * @param page
-     * @param s
+     * @param page The {@link MusicPage} the annotation was added to.
+     * @param s The annotation that was added
      */
     public void addedAnnot(MusicPage page, VmShape s) {
         fire(PROP_ANNOT, null, s);

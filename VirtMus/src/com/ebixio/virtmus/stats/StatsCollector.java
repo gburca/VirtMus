@@ -58,7 +58,7 @@ public class StatsCollector implements PropertyChangeListener {
 
     /**
      * Logs a bunch of configurations/settings every time VirtMus is started.
-     * @param logger
+     * @param logger The logger to log to.
      */
     public static void logStartup(Logger logger) {
         logger.log(getSystemConfig());
@@ -132,7 +132,7 @@ public class StatsCollector implements PropertyChangeListener {
 
     /**
      * Creates log record with the PDF renderer used. Also resets the counters.
-     * @return
+     * @return The {@link java.util.logging.LogRecord} that was added.
      */
     public LogRecord getPdfRenderersUsed() {
         LogRecord renderersLog = new LogRecord(Level.INFO, "PDF Renderers");

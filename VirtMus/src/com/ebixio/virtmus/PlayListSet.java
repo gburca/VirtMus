@@ -45,15 +45,19 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
     private static PlayListSet instance;
     public final List<PlayList> playLists = Collections.synchronizedList(new ArrayList<PlayList>());
 
-    /** If this is true, PROP_ALL_PL_LOADED has already been fired. */
+    /** If this is true, {@link #PROP_ALL_PL_LOADED} has already been fired. */
     public Boolean allPlayListsLoaded = new Boolean(false);
     private int playListsLoading = 0;
 
     private PropertyChangeSupportUnique propertyChangeSupport;
     private final Object pcsMutex = new Object();
+    /** The property fired when all PlayLists have been loaded */
     public static final String PROP_ALL_PL_LOADED   = "allPlayListsLoaded";
+    /** The property fired when all songs have been loaded */
     public static final String PROP_ALL_SONGS_LOADED= "allSongsLoaded";
+    /** The property fired when a new PlayList has been added */
     public static final String PROP_NEW_PL_ADDED    = "newPlayListAdded";
+    /** The property fired when a PlayList has been deleted */
     public static final String PROP_PL_DELETED      = "playListDeleted";
 
     private PlayListSet() {
@@ -208,7 +212,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
 
     // <editor-fold defaultstate="collapsed" desc=" Property Change Listener ">
     /** Listeners will be notified of any changes to the set of PlayLists.
-     * @param pcl */
+     * @param pcl A property change listener to add */
     public void addPropertyChangeListener (PropertyChangeListener pcl) {
         synchronized(pcsMutex) {
             propertyChangeSupport.addPropertyChangeListener(pcl);
@@ -216,8 +220,11 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
     }
 
     /** Listeners will be notified of changes to the set of PlayLists.
-     * @param propertyName
-     * @param pcl */
+     * @param propertyName A property such as
+     * {@link #PROP_NEW_PL_ADDED}, {@link #PROP_PL_DELETED},
+     * {@link #PROP_ALL_PL_LOADED}, or {@link #PROP_ALL_SONGS_LOADED}.
+     * @param pcl The property change listener to be notified when the given
+     * property changes. */
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener pcl) {
         synchronized(pcsMutex) {
             propertyChangeSupport.addPropertyChangeListener(propertyName, pcl);
@@ -240,7 +247,7 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
     /**
      * Monitors PlayList loading. Only after ALL PlayLists have finished loading
      * their songs do we fire "all songs loaded".
-     * @param evt
+     * @param evt A PlayList property change event
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
