@@ -53,6 +53,7 @@
         <chmod file="dist/${app.name}/bin/virtmus" perm="a+x"/>
 
         <echo message="Adding the VirtMus documentation files"/>
+        <!-- TODO: Generate the static pages automatically. -->
         <copy todir="dist/${app.name}/Docs" >
             <fileset dir="Docs/wiki.static">
                 <exclude name="**/src/**"/>
@@ -71,6 +72,24 @@
     <target name="-pre-build-mac" depends="modify-conf"/>
     <target name="build-zip" depends="-pre-build-zip,suite.build-zip" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <echo message="Running VirtMus custom build-zip"/>
+    </target>
+    <target name="build-mac" depends="-pre-build-mac,suite.build-mac" description="Builds a Mac/OSX tgz distribution of the suite, launchers, and selected modules from the platform.">
+        <echo message="Running VirtMus custom build-mac"/>
+    </target>
+    
+    <target name="build-mac-dmg" depends="build-mac"
+        description="Builds a DMG file for the Mac OS X">
+        <exec executable="make">
+            <arg value="-C"/>
+            <arg value="${dist.dir}"/>
+            <arg value="-f"/>
+            <arg value="${basedir}/Installer/fancy-dmg/Makefile"/>
+            <arg value="TEMPLATE_DMG=${basedir}/Installer/template.dmg"/>
+            <arg value="NAME=VirtMus"/>
+            <arg value="VERSION=${app.version}"/>
+            <arg value="SOURCE_DIR=${dist.dir}"/>
+            <arg value="SOURCE_FILES=VirtMus.app"/>
+        </exec>
     </target>
     
     <target name="create-installer-zip" depends="build-dist" description="Creates a ZIP distribution">
@@ -92,6 +111,55 @@
 
     <target name="create-installers" depends="create-installer-exe"
         description="Creates exe and zip application installers">
+    </target>
+    
+    <target name="package-as-installers" depends="-init" description="Replicate what the Package as -> Installers context menu does">
+        <!-- 
+        This target attempts to replicate the behavior of the context menu shown
+        when right-clicking on the "Virtual Music" suite and selecting the
+        "Package as -> Installers" menu.
+        
+        The original intent was to debug the target that creates the Info.plist
+        file on the Mac OSX and replaces the version string in it so that
+        "Spotlight Search" and the "Get Info" context menu shows the proper
+        VirtMus version. It doesn't look like this target ever calls build-mac
+        in suite.xml so it's not clear how Info.plist is generated.
+        
+        See: NetBeans/harness/etc/Info.plist
+        See: NetBeans/harness/suite.xml build-mac target
+        
+        When selecting the menu item, the following command is executed:
+            ant -f "/Applications/NetBeans/NetBeans 8.0.2.app/Contents/Resources/NetBeans/harness/nbi/stub/template.xml"
+                -Dsuite.nbi.product.uid=virtmus
+                "-Dnbi.stub.common.location=/Applications/NetBeans/NetBeans 8.0.2.app/Contents/Resources/NetBeans/harness/nbi/.common"
+                -Dnbi.dock.icon.file=/Users/gburca1/Documents/NetBeansProjects/VirtMus/Installer/VirtMus.icns
+                "-Dnbi.engine.jar=/Applications/NetBeans/NetBeans 8.0.2.app/Contents/Resources/NetBeans/harness/modules/ext/nbi-engine.jar"
+                "-Dnbi.ant.tasks.jar=/Applications/NetBeans/NetBeans 8.0.2.app/Contents/Resources/NetBeans/harness/modules/ext/nbi-ant-tasks.jar"
+                "-Dnbi.registries.management.jar=/Applications/NetBeans/NetBeans 8.0.2.app/Contents/Resources/NetBeans/harness/modules/ext/nbi-registries-management.jar"
+                -Dnbi.icon.file=/Users/gburca1/Documents/NetBeansProjects/VirtMus/branding/core/core.jar/org/netbeans/core/startup/frame48.gif
+                -Dgenerator-jdk-location-forward-slashes=/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home
+                -Dpack200.enabled=true
+                -Dnbi.license.file=/var/folders/2x/njbycfbs383ffxgy8c0mh_wwbpp5gs/T/license8614309296844675394.txt
+                "-Dnbi.stub.location=/Applications/NetBeans/NetBeans 8.0.2.app/Contents/Resources/NetBeans/harness/nbi/stub"
+                -Dsuite.location=/Users/gburca1/Documents/NetBeansProjects/VirtMus
+                "-Dgenerate.installer.for.platforms=windows linux macosx"
+                build
+        -->
+        <ant antfile="${harness.dir}/nbi/stub/template.xml" useNativeBasedir="true" inheritAll="true" target="build">
+            <property name="suite.nbi.product.uid" value="virtmus"/>
+            <property name="nbi.stub.common.location" value="${harness.dir}/nbi/.common"/>
+            <property name="nbi.dock.icon.file" value="${basedir}/${app.icon.icns}"/>
+            <property name="nbi.engine.jar" value="${harness.dir}/modules/ext/nbi-engine.jar"/>
+            <property name="nbi.ant.tasks.jar" value="${harness.dir}/modules/ext/nbi-ant-tasks.jar"/>
+            <property name="nbi.registries.management.jar" value="${harness.dir}/modules/ext/nbi-registries-management.jar"/>
+            <property name="nbi.icon.file" value="${basedir}/branding/core/core.jar/org/netbeans/core/startup/frame48.gif"/>
+            <property name="generator-jdk-location-forward-slashes" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home"/>
+            <property name="pack200.enabled" value="true"/>
+            <property name="nbi.license.file" value="${basedir}/LICENSE.txt"/>
+            <property name="nbi.stub.location" value="${harness.dir}/nbi/stub"/>
+            <property name="suite.location" value="${basedir}"/>
+            <property name="generate.installer.for.platforms" value="windows linux macosx"/>
+        </ant>
     </target>
 
     <target name="javadoc-all" depends="-init" description="Build javadoc for several modules in the suite.">
@@ -127,7 +195,7 @@
             <sourcepath location="JAI/src"/>
 
             <header>VirtMus Java Docs</header>
-            <bottom><![CDATA[<i>Copyright &#169; 2006-2014 Gabriel Burca. All Rights Reserved.</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright &#169; 2006-2015 Gabriel Burca. All Rights Reserved.</i>]]></bottom>
 
         </javadoc>
         <nbbrowse file="JavaDoc/index.html"/>
