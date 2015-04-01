@@ -9,7 +9,7 @@
 
 ;--------------------------------
 ;General
-        ; Name and file.
+        ; The build.xml update-version-string target will update this define.
 	!define VERSION "4.00"
 
 	; This ${PRODUCT} !define is used throughout this intaller for a lot of
@@ -74,7 +74,7 @@ Section "VirtMus" SVirtMus
 
   SetOutPath "$INSTDIR"
 
-  File /r ..\dist\virtmus\*.*
+  File /r ..\dist\VirtMus\*.*
 
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\${UNINSTALLER_NAME}"

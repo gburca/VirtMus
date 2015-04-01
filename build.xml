@@ -6,6 +6,18 @@
     <description>Builds the module suite VirtMus.</description>
     <import file="nbproject/build-impl.xml"/>
 
+    <!-- Set the operating system test properties. On Mac OS X, both isMac and 
+    isUnix will be set to true, and isWindows will be undefined. -->
+    <condition property="isMac">
+        <os family="mac" />
+    </condition>
+    <condition property="isWindows">
+        <os family="windows" />
+    </condition>
+    <condition property="isUnix">
+        <os family="unix" />
+    </condition>
+  
     <!--
         To automatically update the application version in the title bar.
         Must be executed manually before executing the build-zip target.
@@ -29,10 +41,13 @@
             comment="Updated by build script">
             <entry key="LBL_ProductInformation" value="${app.title}" />
         </propertyfile>
-     
+
+        <replaceregexp file="${basedir}/Installer/VirtMus.nsi"
+                       match="(\s*!define\s+VERSION\s+).*"
+                       replace="\1&quot;${app.version}&quot;"/>
     </target>
     
-    <target name="create-docs" description="Converts the VirtMus.wiki documents into a static site">
+    <target name="create-docs" depends="javadoc-all" description="Converts the VirtMus.wiki documents into a static site">
         <copy file="Docs/favicon.ico" tofile="Docs/wiki.static/favicon.ico"/>
         <copy file="Docs/img/VirtMusLogo.gif" tofile="Docs/wiki.static/VirtMusLogo.gif"/>
     </target>
@@ -68,7 +83,7 @@
         <copy file="Installer/BrandedExe/virtmus.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" overwrite="true"/>
         <!-- copy file="${harness.dir}/launchers/${app.exe.prefix}app64.exe" tofile="${build.launcher.dir}/bin/${app.name}64.exe" failonerror="false" overwrite="true"/ -->
     </target>
-    <target name="-pre-build-zip" depends="modify-conf"/>
+    <target name="-pre-build-zip" depends="update-version-string,modify-conf"/>
     <target name="-pre-build-mac" depends="modify-conf"/>
     <target name="build-zip" depends="-pre-build-zip,suite.build-zip" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <echo message="Running VirtMus custom build-zip"/>
@@ -79,6 +94,7 @@
     
     <target name="build-mac-dmg" depends="build-mac"
         description="Builds a DMG file for the Mac OS X">
+        <!-- See also: https://github.com/LinusU/node-appdmg -->
         <exec executable="make">
             <arg value="-C"/>
             <arg value="${dist.dir}"/>
@@ -91,6 +107,7 @@
             <arg value="SOURCE_DIR=${dist.dir}"/>
             <arg value="SOURCE_FILES=VirtMus.app"/>
         </exec>
+        <move file="${dist.dir}/VirtMus-${app.version}.dmg" todir="Installer"/>
     </target>
     
     <target name="create-installer-zip" depends="build-dist" description="Creates a ZIP distribution">
@@ -99,19 +116,60 @@
         </zip>
     </target>
 
-
-    <target name="create-installer-exe" depends="create-installer-zip"
-        description="Creates a Windows exe installer using NSIS">
+    <target name="create-installer-exe-OnWindows" if="isWindows" depends="create-installer-zip"
+        description="Builds Windows exe installer on Windows.">
+        <echo message="Building exe on Windows." />
         <echo message="Exit NSIS to continue"/>
         <exec dir="Installer" executable="C:/Program Files (x86)/NSIS/makensisw.exe"
-            osfamily="Windows" failonerror="true">
+            osfamily="Windows" failonerror="true" spawn="true">
             <arg line="VirtMus.nsi"/>
-        </exec>      
+        </exec>
+    </target>
+
+    <target name="create-installer-exe-OnUnix" if="isUnix" depends="create-installer-zip"
+        description="Builds Windows exe installer on Unix (and Mac OS X) using makensis.">
+        <!-- Mac systems are also Unix systems, so this target will run on both. -->
+        <echo message="Building exe on Unix." />
+        
+        <!-- The base 'env' doesn't pick up paths set in .bashrc/.bash_profile on Mac. -->
+        <property environment="env"/>
+        <echo message="env.PATH = ${env.PATH}"/>
+        
+        <!--
+        Can't rely on searchpath and resolveexecutable to pick up an executable
+        from the user's path on Mac. Rather than try to guess, we ask bash.
+        Save the makensis location in bash.out if the user has it in their path,
+        and fail if they don't.
+        -->
+        <exec executable="bash" outputproperty="makensis.path" errorproperty="bash.errors" failonerror="true">
+            <arg value="-i"/>
+            <arg value="-l"/>
+            <arg value="-c"/>
+            <arg value="which makensis"/>
+        </exec>
+        <!-- echo message="bash.out = ${makensis.path} ${bash.errors}" / -->
+
+        <exec dir="Installer" executable="${makensis.path}" osfamily="Unix" failonerror="true">
+            <arg line="VirtMus.nsi"/>
+            <!-- We could instead add searchpath="true" and resolveexecutable="true"
+            and pick a few likely paths for makensis, but it's better to rely on bash above. -->
+            <!-- env key="PATH" path="/usr/local/bin:/usr/bin" / -->
+        </exec>
+    </target>
+  
+    <target name="create-installer-exe-OnMac" if="isMac" depends="create-installer-zip,create-installer-exe-OnUnix"
+        description="Creates a Windows exe installer on Mac OS X using makensis.">
+        <echo message="Building exe on Mac." />
+        <!-- Mac systems are also Unix systems, so we defer to the OnUnix target. -->
+    </target>
+    
+    <target name="create-installer-exe" depends="create-installer-exe-OnMac,create-installer-exe-OnWindows,create-installer-exe-OnUnix"
+        description="Creates a Windows exe installer using NSIS on all platforms.">
     </target>
 
 
-    <target name="create-installers" depends="create-installer-exe"
-        description="Creates exe and zip application installers">
+    <target name="create-installers" depends="update-version-string,create-installer-exe,build-mac-dmg"
+        description="Creates exe, zip, and dmg application installers">
     </target>
     
     <target name="package-as-installers" depends="-init" description="Replicate what the Package as -> Installers context menu does">

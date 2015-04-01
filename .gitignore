@@ -13,12 +13,12 @@ dist
 
 hs_err_pid*.log
 
-# VIM swap files
-.*.swp
-
-Installer/VirtMus_*.exe
 Installer/VirtMus-*.exe
+Installer/VirtMus-*.dmg
 Installer/VirtMus-*.zip
+Installer/PreviousReleases/
+# Mac OS X Icon file
+Installer/VirtMus.icns
 
 Installer/VirtMusPortable/App/VirtMus
 Installer/VirtMusPortable/VirtMusPortable.exe
