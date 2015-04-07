@@ -78,13 +78,17 @@
         </copy>
     </target>
     
+    <target name="create-mac-icons">
+        <exec dir="${basedir}/Installer" executable="./GenerateMacIcons.sh" failonerror="true"/>        
+    </target>
+    
     <target name="modify-conf" depends="build-launchers">
         <echo message="modify-conf: ${app.conf} -> ${build.launcher.dir}/etc/${app.name}.conf"/>
         <copy file="Installer/BrandedExe/virtmus.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" overwrite="true"/>
         <!-- copy file="${harness.dir}/launchers/${app.exe.prefix}app64.exe" tofile="${build.launcher.dir}/bin/${app.name}64.exe" failonerror="false" overwrite="true"/ -->
     </target>
     <target name="-pre-build-zip" depends="update-version-string,modify-conf"/>
-    <target name="-pre-build-mac" depends="modify-conf"/>
+    <target name="-pre-build-mac" depends="modify-conf,create-mac-icons"/>
     <target name="build-zip" depends="-pre-build-zip,suite.build-zip" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <echo message="Running VirtMus custom build-zip"/>
     </target>
@@ -92,22 +96,42 @@
         <echo message="Running VirtMus custom build-mac"/>
     </target>
     
-    <target name="build-mac-dmg" depends="build-mac"
+    <target name="build-mac-dmg" depends="build-mac,create-mac-icons"
         description="Builds a DMG file for the Mac OS X">
-        <!-- See also: https://github.com/LinusU/node-appdmg -->
-        <exec executable="make">
-            <arg value="-C"/>
-            <arg value="${dist.dir}"/>
-            <arg value="-f"/>
-            <arg value="${basedir}/Installer/fancy-dmg/Makefile"/>
-            <arg value="TEMPLATE_DMG=${basedir}/Installer/template.dmg"/>
-            <arg value="TEMPLATE_SIZE=80m"/>
-            <arg value="NAME=VirtMus"/>
-            <arg value="VERSION=${app.version}"/>
-            <arg value="SOURCE_DIR=${dist.dir}"/>
-            <arg value="SOURCE_FILES=VirtMus.app"/>
+
+        <!--
+        The exec calls don't pick up paths set in .bashrc/.bash_profile on Mac!
+        Since 'appdmg' calls a few utilities on its own, we need to execute it with a
+        proper path (as configured by the system/user). We run bash here just so we
+        can extract the user configured $PATH, and later pass it to exec.
+        -->
+        <exec executable="bash" outputproperty="user.path" errorproperty="bash.errors" failonerror="true">
+            <arg value="-i"/>
+            <arg value="-l"/>
+            <arg value="-c"/>
+            <arg value="echo $$PATH"/>
         </exec>
-        <move file="${dist.dir}/VirtMus-${app.version}.dmg" todir="Installer"/>
+
+        <exec dir="${basedir}/Installer" executable="/Applications/Inkscape.app/Contents/Resources/bin/inkscape">
+            <arg value="--export-png"/>
+            <arg value="${basedir}/Installer/DMG-Background.png"/>
+            <arg value="-d"/>
+            <arg value="72"/>
+            <arg value="${basedir}/Installer/DMG-Background.svg"/>
+        </exec>
+
+        <!-- appdmg refuses to overwrite, so delete the target first. -->        
+        <delete file="${basedir}/Installer/VirtMus-${app.version}.dmg"/>
+        
+        <exec dir="${basedir}/Installer" executable="appdmg" failonerror="true"
+            searchpath="true" resolveexecutable="true">
+            <env key="PATH" path="${user.path}" />
+            <arg value="VirtMus-appdmg.json"/>
+            <arg value="VirtMus-${app.version}.dmg"/>
+        </exec>
+        
+        <!-- Clean-up temporaries. -->
+        <delete file="${basedir}/Installer/DMG-Background.png"/>
     </target>
     
     <target name="create-installer-zip" depends="build-dist" description="Creates a ZIP distribution">
@@ -140,6 +164,8 @@
         from the user's path on Mac. Rather than try to guess, we ask bash.
         Save the makensis location in bash.out if the user has it in their path,
         and fail if they don't.
+        
+        See build-mac-dmg for another alternative.
         -->
         <exec executable="bash" outputproperty="makensis.path" errorproperty="bash.errors" failonerror="true">
             <arg value="-i"/>
