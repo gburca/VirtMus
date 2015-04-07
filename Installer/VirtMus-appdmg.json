@@ -1,0 +1,11 @@
+{
+  "title": "VirtMus",
+  "icon": "VirtMus.icns",
+  "background": "DMG-Background.png",
+  "icon-size": 80,
+
+  "contents": [
+    { "x": 102, "y": 235, "type": "file", "path": "../dist/VirtMus.app" },
+    { "x": 421, "y": 235, "type": "link", "path": "/Applications/" }
+  ]
+}
