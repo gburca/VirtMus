@@ -1,3 +1,6 @@
 [submodule "VirtMus/src/org/json"]
 	path = VirtMus/src/org/json
 	url = https://github.com/douglascrockford/JSON-java.git
+[submodule "Docs/wiki"]
+	path = Docs/wiki
+	url = https://github.com/gburca/VirtMus.wiki.git

@@ -27,4 +27,5 @@ Installer/VirtMusPortable_*.exe
 Docs/publish
 Docs/sitemap.xml
 Docs/urllist.txt
+Docs/wiki.static
 /HttpClient-Wrapper/target/

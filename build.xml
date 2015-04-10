@@ -50,6 +50,35 @@
     <target name="create-docs" depends="javadoc-all" description="Converts the VirtMus.wiki documents into a static site">
         <copy file="Docs/favicon.ico" tofile="Docs/wiki.static/favicon.ico"/>
         <copy file="Docs/img/VirtMusLogo.gif" tofile="Docs/wiki.static/VirtMusLogo.gif"/>
+        
+        <exec executable="bash" outputproperty="user.path" errorproperty="bash.errors" failonerror="true">
+            <arg value="-i"/>
+            <arg value="-l"/>
+            <arg value="-c"/>
+            <arg value="echo $$PATH"/>
+        </exec>
+        
+        <!-- ToDo: Install only if not already installed. -->
+        <exec dir="${basedir}/Docs/wiki" executable="npm" failonerror="true"
+            searchpath="true" resolveexecutable="true">
+            <env key="PATH" path="${user.path}" />
+            <arg value="install"/>
+            <arg value="git+https://github.com/gburca/h5bp-docs.git"/>
+        </exec>
+
+        <exec dir="${basedir}/Docs/wiki" executable="./node_modules/.bin/h5bp-docs" failonerror="true"
+            searchpath="true" resolveexecutable="true">
+            <env key="PATH" path="${user.path}" />
+            <arg value="--src"/>
+            <arg value="."/>
+            <arg value="--dest"/>
+            <arg value="../wiki.static/"/>
+            <arg value="--baseurl"/>
+            <arg value="&quot;/&quot;"/>
+            <arg value="--config"/>
+            <arg value="h5bp-config.js"/>
+        </exec>
+        
     </target>
 
     <!--
