@@ -34,6 +34,7 @@ import org.openide.util.actions.SystemAction;
 @ActionID(id = "com.ebixio.virtmus.actions.RenameItemAction", category = "VirtMus")
 @ActionRegistration(displayName = "#CTL_RenameItemAction", lazy = false)
 @ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "F2"),
     @ActionReference(path = "Menu/Tools", position = 101),
     @ActionReference(path = "Toolbars/General", name = "RenameItemAction", position = 200)})
 public final class RenameItemAction extends RenameAction {
