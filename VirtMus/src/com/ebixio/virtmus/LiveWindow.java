@@ -110,6 +110,7 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
     Graphics2D graph2D;
 
     Thread noScreenSaver;
+    Point lastMouseLocation;
 
     /** Creates new form LiveWindow
      * @param gConfig A graphics configuration
@@ -126,6 +127,8 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
 //        glasspane.setText(NbBundle.getMessage(LiveWindow.class, "LW_Loading"));
         this.setGlassPane(glasspane);
 
+        lastMouseLocation = new Point(100, 100);
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -134,6 +137,12 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                 } else {
                     showPrevSection();
                 }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                lastMouseLocation = e.getLocationOnScreen();
             }
         });
 
@@ -153,8 +162,16 @@ public class LiveWindow extends javax.swing.JFrame implements Renderer.JobReques
                 try {
                     Robot robot = new Robot();
                     while (true) {
-                        robot.mouseMove((int)(Math.random() * 100),
-                                        (int)(Math.random() * 100));
+                        /* On the Mac, the top menu is always displayed, so if we move
+                        the mouse completely randomly and leave it there, it could end
+                        up on the system menu, at which point the mouse click would
+                        not turn the page, but open the system menu instead. */
+
+                        // Move it a bit.
+                        robot.mouseMove(lastMouseLocation.x + (int)(Math.random() * 10),
+                                        lastMouseLocation.y + (int)(Math.random() * 10));
+                        // And move it quickly back.
+                        robot.mouseMove(lastMouseLocation.x, lastMouseLocation.y);
                         try {
                             Thread.sleep(1 * 60 * 1000);
                         } catch (InterruptedException e) {
