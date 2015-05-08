@@ -33,6 +33,7 @@ import org.openide.util.actions.NodeAction;
 @ActionReference(path = "Toolbars/Song", name = "SongSaveAction", position = 400)
 public final class SongSaveAction extends NodeAction {
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         int songs = 0;
         Song s = null;
@@ -69,6 +70,7 @@ public final class SongSaveAction extends NodeAction {
 //        }
 //    }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SongSaveAction.class, "CTL_SongSaveAction");
     }
@@ -78,6 +80,7 @@ public final class SongSaveAction extends NodeAction {
         return "com/ebixio/virtmus/resources/document-save.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -88,6 +91,7 @@ public final class SongSaveAction extends NodeAction {
     }
 
 
+    @Override
     protected boolean enable(Node[] node) {
         for (Node n: node) {
             Song s = n.getLookup().lookup(Song.class);

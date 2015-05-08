@@ -20,6 +20,7 @@
 
 package com.ebixio.virtmus;
 
+import com.ebixio.util.Log;
 import com.ebixio.util.WeakPropertyChangeListener;
 import com.ebixio.virtmus.actions.GoLive;
 import com.ebixio.virtmus.actions.PlayListDelete;
@@ -28,7 +29,9 @@ import com.ebixio.virtmus.actions.RenameItemAction;
 import com.ebixio.virtmus.actions.SavePlayListAction;
 import com.ebixio.virtmus.actions.SongNewAction;
 import com.ebixio.virtmus.actions.SongOpenAction;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -36,16 +39,19 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
+import org.openide.actions.PasteAction;
 import org.openide.actions.ReorderAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -59,7 +65,7 @@ import org.openide.util.lookup.Lookups;
 public class PlayListNode extends AbstractNode
     implements PropertyChangeListener, ChangeListener, Comparable<PlayListNode> {
     private final PlayList playList;
-    
+
     /** Creates a new instance of PlayListNode
      * @param playList The PlayList represented by this node.
      * @param children The Songs in this node's PlayList.
@@ -69,35 +75,49 @@ public class PlayListNode extends AbstractNode
         this.playList = playList;
         displayFormat = new MessageFormat("{0}");
         setIconBaseWithExtension("com/ebixio/virtmus/resources/PlayListNode.png");
-        
+
         playList.addPropertyChangeListener(PlayList.PROP_NAME, new WeakPropertyChangeListener(this, playList));
         playList.addChangeListener(WeakListeners.change(this, playList));
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
-        if (playList.type == PlayList.Type.Normal) {
-            return new Action[] {
-                SystemAction.get(GoLive.class),
-                SystemAction.get(SavePlayListAction.class),
-                SystemAction.get(PlayListRevertAction.class),
-                null,
-                SystemAction.get(SongNewAction.class),
-                SystemAction.get(SongOpenAction.class),
-                null,
-                SystemAction.get(RenameItemAction.class),
-                SystemAction.get(ReorderAction.class),
-                null,
-                SystemAction.get(PlayListDelete.class)
+        switch (playList.type) {
+            case Normal:
+                return new Action[] {
+                    SystemAction.get(GoLive.class),
+                    SystemAction.get(SavePlayListAction.class),
+                    SystemAction.get(PlayListRevertAction.class),
+                    null,
+                    SystemAction.get(SongNewAction.class),
+                    SystemAction.get(SongOpenAction.class),
+                    null,
+                    SystemAction.get(PasteAction.class),
+                    null,
+                    SystemAction.get(RenameItemAction.class),
+                    SystemAction.get(ReorderAction.class),
+                    null,
+                    SystemAction.get(PlayListDelete.class)
 
-            };
-        } else {
-            return new Action[] {
-                SystemAction.get(GoLive.class),
-                null,
-                SystemAction.get(SongNewAction.class),
-                SystemAction.get(SongOpenAction.class),
-            };
+                };
+            case Default:
+                return new Action[] {
+                    SystemAction.get(GoLive.class),
+                    null,
+                    SystemAction.get(SongNewAction.class),
+                    SystemAction.get(SongOpenAction.class),
+                    null,
+                    SystemAction.get(PasteAction.class)
+                };
+            case AllSongs:
+                return new Action[] {
+                    SystemAction.get(GoLive.class),
+                    null,
+                    SystemAction.get(SongNewAction.class),
+                    SystemAction.get(SongOpenAction.class),
+                };
+            default:
+                return new Action[]{};
         }
     }
 
@@ -135,7 +155,7 @@ public class PlayListNode extends AbstractNode
         sheet.put(set);
         return sheet;
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Drag-n-drop ">
 
     @Override
@@ -145,36 +165,53 @@ public class PlayListNode extends AbstractNode
         PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1);
         if (paste != null) s.add(paste);
     }
-    
+
     @Override
-    public PasteType getDropType(Transferable t, final int action, int index) {
+    public PasteType getDropType(final Transferable t, final int action, int index) {
         //Log.log("PlayListNode::getDropType p:" + playList.getName() + " i:" + Integer.toString(index));
-        final Node dropNode = NodeTransfer.node(t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT);
-        if (dropNode != null) {
-            final Song song = dropNode.getLookup().lookup(Song.class);
-            
-            // Prevent a song for being dropped on the source playlist... ?
-            //if (song != null && !this.equals(dropNode.getParentNode()) ) {
-            if (song != null) {
-                //Log.log("PlayListNode::getDropType2 p:" + playList.getName());
-                return new PasteType() {
-                    @Override
-                    public Transferable paste() throws IOException {
-                        if (playList.type != PlayList.Type.AllSongs) {
-                            playList.addSong(song);
+
+        // Can't paste into the AllSongs PlayList
+        if (playList.type == PlayList.Type.AllSongs) return null;
+
+        DataFlavor[] flavors = t.getTransferDataFlavors();
+
+        if (t.isDataFlavorSupported(SongFlavor.SONG_FLAVOR)) {
+            return new PasteType() {
+                @Override
+                public Transferable paste() throws IOException {
+                    try {
+                        Song song = (Song)t.getTransferData(SongFlavor.SONG_FLAVOR);
+                        if (song != null) playList.addSong(song);
+
+                        final Node songNode = NodeTransfer.node(t, NodeTransfer.DND_MOVE + NodeTransfer.CLIPBOARD_CUT);
+                        if (songNode != null) {
+                            //final PlayList source = node.getLookup().lookup(PlayList.class);
+                            songNode.destroy();
                         }
-                        if ((action & DnDConstants.ACTION_MOVE) != 0) {
-                            final PlayList source = dropNode.getLookup().lookup(PlayList.class);
-                            if (source != null && source.type != PlayList.Type.AllSongs) {
-                                source.removeSong(song);
-                            }
-                        }
-                        return null;
+                    } catch (UnsupportedFlavorException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                };
-            }
+                    return null;
+                }
+            };
+        } else if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+            // TODO: Handle file drops. Convert PDFs into songs, and sets of
+            // images into a single song?
+            return new PasteType() {
+                @Override
+                public Transferable paste() throws IOException {
+                    try {
+                        List fileList = (List)t.getTransferData(DataFlavor.javaFileListFlavor);
+                        Log.log("Pasting file");
+                    } catch (UnsupportedFlavorException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return null;
+                }
+            };
+        } else {
+            return null;
         }
-        return null;
     }
 
     @Override
@@ -183,7 +220,7 @@ public class PlayListNode extends AbstractNode
     public boolean canCopy()    { return false; }   // Makes no sense to copy a PlayList
 
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Node name ">
 
     @Override
@@ -195,7 +232,7 @@ public class PlayListNode extends AbstractNode
     public void setName(String nue) {
         playList.setName(nue);
     }
-    
+
     @Override
     public String getName() {
         return playList.getName();
@@ -207,13 +244,13 @@ public class PlayListNode extends AbstractNode
     @Override
     public String getHtmlDisplayName() {
         String name = super.getDisplayName();
-        
+
         if (playList.isFullyLoaded()) {
             name = "<font color='!textText'>" + name + "</font>";
         } else {
             name = "<font color='!controlShadow'>" + name + " (loading)</font>";
         }
-        
+
         if (playList.isDirty()) {
             name = "<i>" + name + "</i>";
         }
@@ -221,7 +258,7 @@ public class PlayListNode extends AbstractNode
         if (playList.isMissingSongs()) {
             name = "<b>" + name + "</b>";
         }
-        
+
         return name;
     }
     // </editor-fold>
@@ -252,4 +289,12 @@ public class PlayListNode extends AbstractNode
         return playList.compareTo(o.playList);
     }
 
+    @Override
+    public String toString() {
+        if (playList.type == PlayList.Type.Normal) {
+            return playList.getName() + " [" + playList.getSourceFile().getAbsolutePath() + "]";
+        } else {
+            return playList.getName();
+        }
+    }
 }

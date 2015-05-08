@@ -18,21 +18,16 @@
 
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListNode;
 import com.ebixio.virtmus.PlayListSet;
 import com.ebixio.virtmus.Song;
-import java.beans.PropertyVetoException;
 import javax.swing.Action;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;

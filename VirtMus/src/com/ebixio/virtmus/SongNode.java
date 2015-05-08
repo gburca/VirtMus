@@ -32,11 +32,14 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
+import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.MoveDownAction;
 import org.openide.actions.MoveUpAction;
@@ -51,6 +54,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -61,7 +65,7 @@ import org.openide.util.lookup.Lookups;
 public class SongNode extends AbstractNode
     implements PropertyChangeListener, ChangeListener, Comparable<SongNode> {
     private Song song;
-    
+
     /** Creates a new instance of SongNode
      * @param playList The playlist the song belongs to
      * @param song The song represented by this node
@@ -71,7 +75,7 @@ public class SongNode extends AbstractNode
         super(children, Lookups.fixed(new Object[]{playList, song, children.getIndex()}));
         nodeConfig(song);
     }
-    
+
     /** Creates a new instance of SongNode. This is used by stand-alone songs
      * that are not tied to a specific PlayList (ex: in the Tag TopComponent).
      * @param song The song represented by this node
@@ -81,7 +85,7 @@ public class SongNode extends AbstractNode
         super(children, Lookups.fixed(new Object[]{song, children.getIndex()}));
         nodeConfig(song);
     }
-    
+
     /** 2nd stage constructor. */
     private void nodeConfig(Song song) {
         this.song = song;
@@ -89,20 +93,43 @@ public class SongNode extends AbstractNode
         setIconBaseWithExtension("com/ebixio/virtmus/resources/SongNode.png");
 
         song.addPropertyChangeListener(Song.PROP_NAME, new WeakPropertyChangeListener(this, song));
-        song.addChangeListener(WeakListeners.change(this, song));        
+        song.addChangeListener(WeakListeners.change(this, song));
     }
-        
+
     @Override
     public boolean canDestroy() {
-        return true;
+        PlayList myPlayList = getLookup().lookup(PlayList.class);
+        return myPlayList != null && myPlayList.type != PlayList.Type.AllSongs;
     }
-    
+
+    /**
+     * Called from
+     * {@link PlayListNode#getDropType(java.awt.datatransfer.Transferable, int, int)}
+     * when a song is cut (Ctrl-X) from a PlayList.
+     *
+     * By the time this function is called, the song has already been added to
+     * the destination PlayList. We need to find the source PlayList and remove
+     * the song from it (which should update the nodes).
+     *
+     * @see PlayListNode#getDropType(java.awt.datatransfer.Transferable, int, int)
+     * @throws IOException
+     */
+    @Override
+    public void destroy() throws IOException {
+        //Song s = getLookup().lookup(Song.class);
+        PlayList source = getLookup().lookup(PlayList.class);
+        if (source != null && source.type != PlayList.Type.AllSongs) {
+            source.removeSong(song);
+        }
+    }
+
+
     @Override
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set set = Sheet.createPropertiesSet();
         Song s = getLookup().lookup(Song.class);
-        
+
         try {
             Property nameProp = new PropertySupport.Reflection<String>(s, String.class, "name"); // get/setName
             Property fileProp = new PropertySupport.Reflection<File>(s, File.class, "getSourceFile", null); // only getSourceFile
@@ -121,27 +148,48 @@ public class SongNode extends AbstractNode
         } catch (NoSuchMethodException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        
+
         sheet.put(set);
         return sheet;
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get( NewAction.class ),
-            SystemAction.get( SongSaveAction.class ),
-            SystemAction.get( SongSaveAsAction.class ),
-            SystemAction.get( SongRemoveAction.class ),
-            SystemAction.get( RenameItemAction.class ),
-            null,
-            SystemAction.get( PasteAction.class ),
-            SystemAction.get( CutAction.class ),
-            null,
-            SystemAction.get( ReorderAction.class ),
-            SystemAction.get( MoveUpAction.class ),
-            SystemAction.get( MoveDownAction.class )
-        };
+        PlayList pl = getLookup().lookup(PlayList.class);
+
+        // Let's not confuse the user by allowing reordering if we won't save
+        // the new ordering.
+        if (pl == null || pl.type == PlayList.Type.AllSongs) {
+            return new Action[] {
+                SystemAction.get( NewAction.class ),
+                SystemAction.get( SongSaveAction.class ),
+                SystemAction.get( SongSaveAsAction.class ),
+                SystemAction.get( SongRemoveAction.class ),
+                SystemAction.get( RenameItemAction.class ),
+                null,
+                SystemAction.get( CutAction.class ),
+                SystemAction.get( CopyAction.class ),
+                SystemAction.get( PasteAction.class ),
+            };
+        } else {
+            return new Action[] {
+                SystemAction.get( NewAction.class ),
+                SystemAction.get( SongSaveAction.class ),
+                SystemAction.get( SongSaveAsAction.class ),
+                SystemAction.get( SongRemoveAction.class ),
+                SystemAction.get( RenameItemAction.class ),
+                null,
+                SystemAction.get( CutAction.class ),
+                SystemAction.get( CopyAction.class ),
+                SystemAction.get( PasteAction.class ),
+                null,
+                // We could override these classes and redefine enable().
+                // See: SongRemoveAction#enable(Node[] nodes)
+                SystemAction.get( ReorderAction.class ),
+                SystemAction.get( MoveUpAction.class ),
+                SystemAction.get( MoveDownAction.class )
+            };
+        }
     }
 
     public Song getSong() {
@@ -149,11 +197,21 @@ public class SongNode extends AbstractNode
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Drag-n-drop ">
-    
+
+    /**
+     * This controls the CutAction context menu availability. If we return false
+     * the menu option is disabled. If we return true, then it is selectable.
+     *
+     * @return true if cutting this node is supported.
+     * @see #getActions(boolean)
+     */
     @Override
-    public boolean canCut()     { return true; }
+    public boolean canCut() {
+        return canDestroy();
+    }
+
     @Override
-    public boolean canCopy()    { return true; }
+    public boolean canCopy() { return true; }
 
     @Override
     protected void createPasteTypes(Transferable t, List<PasteType> s) {
@@ -176,9 +234,10 @@ public class SongNode extends AbstractNode
             final MusicPage mp = dropNode.getLookup().lookup( MusicPage.class );
             // We only accept a MusicPage to be dropped on this SongNode
             if (mp != null) {
-                
+
                 //Log.log("SongNode::getDropType2 " + Integer.toString(index) + " " + Integer.toString(action) + " s:" + song.getName());
                 return new PasteType() {
+                    @Override
                     public Transferable paste() throws IOException {
                         //song.addPage(new MusicPage(song, mp.getSourceFile()));
                         song.addPage(mp.clone(song));
@@ -193,6 +252,32 @@ public class SongNode extends AbstractNode
         }
         return null;
     }
+
+    @Override
+    public Transferable clipboardCut() throws IOException {
+        Transferable deflt = super.clipboardCut();
+        ExTransferable added = ExTransferable.create(deflt);
+        added.put(new ExTransferable.Single(SongFlavor.SONG_FLAVOR) {
+            @Override
+            protected Song getData() {
+                return getLookup().lookup(Song.class);
+            }
+        });
+        return added;
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        Transferable deflt = super.clipboardCopy();
+        ExTransferable added = ExTransferable.create(deflt);
+        added.put(new ExTransferable.Single(SongFlavor.SONG_FLAVOR) {
+            @Override
+            protected Song getData() {
+                return getLookup().lookup(Song.class);
+            }
+        });
+        return added;
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc=" PropertyChangeListener interface ">
@@ -204,9 +289,9 @@ public class SongNode extends AbstractNode
         }
     }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Node name ">
-    
+
     @Override
     public boolean canRename()  { return true; }
     @Override
@@ -225,15 +310,15 @@ public class SongNode extends AbstractNode
     @Override
     public String getHtmlDisplayName() {
         String name = getDisplayName();
-        
+
         if (song.isDirty()) {
             name = "<i>" + name + "</i>";
         }
-        
+
         return name;
     }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc=" ChangeListener interface ">
     @Override
     public void stateChanged(ChangeEvent e) {
@@ -246,4 +331,8 @@ public class SongNode extends AbstractNode
         return song.compareTo(o.song);
     }
 
+    @Override
+    public String toString() {
+        return song.getName() + " [" + song.getSourceFile().getAbsolutePath() + "]";
+    }
 }

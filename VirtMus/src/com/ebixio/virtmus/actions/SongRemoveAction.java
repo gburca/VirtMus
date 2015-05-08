@@ -41,6 +41,7 @@ import org.openide.util.actions.SystemAction;
     @ActionReference(path = "Toolbars/Song", name = "SongRemoveAction", position = 300)})
 public final class SongRemoveAction extends NodeAction {
     
+    @Override
     public void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
@@ -60,22 +61,27 @@ public final class SongRemoveAction extends NodeAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SongRemoveAction.class, "CTL_SongRemoveAction");
     }
     
+    @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SongRemoveAction.gif";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         // Make sure all nodes are "song" nodes
         boolean result = false;
