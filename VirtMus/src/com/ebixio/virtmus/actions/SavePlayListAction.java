@@ -31,7 +31,7 @@ import org.openide.util.actions.NodeAction;
 @ActionRegistration(displayName = "#CTL_SavePlayListAction", lazy = false)
 @ActionReference(path = "Toolbars/PlayList", name = "SavePlayListAction", position = 300)
 public final class SavePlayListAction extends NodeAction {
-    
+
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
@@ -40,30 +40,30 @@ public final class SavePlayListAction extends NodeAction {
             setEnabled(false);
         }
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(SavePlayListAction.class, "CTL_SavePlayListAction");
     }
-    
+
     @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SavePlayListAction.png";
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
 
     @Override
-    protected boolean enable(Node[] node) {
-        for (Node n: node) {
+    protected boolean enable(Node[] nodes) {
+        for (Node n: nodes) {
             PlayList pl = n.getLookup().lookup(PlayList.class);
             if (pl != null && pl.isDirty()) return true;
         }

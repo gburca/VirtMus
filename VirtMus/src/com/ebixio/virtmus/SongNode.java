@@ -21,6 +21,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.WeakPropertyChangeListener;
+import com.ebixio.virtmus.actions.Pdf2JpegAction;
 import com.ebixio.virtmus.actions.RenameItemAction;
 import com.ebixio.virtmus.actions.SongRemoveAction;
 import com.ebixio.virtmus.actions.SongSaveAction;
@@ -170,6 +171,8 @@ public class SongNode extends AbstractNode
                 SystemAction.get( CutAction.class ),
                 SystemAction.get( CopyAction.class ),
                 SystemAction.get( PasteAction.class ),
+                null,
+                SystemAction.get( Pdf2JpegAction.class ),
             };
         } else {
             return new Action[] {
@@ -182,6 +185,8 @@ public class SongNode extends AbstractNode
                 SystemAction.get( CutAction.class ),
                 SystemAction.get( CopyAction.class ),
                 SystemAction.get( PasteAction.class ),
+                null,
+                SystemAction.get( Pdf2JpegAction.class ),
                 null,
                 // We could override these classes and redefine enable().
                 // See: SongRemoveAction#enable(Node[] nodes)
