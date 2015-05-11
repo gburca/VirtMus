@@ -9,9 +9,13 @@ import com.ebixio.util.Log;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.Song;
+import com.ebixio.virtmus.Utils;
+import com.ebixio.virtmus.imgsrc.GenericImg;
 import com.ebixio.virtmus.imgsrc.IcePdfImg;
+import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
 import com.ebixio.virtmus.imgsrc.PdfViewImg;
+import java.io.File;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -41,7 +45,43 @@ public class Pdf2JpegAction extends CookieAction {
             Song s = n.getLookup().lookup((Song.class));
             if (hasPdfPage(s)) {
                 Log.log("Converting node to JPEG: " + n.getDisplayName());
+                convertSong(s);
             }
+        }
+    }
+    
+    private void convertSong(Song s) {
+        File curSongF = s.getSourceFile();
+        File curDir = curSongF.getParentFile();
+        File newDir = new File(Utils.trimExtension(curSongF.getName(),
+                Song.SONG_FILE_EXT));
+        File newSongF = new File(newDir.getName() + File.separator + curSongF.getName());
+        
+        if (newDir.exists() || !newDir.mkdir()) {
+            // TODO: Throw some exception?
+            return;
+        } else {
+            // Move/Convert pages first
+            //Song newSong = new Song();
+            int mpNr = 0;
+            for (MusicPage mp: s.pageOrder) {
+                mpNr++;
+                File newMusicPageF = new File(newDir.getName() + File.separator
+                        + String.format("%s-%02d.jpg", curSongF.getName(), mpNr));
+                
+                if (mp.imgSrc.getImgType() != ImgSrc.ImgType.PDF) {
+                    // Move to new dir
+                    mp.imgSrc.sourceFile.renameTo(newMusicPageF);
+                    // TODO: Check to see if another song references this file
+                    // and just copy it if that's the case?
+                    mp.imgSrc.sourceFile = newMusicPageF;
+                } else {
+                    mp.saveImg(newMusicPageF, "jpg");
+                    mp.imgSrc = new GenericImg(newMusicPageF);
+                }
+            }
+            s.save();
+            curSongF.renameTo(newSongF);
         }
     }
 
@@ -58,11 +98,7 @@ public class Pdf2JpegAction extends CookieAction {
         if (s == null) return false;
 
         for (MusicPage mp: s.pageOrder) {
-            if (mp.imgSrc instanceof PdfImg
-                    || mp.imgSrc instanceof IcePdfImg
-                    || mp.imgSrc instanceof PdfViewImg) {
-                return true;
-            }
+            if (mp.imgSrc.getImgType() == ImgSrc.ImgType.PDF) return true;
         }
 
         return false;

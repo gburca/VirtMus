@@ -62,6 +62,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Matcher;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -84,6 +85,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.apache.xerces.impl.xpath.regex.RegularExpression;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.SaveAsCapable;
@@ -120,6 +122,7 @@ public class Song implements Comparable<Song> {
 
     // transients are not initialized when the object is deserialized !!!
     private transient File sourceFile = null;
+    public static final String SONG_FILE_EXT = ".song.xml";
 
     public static final String PROP_TAGS = "tagsProp";
     public static final String PROP_NAME = "nameProp";
@@ -352,7 +355,7 @@ public class Song implements Comparable<Song> {
         if (name != null && name.length() > 0) {
             return name;
         } else if (this.sourceFile != null) {
-            return this.sourceFile.getName().replaceFirst("\\.song\\.xml", "");
+            return Utils.trimExtension(sourceFile.getName(), SONG_FILE_EXT);
         } else {
             return "No name";
         }
@@ -413,8 +416,8 @@ public class Song implements Comparable<Song> {
         int returnVal = fc.showSaveDialog(mainWindow);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            if (! file.toString().endsWith(".song.xml")) {
-                file = new File(file.toString().concat(".song.xml"));
+            if (! file.toString().endsWith(SONG_FILE_EXT)) {
+                file = new File(file.toString().concat(SONG_FILE_EXT));
             }
             if (file.exists()) {
                 returnVal = JOptionPane.showConfirmDialog(null, "Overwrite existing file?", "Overwrite?", JOptionPane.YES_NO_OPTION);
@@ -573,7 +576,7 @@ public class Song implements Comparable<Song> {
      * @return The de-serialized song, or null if an error was encountered.
      */
     static Song deserialize(File f) {
-        if (f == null || !f.getName().endsWith(".song.xml")) return null;
+        if (f == null || !f.getName().endsWith(SONG_FILE_EXT)) return null;
 
         String canonicalPath;
         try {

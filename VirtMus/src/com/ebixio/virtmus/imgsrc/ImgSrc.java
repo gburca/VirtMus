@@ -5,7 +5,6 @@
 
 package com.ebixio.virtmus.imgsrc;
 
-import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.options.Options;
 import com.ebixio.virtmus.xml.FileConverter;
@@ -31,7 +30,11 @@ public abstract class ImgSrc {
     transient protected Dimension dimension = null;
     @XStreamConverter(FileConverter.class)
     public File sourceFile;
-
+    
+    public enum ImgType {
+        PDF, JPG, PNG, OTHER
+    }
+    
     public ImgSrc(File sourceFile) {
         this.sourceFile = sourceFile;
     }
@@ -84,6 +87,8 @@ public abstract class ImgSrc {
     public void setSourceFile(File sourceFile) {
         this.sourceFile = sourceFile;
     }
+    
+    public abstract ImgType getImgType();
 
     protected BufferedImage errText(BufferedImage img, Graphics2D g, String msg, Rectangle destSize) {
         int strW = g.getFontMetrics().stringWidth(msg);

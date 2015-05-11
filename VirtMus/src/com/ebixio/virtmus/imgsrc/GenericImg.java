@@ -30,6 +30,18 @@ public class GenericImg extends ImgSrc {
     public GenericImg(File sourceFile) {
         super(sourceFile);
     }
+    
+    @Override
+    public ImgType getImgType() {
+        String name = sourceFile.getName().toLowerCase();
+        if (name.endsWith(".png")) {
+            return ImgType.PNG;
+        } else if (name.endsWith("jpg") || name.endsWith("jpeg")) {
+            return ImgType.JPG;
+        } else {
+            return ImgType.OTHER;
+        }
+    }
 
     void closeStream(FileSeekableStream stream) {
         if (stream == null) {

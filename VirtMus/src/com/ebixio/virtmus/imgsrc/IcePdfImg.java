@@ -61,6 +61,11 @@ public class IcePdfImg extends PdfImg {
     public IcePdfImg(File sourceFile, int pageNum) {
         super(sourceFile, pageNum);
     }
+    
+    @Override
+    public ImgType getImgType() {
+        return ImgType.PDF;
+    }
 
     private float getPageScale() {
         if (dimension == null) getDimension();

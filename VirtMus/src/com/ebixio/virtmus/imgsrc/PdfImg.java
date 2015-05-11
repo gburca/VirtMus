@@ -63,6 +63,11 @@ public class PdfImg extends ImgSrc {
         super(sourceFile);
         this.pageNum = pageNum;
     }
+    
+    @Override
+    public ImgType getImgType() {
+        return ImgType.PDF;
+    }
 
     @Override
     public Dimension getDimension() {

@@ -21,6 +21,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.virtmus.imgsrc.GenericImg;
+import com.ebixio.virtmus.imgsrc.IcePdfImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
 import com.ebixio.virtmus.options.Options;
@@ -144,7 +145,7 @@ public abstract class MusicPage {
     public void setSourceFile(File file) {
         imgSrc.setSourceFile(file);
     }
-
+    
     public void setName(String name) {
         if (name.equals(this.name)) return;
         this.name = name;
