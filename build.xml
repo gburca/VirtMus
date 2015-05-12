@@ -49,15 +49,14 @@
     
     <target name="create-docs" depends="javadoc-all" description="Converts the VirtMus.wiki documents into a static site">
         <copy file="Docs/favicon.ico" tofile="Docs/wiki.static/favicon.ico"/>
-        <copy file="Docs/img/VirtMusLogo.gif" tofile="Docs/wiki.static/VirtMusLogo.gif"/>
-        
+
         <exec executable="bash" outputproperty="user.path" errorproperty="bash.errors" failonerror="true">
             <arg value="-i"/>
             <arg value="-l"/>
             <arg value="-c"/>
             <arg value="echo $$PATH"/>
         </exec>
-        
+
         <!-- ToDo: Install only if not already installed. -->
         <exec dir="${basedir}/Docs/wiki" executable="npm" failonerror="true"
             searchpath="true" resolveexecutable="true">
@@ -78,7 +77,9 @@
             <arg value="--config"/>
             <arg value="h5bp-config.js"/>
         </exec>
-        
+
+        <copy file="Docs/img/VirtMusLogo.gif" tofile="Docs/wiki.static/public/VirtMusLogo.gif"/>
+        <copy file="Docs/img/bitcoin-button.png" tofile="Docs/wiki.static/public/bitcoin-button.png"/>
     </target>
 
     <!--
