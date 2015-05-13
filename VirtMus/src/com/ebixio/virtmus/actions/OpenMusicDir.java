@@ -33,11 +33,8 @@ public final class OpenMusicDir implements ActionListener {
             InstanceCookie ic = dataObj.getLookup().lookup(InstanceCookie.class);
             Action a = (Action)ic.instanceCreate();
             a.actionPerformed(e);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-
     }
 }
