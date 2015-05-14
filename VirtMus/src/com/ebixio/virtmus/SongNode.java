@@ -21,7 +21,7 @@
 package com.ebixio.virtmus;
 
 import com.ebixio.util.WeakPropertyChangeListener;
-import com.ebixio.virtmus.actions.Pdf2JpegAction;
+import com.ebixio.virtmus.actions.SongPdf2JpgAction;
 import com.ebixio.virtmus.actions.RenameItemAction;
 import com.ebixio.virtmus.actions.SongRemoveAction;
 import com.ebixio.virtmus.actions.SongSaveAction;
@@ -33,8 +33,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -172,7 +170,7 @@ public class SongNode extends AbstractNode
                 SystemAction.get( CopyAction.class ),
                 SystemAction.get( PasteAction.class ),
                 null,
-                SystemAction.get( Pdf2JpegAction.class ),
+                SystemAction.get( SongPdf2JpgAction.class ),
             };
         } else {
             return new Action[] {
@@ -186,7 +184,7 @@ public class SongNode extends AbstractNode
                 SystemAction.get( CopyAction.class ),
                 SystemAction.get( PasteAction.class ),
                 null,
-                SystemAction.get( Pdf2JpegAction.class ),
+                SystemAction.get( SongPdf2JpgAction.class ),
                 null,
                 // We could override these classes and redefine enable().
                 // See: SongRemoveAction#enable(Node[] nodes)

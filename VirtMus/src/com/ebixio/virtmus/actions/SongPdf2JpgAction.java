@@ -53,12 +53,13 @@ import org.openide.windows.WindowManager;
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-@ActionID(id = "com.ebixio.virtmus.actions.Pdf2JpegAction", category = "Song")
-@ActionRegistration(displayName = "#CTL_Pdf2JpegAction", lazy = false)
+@ActionID(id = "com.ebixio.virtmus.actions.SongPdf2JpgAction", category = "Song")
+@ActionRegistration(displayName = "#CTL_SongPdf2JpgAction", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Menu/Song"),
-    @ActionReference(path = "Toolbars/Song", name = "Pdf2JpegAction", position = 900)})
-public class Pdf2JpegAction extends CookieAction {
+    @ActionReference(path = "Menu/Song", position = 2000),
+    //@ActionReference(path = "Toolbars/Song", name = "SongPdf2JpgAction", position = 900)
+})
+public class SongPdf2JpgAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] nodes) {
@@ -224,7 +225,7 @@ public class Pdf2JpegAction extends CookieAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(Pdf2JpegAction.class, "CTL_Pdf2JpegAction");
+        return NbBundle.getMessage(SongPdf2JpgAction.class, "CTL_SongPdf2JpgAction");
     }
 
     @Override
