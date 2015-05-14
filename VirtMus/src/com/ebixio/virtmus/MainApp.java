@@ -47,7 +47,7 @@ public final class MainApp {
 
     private static MainApp instance;
 
-    public static final String VERSION = "4.01";
+    public static final String VERSION = "4.03";
 
     /** Creates a new instance of MainApp */
     private MainApp() {

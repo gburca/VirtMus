@@ -10,7 +10,7 @@
 ;--------------------------------
 ;General
         ; The build.xml update-version-string target will update this define.
-	!define VERSION "4.01"
+	!define VERSION "4.03"
 
 	; This ${PRODUCT} !define is used throughout this intaller for a lot of
 	; things including install directory names and links. It should probably
