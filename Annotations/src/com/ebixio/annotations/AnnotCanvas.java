@@ -46,12 +46,12 @@ import org.openide.awt.UndoRedo;
  */
 public class AnnotCanvas extends ImageDisplay implements Serializable,
         MouseListener, MouseMotionListener {
-    
+
     public Paint paint = Color.BLUE;
     public int diam = 10;
     public float alpha = 1.0F;
     public float scale = 1.0F;
-    
+
     public MusicPage musicPage = null;
 
     public Rectangle imgBounds;
@@ -65,34 +65,34 @@ public class AnnotCanvas extends ImageDisplay implements Serializable,
         addMouseMotionListener(this);
         setBackground(Color.BLACK);
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Setters and Getters ">
     public void setMusicPage(MusicPage musicPage) {
         this.musicPage = musicPage;
     }
-    
+
     public void setAlpha(float alpha) {
         this.alpha = alpha;
     }
-    
+
     public void setScale(float scale) {
         this.scale = scale;
     }
-    
+
     public void setDiam(int val) {
         this.diam = val;
     }
     public int getDiam() {
         return diam;
     }
-    
+
     public void setPaint(Paint c) {
         this.paint = c;
     }
     public Paint getPaint() {
         return paint;
     }
-    
+
     public void setOrigin(Point p) {
         super.setOrigin(p.x, p.y);
     }
@@ -108,14 +108,14 @@ public class AnnotCanvas extends ImageDisplay implements Serializable,
             return Color.BLACK;
         }
     }
-    
+
     public void clear() {
         if (musicPage != null) {
             musicPage.clearAnnotations();
-            repaint();
         }
+        repaint();
     }
-    
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
@@ -127,7 +127,7 @@ public class AnnotCanvas extends ImageDisplay implements Serializable,
         newXform.concatenate( AffineTransform.getTranslateInstance(-orig.x, -orig.y) );
         newXform.concatenate( AffineTransform.getScaleInstance(scale, scale) );
         g2d.setTransform( newXform );
-        
+
         if (musicPage != null) {
             musicPage.paintAnnotations(g2d);
         }
@@ -169,8 +169,8 @@ public class AnnotCanvas extends ImageDisplay implements Serializable,
             undoManager.undoableEditHappened(ue);
         }
     }
-    
-    
+
+
     /** This function will convert the coordinates of a mouse click (with (0,0) being
      * the upper-left corner of the canvas component) into coordinates with respect
      * to the raw image file. The image could be scaled and translated.
@@ -184,37 +184,37 @@ public class AnnotCanvas extends ImageDisplay implements Serializable,
         p.move(Math.round(p.x/scale), Math.round(p.y/scale));
         return p;
     }
-    
+
     @Override
     public void mouseClicked(MouseEvent e) {
         if (musicPage != null) tool.mouseClicked(e);
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e) {
         if (musicPage != null) tool.mousePressed(e);
     }
-    
+
     @Override
     public void mouseReleased(MouseEvent e) {
         if (musicPage != null) tool.mouseReleased(e);
     }
-    
+
     @Override
     public void mouseEntered(MouseEvent e) {
         if (musicPage != null) tool.mouseEntered(e);
     }
-    
+
     @Override
     public void mouseExited(MouseEvent e) {
         if (musicPage != null) tool.mouseExited(e);
     }
-    
+
     @Override
     public void mouseDragged(MouseEvent e) {
         if (musicPage != null) tool.mouseDragged(e);
     }
-    
+
     @Override
     public void mouseMoved(MouseEvent e) {
         if (musicPage != null) tool.mouseMoved(e);

@@ -56,14 +56,15 @@ import org.apache.batik.ext.awt.RenderingHintsKeyExt;
 public class PdfImg extends ImgSrc {
     public int pageNum;
     private PdfImg pdfSrc;
+    private Object pdfSrcLock = new Object();
     protected transient String pageErr = null;
     protected transient File tmpImgFile = null;
-    
+
     public PdfImg(File sourceFile, int pageNum) {
         super(sourceFile);
         this.pageNum = pageNum;
     }
-    
+
     @Override
     public ImgType getImgType() {
         return ImgType.PDF;
@@ -239,17 +240,19 @@ public class PdfImg extends ImgSrc {
      * @return
      */
     private PdfImg getPdfSrc() {
-        if (pdfSrc == null) {
-            IcePdfImg icePdfSrc = new IcePdfImg(sourceFile, pageNum);
-            if (icePdfSrc.canRender()) {
-                pdfSrc = icePdfSrc;
-                StatsCollector.findInstance().usingRenderer("org.icepdf");
-            } else {
-                pdfSrc = new PdfViewImg(sourceFile, pageNum);
-                StatsCollector.findInstance().usingRenderer("com.sun.pdfview");
+        synchronized (pdfSrcLock) {
+            if (pdfSrc == null) {
+                IcePdfImg icePdfSrc = new IcePdfImg(sourceFile, pageNum);
+                if (icePdfSrc.canRender()) {
+                    pdfSrc = icePdfSrc;
+                    StatsCollector.findInstance().usingRenderer("org.icepdf");
+                } else {
+                    pdfSrc = new PdfViewImg(sourceFile, pageNum);
+                    StatsCollector.findInstance().usingRenderer("com.sun.pdfview");
+                }
             }
+            return pdfSrc;
         }
-        return pdfSrc;
     }
 
     /**
@@ -282,4 +285,13 @@ public class PdfImg extends ImgSrc {
     public void setDimension(Dimension dim) {
 
     }
+
+    @Override
+    public void setSourceFile(File sourceFile) {
+        synchronized (pdfSrcLock) {
+            pdfSrc = null; // Need to regenerate this with the new PDF.
+            super.setSourceFile(sourceFile);
+        }
+    }
+
 }

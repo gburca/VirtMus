@@ -60,11 +60,11 @@ import org.openide.windows.WindowManager;
  */
 public final class AnnotTopComponent extends TopComponent
         implements ComponentListener {
-       
+
     private static AnnotTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/ebixio/annotations/annot-tab-icon.png";
-    
+
     private static final String PREFERRED_ID = "AnnotTopComponent";
     private PlanarImage source = null;
     private PlanarImage scaledSource = null;
@@ -86,25 +86,25 @@ public final class AnnotTopComponent extends TopComponent
     }
 
     private AnnotTopComponent() {
-        
+
         initComponents();
         setName(NbBundle.getMessage(AnnotTopComponent.class, "CTL_AnnotTopComponent"));
         setToolTipText(NbBundle.getMessage(AnnotTopComponent.class, "HINT_AnnotTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        
+
         panner.setBorder(new LineBorder(Color.RED, 2));
         panner.setVisible(false);
-        
+
         this.addComponentListener(this);
-        
+
         // Initialize the canvas with the default alpha value
         jsAlphaStateChanged(null);
-        
+
         // Initialize the color chooser with a random bright color
         colorChooser.setColor(Color.getHSBColor((float)Math.random(), 0.9F, 0.9F));
         colorChooserActionPerformed(null);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -338,7 +338,7 @@ public final class AnnotTopComponent extends TopComponent
             canvas.tool = (DrawingTool)evt.getItem();
         }
     }//GEN-LAST:event_toolChooserItemStateChanged
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.ebixio.annotations.BrushPreview brushPreview;
     private com.ebixio.annotations.AnnotCanvas canvas;
@@ -361,7 +361,7 @@ public final class AnnotTopComponent extends TopComponent
     private com.ebixio.jai.Panner panner;
     private javax.swing.JComboBox<DrawingTool> toolChooser;
     // End of variables declaration//GEN-END:variables
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Singleton ">
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -375,7 +375,7 @@ public final class AnnotTopComponent extends TopComponent
         }
         return instance;
     }
-    
+
     /**
      * Obtain the AnnotTopComponent instance. Never call {@link #getDefault} directly!
      * @return The AnnotTopComponent singleton
@@ -396,12 +396,12 @@ public final class AnnotTopComponent extends TopComponent
         return getDefault();
     }
     // </editor-fold>
-    
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-    
+
     @Override
     public void addNotify() {
         CommonExplorers.MainExplorerManager.addPropertyChangeListener(eListener);
@@ -419,30 +419,31 @@ public final class AnnotTopComponent extends TopComponent
     public UndoRedo getUndoRedo() {
         return canvas.undoManager;
     }
-    
+
     /**
      * This function gets called every time the selected nodes change.
      * The results change to "nothing" when the focus moves away from the TopComponent
      * that contains the nodes. It gets changed to the selected node when focus returns
      * to the TopComponent, etc...
-     * 
+     *
      * Since setImage is very time-consuming for large images, we want to do it only if
      * it is different from the image being currently displayed.
      */
     private void updateSelection(Node[] nodes) {
         if (nodes.length > 0) {
-            Lookup l = nodes[0].getLookup();
-            Collection pages = l.lookupResult(MusicPage.class).allInstances();
-            if (!pages.isEmpty()) {
-                MusicPage mp = (MusicPage) pages.iterator().next();
-                if (currentlyShowing != mp) {
-                    currentlyShowing = mp;
-                    this.showPage(mp);
-                }
+            MusicPage mp = nodes[0].getLookup().lookup(MusicPage.class);
+            // Only change the currently showing node if another MusicPage was
+            // selected. Ignore Song or PlayList nodes.
+            if (mp != null && currentlyShowing != mp) {
+                currentlyShowing = mp;
+                this.showPage(mp);
             }
+        } else {
+            currentlyShowing = null;
+            this.showPage(null);
         }
     }
-    
+
     /**
      *
      * @param scale A scaling percentage between [0.1 .. 1]
@@ -451,13 +452,13 @@ public final class AnnotTopComponent extends TopComponent
         if (source == null) {
             return;
         }
-        
+
         if (scale < 0.1) {
             scale = 0.1F;
         } else if (scale > 1) {
             scale = 1.0F;
         }
-        
+
         canvas.setScale(scale);
 
         // Use "SubsampleAverage" because it looks much better.
@@ -472,7 +473,11 @@ public final class AnnotTopComponent extends TopComponent
         // Reset zoom so the change property fires when the page is scaled to fit.
         this.jsZoom.setValue(100 * 10);
         canvas.setMusicPage(page);
-        
+        if (page == null) {
+            canvas.repaint();
+            return;
+        }
+
         page.setChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -486,7 +491,7 @@ public final class AnnotTopComponent extends TopComponent
         } else {
             return;
         }
-        
+
         // Loading an image takes some time. We do it on a separate thread.
         SwingWorker w = new SwingWorker<Boolean, Void>() {
             @Override
@@ -499,21 +504,21 @@ public final class AnnotTopComponent extends TopComponent
                 }
                 return new Boolean(true);
             }
-            
+
             @Override
             public void done() {
                 resizeImgToFit();
             }
         };
-        
+
         w.execute();
     }
-    
+
     public void showImage(PlanarImage imgSource) {
         canvas.set(imgSource);
-        
+
         /* We need to wait for the imgLoader in canvas.set to finish before attempting to configure
-         * the panner, or else the image won't be fully loaded when we do source.getHeight() in 
+         * the panner, or else the image won't be fully loaded when we do source.getHeight() in
          * configurePanner() and we'll block the UI thread waiting for it to load.
          */
         SwingWorker w = new SwingWorker<Boolean, Void>() {
@@ -531,25 +536,25 @@ public final class AnnotTopComponent extends TopComponent
                 }
                 return new Boolean(true);
             }
-            
+
             @Override
             public void done() {
                 configurePanner();
             }
         };
-        
+
         w.execute();
-        
+
         // Need to re-paint the areas outside the canvas when the canvas shrinks
         this.canvasPanel.repaint();
     }
-    
+
     private void resizeImgToFit() {
         if (source == null) return;
-        
+
         double dScale = 1000 * com.ebixio.virtmus.Utils.scaleProportional(canvasPanel.getBounds(), source.getBounds());
         int scale;
-        
+
         if (dScale < 1) {
             scale = 1;
         } else if (dScale >= 1000) {
@@ -561,18 +566,18 @@ public final class AnnotTopComponent extends TopComponent
         // If the zoom value changes, the listeners will be notified.
         this.jsZoom.setValue(scale);
     }
-    
+
     /**
      * The panner should only be shown if the image is larger than the canvas.
      */
     private void configurePanner() {
         PlanarImage currentSource = (scaledSource != null) ? scaledSource : source;
-        
+
         if (currentSource == null) {
             panner.setVisible(false);
             return;
         }
-        
+
         // source.getWidth() (or Height) could throw an exception if the source is invalid
         try {
             /* source.getWidth/Height() will block until the image is decoded, so this function
@@ -589,7 +594,7 @@ public final class AnnotTopComponent extends TopComponent
                 canvas.revalidate();
             }
         } catch (Exception e) {
-            
+
         }
     }
 
@@ -634,14 +639,14 @@ public final class AnnotTopComponent extends TopComponent
         }
     }
 
-    /** replaces this in object stream 
+    /** replaces this in object stream
      * @return Something or another.
      */
     @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
-    
+
     @Override
     protected String preferredID() {
         return PREFERRED_ID;

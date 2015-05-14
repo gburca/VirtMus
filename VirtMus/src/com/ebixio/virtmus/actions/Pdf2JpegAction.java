@@ -5,22 +5,16 @@
  */
 package com.ebixio.virtmus.actions;
 
-import com.ebixio.util.Log;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListSet;
 import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.Utils;
-import com.ebixio.virtmus.imgsrc.GenericImg;
-import com.ebixio.virtmus.imgsrc.IcePdfImg;
 import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
-import com.ebixio.virtmus.imgsrc.PdfViewImg;
 import java.awt.Frame;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -31,10 +25,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.CookieAction;
-import org.openide.util.actions.NodeAction;
 import org.openide.windows.WindowManager;
 
 /**
@@ -73,33 +64,16 @@ public class Pdf2JpegAction extends CookieAction {
     protected void performAction(Node[] nodes) {
         Song s = nodes[0].getLookup().lookup(Song.class);
         convertSong(s);
-
-//        for (Node n: nodes) {
-//            Song s = n.getLookup().lookup((Song.class));
-//            if (hasPdfPage(s)) {
-//                Log.log("Converting node to JPEG: " + n.getDisplayName());
-//                // TODO: The user could select the same song in 2 different
-//                // PlayLists (or even two copies of the same song in the same
-//                // PlayList. Make sure the hasPdfPages() check is enough.
-//                convertSong(s);
-//            }
-//        }
     }
 
     private void convertSong(Song s) {
         /* Consider what happens when the song file is named "Foo.pdf.song.xml".
-        There's a good chance the song pages come from Foo.pdf. We can't just
-        use "songFile - songExt" as the destination directory. So let the user
-        choose the directory.
-        */
+         * There's a good chance the song pages come from Foo.pdf in the same
+         * directory. We can't just use "songFile - songExt" as the destination
+         * directory. So let the user choose the directory.
+         */
         File curSongF = s.getSourceFile();
         File curDir = curSongF.getParentFile();
-        //File newDir = new File(Utils.trimExtension(curSongF.getName(),
-        //        Song.SONG_FILE_EXT)); // Not absolute
-        //String newSongStem = newDir.getName() + File.separator
-        //        + Utils.trimExtension(curSongF.getName(), Song.SONG_FILE_EXT);
-        //File newSongF = new File(newSongStem + Song.SONG_FILE_EXT);
-        //File newSongJpgF = new File(newSongStem + "-jpg" + Song.SONG_FILE_EXT);
 
         boolean move = false;
         File destDir = chooseDestDir(curDir);
@@ -133,45 +107,6 @@ public class Pdf2JpegAction extends CookieAction {
             curSongF.renameTo(newSongF);
             cnt = updatePlayLists(curSongF, newSongF);
         }
-
-//        if (newDir.exists() || !newDir.mkdir()) {
-//            // TODO: Throw some exception?
-//            return;
-//        } else {
-//            // Move/Convert pages first
-//            //Song newSong = new Song();
-//            int mpNr = 1;
-//            for (MusicPage mp: s.pageOrder) {
-//                File newMusicPageF = new File(newDir.getName() + File.separator
-//                        + String.format("%s-%02d.jpg", curSongF.getName(), mpNr++));
-//
-//                if (mp.imgSrc.getImgType() != ImgSrc.ImgType.PDF) {
-//                    // Move to new dir
-//                    mp.imgSrc.sourceFile.renameTo(newMusicPageF);
-//                    // TODO: Check to see if another song references this file
-//                    // and just copy it if that's the case?
-//                    mp.imgSrc.sourceFile = newMusicPageF;
-//                } else {
-//                    mp.saveImg(newMusicPageF, "jpg");
-//                    mp.imgSrc = new GenericImg(newMusicPageF);
-//                }
-//
-//                // We won't worry about the same music page showing up in
-//                // multiple songs.
-//            }
-//
-//            // Move old song file to new dir & update the MusicPage references
-//            // to the new PDF location
-//
-//            // Create new song in new dir
-//            s.setSourceFile(newSongF);
-//            s.serialize();
-//
-//            //s.save();
-//            curSongF.renameTo(newSongF);
-//
-//            updatePlayLists(curSongF, newSongF);
-//        }
     }
 
     private File chooseDestDir(File origDir) {
@@ -250,37 +185,6 @@ public class Pdf2JpegAction extends CookieAction {
         return updated;
     }
 
-//    private List<PlayList> getSongRefs(Song song) {
-//        List<PlayList> refs = new ArrayList<>();
-//
-//        for (PlayList pl: PlayListSet.findInstance().playLists) {
-//            if (pl.type == PlayList.Type.Normal) {
-//                for (Song s: pl.songs) {
-//                    if (s.getSourceFile() != null &&
-//                            s.getSourceFile().equals(song.getSourceFile())) {
-//                        refs.add(pl);
-//                    }
-//                }
-//            }
-//        }
-//
-//        return refs;
-//    }
-//
-//    private int getMusicPageRefCnt(File f) {
-//        int cnt = 0;
-//        for (PlayList pl: PlayListSet.findInstance().playLists) {
-//            if (pl.type == PlayList.Type.Normal) {
-//                for (Song s: pl.songs) {
-//                    for (MusicPage mp: s.pageOrder) {
-//
-//                    }
-//                }
-//            }
-//        }
-//        return cnt;
-//    }
-
     @Override
     protected boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
@@ -289,17 +193,6 @@ public class Pdf2JpegAction extends CookieAction {
         }
         return false;
     }
-
-    private boolean hasPdfPage(Song s) {
-        if (s == null) return false;
-
-        for (MusicPage mp: s.pageOrder) {
-            if (mp.imgSrc.getImgType() == ImgSrc.ImgType.PDF) return true;
-        }
-
-        return false;
-    }
-
 
     /**
      * Checks to see if the song is convertible.
