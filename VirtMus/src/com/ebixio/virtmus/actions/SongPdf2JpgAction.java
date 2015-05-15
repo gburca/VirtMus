@@ -20,6 +20,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -88,10 +90,16 @@ public class SongPdf2JpgAction extends CookieAction {
         ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
                 "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
 
+        ProgressHandle handle = ProgressHandleFactory.createHandle("My custom task");
+        int progress = 1;
+
         for (MusicPage mp: s.pageOrder) {
+            handle.progress(progress++);
+
             PdfImg pdfImg = (PdfImg)mp.imgSrc;
             File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
                 + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
+
             if (newMusicPageF.exists()) {
                 int returnVal = JOptionPane.showConfirmDialog(null,
                         "" + newMusicPageF + " already exists. Overwrite?",
@@ -106,9 +114,12 @@ public class SongPdf2JpgAction extends CookieAction {
                     default:
                 }
             }
+
             MainApp.setStatusText("Writing " + newMusicPageF);
             mp.saveImg(newMusicPageF, "jpg");
         }
+
+        handle.finish(); // Remove task from the status bar
 
         if (!destDir.equals(curDir)) {
             int returnVal = JOptionPane.showConfirmDialog(null,
