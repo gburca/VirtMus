@@ -286,6 +286,56 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
     }
     // </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc=" Filesystem moves ">
+    /** Update PlayLists so they all point to the new song.
+     *
+     * A PlayList could reference the same song more than once.
+     * @param oldS The old location of the song file
+     * @param newS The new location of the song file
+     * @return The number of PlayLists that were impacted by the move.
+     */
+    public int movedSong(File oldS, File newS) {
+        int updated = 0;
+        for (PlayList pl: PlayListSet.findInstance().playLists) {
+            for (Song s: pl.songs) {
+                if (s.getSourceFile() != null &&
+                        s.getSourceFile().equals(oldS)) {
+                    s.setSourceFile(newS);
+                    updated++;
+                }
+            }
+
+            pl.save();  // Only saves if isDirty
+        }
+        return updated;
+    }
+
+    /** Update Songs so they all point to the new location of a PDF file.
+     *
+     * @param oldPdf The old location of the PDF file
+     * @param newPdf The new location of the PDF file
+     * @return The number of songs that were impacted by the move.
+     */
+    public int movedPdf(File oldPdf, File newPdf) {
+        int updated = 0;
+        for (PlayList pl: PlayListSet.findInstance().playLists) {
+            for (Song s: pl.songs) {
+                boolean needsSave = false;
+                for (MusicPage mp: s.pageOrder) {
+                    if (mp.imgSrc.getSourceFile().equals(oldPdf)) {
+                        mp.imgSrc.setSourceFile(newPdf);
+                        needsSave = true;
+                    }
+                }
+                if (needsSave) {
+                    s.save();
+                    updated++;
+                }
+            }
+        }
+        return updated;
+    }
+    // </editor-fold>
 
     class AddPlayLists extends Thread {
         Preferences pref;

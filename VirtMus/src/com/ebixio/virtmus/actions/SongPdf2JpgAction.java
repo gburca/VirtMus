@@ -15,6 +15,8 @@ import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
 import java.awt.Frame;
 import java.io.File;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -24,6 +26,7 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.windows.WindowManager;
@@ -56,8 +59,7 @@ import org.openide.windows.WindowManager;
 @ActionID(id = "com.ebixio.virtmus.actions.SongPdf2JpgAction", category = "Song")
 @ActionRegistration(displayName = "#CTL_SongPdf2JpgAction", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Menu/Song", position = 2000),
-    //@ActionReference(path = "Toolbars/Song", name = "SongPdf2JpgAction", position = 900)
+    @ActionReference(path = "Menu/Song", position = 2000)
 })
 public class SongPdf2JpgAction extends CookieAction {
 
@@ -83,30 +85,46 @@ public class SongPdf2JpgAction extends CookieAction {
         File curPdfF = s.pageOrder.get(0).imgSrc.getSourceFile();
         String imgStem = Utils.trimExtension(curPdfF.getName(), null);
 
+        ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
+                "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
+
         for (MusicPage mp: s.pageOrder) {
             PdfImg pdfImg = (PdfImg)mp.imgSrc;
             File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
                 + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
             if (newMusicPageF.exists()) {
-                // OOPS... TODO
+                int returnVal = JOptionPane.showConfirmDialog(null,
+                        "" + newMusicPageF + " already exists. Overwrite?",
+                        "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE, qIcon);
+                switch (returnVal) {
+                    case JOptionPane.CANCEL_OPTION:
+                        return;
+                    case JOptionPane.NO_OPTION:
+                        continue;
+                    case JOptionPane.YES_OPTION:
+                    default:
+                }
             }
             MainApp.setStatusText("Writing " + newMusicPageF);
             mp.saveImg(newMusicPageF, "jpg");
         }
 
         if (!destDir.equals(curDir)) {
-            int returnVal = JOptionPane.showConfirmDialog(null, "Move PDF+Song to new dir?", "Move?", JOptionPane.YES_NO_OPTION);
+            int returnVal = JOptionPane.showConfirmDialog(null,
+                    "Move PDF+Song to new dir?", "Move?",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, qIcon);
             move = (returnVal == JOptionPane.YES_OPTION);
         }
 
         if (move) {
             File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
-            int cnt = updateSongs(curPdfF, newPdfF);
+            int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
             curPdfF.renameTo(newPdfF);
 
             File newSongF = new File(destDir + File.separator + curSongF.getName());
             curSongF.renameTo(newSongF);
-            cnt = updatePlayLists(curSongF, newSongF);
+            cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
         }
     }
 
@@ -146,44 +164,6 @@ public class SongPdf2JpgAction extends CookieAction {
         }
 
         return null;
-    }
-
-    // Update PlayLists so they all point to the new song.
-    // A PlayList could reference the same song more than once.
-    private int updatePlayLists(File oldS, File newS) {
-        int updated = 0;
-        for (PlayList pl: PlayListSet.findInstance().playLists) {
-            for (Song s: pl.songs) {
-                if (s.getSourceFile() != null &&
-                        s.getSourceFile().equals(oldS)) {
-                    s.setSourceFile(newS);
-                    updated++;
-                }
-            }
-
-            pl.save();  // Only saves if isDirty
-        }
-        return updated;
-    }
-
-    private int updateSongs(File oldPdf, File newPdf) {
-        int updated = 0;
-        for (PlayList pl: PlayListSet.findInstance().playLists) {
-            for (Song s: pl.songs) {
-                boolean needsSave = false;
-                for (MusicPage mp: s.pageOrder) {
-                    if (mp.imgSrc.getSourceFile().equals(oldPdf)) {
-                        mp.imgSrc.setSourceFile(newPdf);
-                        needsSave = true;
-                    }
-                }
-                if (needsSave) {
-                    s.save();
-                    updated++;
-                }
-            }
-        }
-        return updated;
     }
 
     @Override
