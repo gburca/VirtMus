@@ -15,10 +15,16 @@ import com.ebixio.virtmus.imgsrc.ImgSrc;
 import com.ebixio.virtmus.imgsrc.PdfImg;
 import java.awt.Frame;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -27,6 +33,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -67,41 +74,50 @@ public class SongPdf2JpgAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] nodes) {
-        Song s = nodes[0].getLookup().lookup(Song.class);
-        convertSong(s);
+        final Song s = nodes[0].getLookup().lookup(Song.class);
+        if (SwingUtilities.isEventDispatchThread()) {
+            convertSong(s);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    convertSong(s);
+                }
+            });
+        }
     }
 
     private void convertSong(Song s) {
-        /* Consider what happens when the song file is named "Foo.pdf.song.xml".
-         * There's a good chance the song pages come from Foo.pdf in the same
-         * directory. We can't just use "songFile - songExt" as the destination
-         * directory. So let the user choose the directory.
-         */
+        boolean move = false;
         File curSongF = s.getSourceFile();
         File curDir = curSongF.getParentFile();
 
-        boolean move = false;
+        /* Consider what happens when the song file is named "Foo.pdf.song.xml".
+         * There's a good chance the song pages come from Foo.pdf in the same
+         * directory. We can't just use "songFile - songExt" as the destination
+         * directory. So let the user choose the directory. */
         File destDir = chooseDestDir(curDir);
         if (destDir == null) return;
 
         File curPdfF = s.pageOrder.get(0).imgSrc.getSourceFile();
         String imgStem = Utils.trimExtension(curPdfF.getName(), null);
 
-        ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
+        final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
                 "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
 
-        ProgressHandle handle = ProgressHandleFactory.createHandle("My custom task");
-        int progress = 1;
+        final ProgressHandle handle = ProgressHandleFactory.createHandle("PDF to JPG converter");
+        final int maxProgress = s.pageOrder.size();
+        final AtomicInteger progressI = new AtomicInteger(1);
+        ExecutorService executor = Executors.newWorkStealingPool();
+        int returnVal;
 
-        for (MusicPage mp: s.pageOrder) {
-            handle.progress(progress++);
-
+        for (final MusicPage mp: s.pageOrder) {
             PdfImg pdfImg = (PdfImg)mp.imgSrc;
-            File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
+            final File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
                 + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
 
             if (newMusicPageF.exists()) {
-                int returnVal = JOptionPane.showConfirmDialog(null,
+                returnVal = JOptionPane.showConfirmDialog(null,
                         "" + newMusicPageF + " already exists. Overwrite?",
                         "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
                         JOptionPane.QUESTION_MESSAGE, qIcon);
@@ -116,13 +132,20 @@ public class SongPdf2JpgAction extends CookieAction {
             }
 
             MainApp.setStatusText("Writing " + newMusicPageF);
-            mp.saveImg(newMusicPageF, "jpg");
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    handle.progress(progressI.incrementAndGet());
+                    mp.saveImg(newMusicPageF, "jpg");
+                    if (progressI.get() >= maxProgress) {
+                        handle.finish(); // Remove task from the status bar
+                    }
+                }
+            });
         }
 
-        handle.finish(); // Remove task from the status bar
-
         if (!destDir.equals(curDir)) {
-            int returnVal = JOptionPane.showConfirmDialog(null,
+            returnVal = JOptionPane.showConfirmDialog(null,
                     "Move PDF+Song to new dir?", "Move?",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, qIcon);
             move = (returnVal == JOptionPane.YES_OPTION);
@@ -237,6 +260,6 @@ public class SongPdf2JpgAction extends CookieAction {
     @Override
     protected boolean asynchronous() {
         // If this is set to true, we need to make sure the dialogs use the EDT.
-        return false;
+        return true;
     }
 }
