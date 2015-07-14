@@ -107,7 +107,8 @@ public class SongPdf2JpgAction extends CookieAction {
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle("PDF to JPG converter");
         final int maxProgress = s.pageOrder.size();
-        final AtomicInteger progressI = new AtomicInteger(1);
+        handle.start(maxProgress);
+        final AtomicInteger progressI = new AtomicInteger(0);
         ExecutorService executor = Executors.newWorkStealingPool();
         int returnVal;
 
@@ -131,17 +132,19 @@ public class SongPdf2JpgAction extends CookieAction {
                 }
             }
 
-            MainApp.setStatusText("Writing " + newMusicPageF);
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    handle.progress(progressI.incrementAndGet());
-                    mp.saveImg(newMusicPageF, "jpg");
-                    if (progressI.get() >= maxProgress) {
-                        handle.finish(); // Remove task from the status bar
-                    }
-                }
-            });
+            executor.execute(new SongSaver(mp, handle, progressI, maxProgress, newMusicPageF));
+
+//            executor.execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    MainApp.setStatusText("Writing " + newMusicPageF);
+//                    mp.saveImg(newMusicPageF, "jpg");
+//                    handle.progress(progressI.incrementAndGet());
+//                    if (progressI.get() >= maxProgress) {
+//                        handle.finish(); // Remove task from the status bar
+//                    }
+//                }
+//            });
         }
 
         if (!destDir.equals(curDir)) {
@@ -159,6 +162,39 @@ public class SongPdf2JpgAction extends CookieAction {
             File newSongF = new File(destDir + File.separator + curSongF.getName());
             curSongF.renameTo(newSongF);
             cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
+        }
+    }
+
+    class SongSaver implements Runnable {
+        MusicPage mp;
+        ProgressHandle handle;
+        final AtomicInteger progressI;
+        int maxProgress;
+        File newMusicPageF;
+        public SongSaver(MusicPage m, ProgressHandle h, AtomicInteger i, int max, File f) {
+            mp = m;
+            handle = h;
+            progressI = i;
+            maxProgress = max;
+            newMusicPageF = f;
+        }
+        @Override
+        public void run() {
+            MainApp.setStatusText("Writing " + newMusicPageF);
+            mp.saveImg(newMusicPageF, "jpg");
+            /*
+             * It's possible for progress to be called with out-of-order values
+             * unless we synchronize
+             * - progress(3) in threadA is pre-empted before it finishes
+             * - progress(4) in threadB runs to completion
+             * - threadA resumes and finds it was called with 3 (< 4)
+             */
+            synchronized (progressI) {
+                handle.progress(progressI.incrementAndGet());
+            }
+            if (progressI.get() >= maxProgress) {
+                handle.finish(); // Remove task from the status bar
+            }
         }
     }
 
@@ -187,7 +223,6 @@ public class SongPdf2JpgAction extends CookieAction {
 
         if (fc.showDialog(mainWindow, "Select Directory") == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            boolean success = true;
             if (file.exists()) {
                 if (file.isDirectory()) {
                     return file;

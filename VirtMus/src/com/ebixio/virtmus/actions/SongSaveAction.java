@@ -44,47 +44,31 @@ public final class SongSaveAction extends NodeAction {
                 songs++;
             }
         }
-        
+
         if (songs == 1) {
             StatusDisplayer.getDefault().setStatusText("Saved song to " + s.getSourceFile().toString());
         } else {
             StatusDisplayer.getDefault().setStatusText("Saved a total of " + songs + " song(s)");
         }
-        
+
         setEnabled(false);
     }
 
-//    public void performAction() {
-//        Lookup.Result<Song> lr = Utilities.actionsGlobalContext().lookupResult(Song.class);
-//        Collection c = lr.allInstances();
-//        
-//        if (c.size() == 1) {
-//            Song s = (Song) c.iterator().next();
-//            if (s.save()) {
-//                StatusDisplayer.getDefault().setStatusText("Saved song to " + s.getSourceFile().toString());
-//            } else {
-//                StatusDisplayer.getDefault().setStatusText("Song was NOT saved!");                
-//            }
-//        } else {
-//            Log.log("Multiple songs selected?");
-//        }
-//    }
-    
     @Override
     public String getName() {
         return NbBundle.getMessage(SongSaveAction.class, "CTL_SongSaveAction");
     }
-    
+
     @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/document-save.png";
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
@@ -97,8 +81,8 @@ public final class SongSaveAction extends NodeAction {
             Song s = n.getLookup().lookup(Song.class);
             if (s != null && s.isDirty()) return true;
         }
-        
+
         return false;
     }
-    
+
 }
