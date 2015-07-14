@@ -39,17 +39,28 @@ import org.openide.windows.WindowManager;
     @ActionReference(path = "Shortcuts", name = "D-N"),
     @ActionReference(path = "Toolbars/Song", name = "NewSongAction", position = 100)})
 public final class SongNewAction extends CallableSystemAction {
-    
+
     @Override
     public void performAction() {
         Song s = new Song();
         if (s.saveAs()) {
             PlayList pl = Utilities.actionsGlobalContext().lookup(PlayList.class);
+
+            // MusicPageNode does not add the PlayList grandparent to the lookup
+            // so if the selection is on a MusicPageNode, pl will be null here.
+            if (pl == null) {
+                MusicPageNode mpn = Utilities.actionsGlobalContext().lookup(MusicPageNode.class);
+                if (mpn != null) {
+                    pl = mpn.getPlayList();
+                }
+            }
+
             if (pl != null) {
                 pl.addSong(s);
             } else {
                 PlayListSet.findInstance().playLists.get(0).addSong(s);
             }
+
             // Add the song to the All Songs playlist
             PlayList allSongs = PlayListSet.findInstance().playLists.get(1);
             if (pl != allSongs) {
@@ -57,25 +68,25 @@ public final class SongNewAction extends CallableSystemAction {
             }
         }
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(SongNewAction.class, "CTL_SongNewAction");
     }
-    
+
     @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/NewSongAction.gif";
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
 }

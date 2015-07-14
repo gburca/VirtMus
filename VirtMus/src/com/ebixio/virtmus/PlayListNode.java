@@ -263,6 +263,10 @@ public class PlayListNode extends AbstractNode
     }
     // </editor-fold>
 
+    public PlayList getPlayList() {
+        return playList;
+    }
+
     public boolean removeSong(Song s) {
         return this.playList.removeSong(s);
     }

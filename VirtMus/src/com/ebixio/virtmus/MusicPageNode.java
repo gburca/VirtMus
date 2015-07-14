@@ -46,7 +46,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class MusicPageNode extends AbstractNode {
     private MusicPage page;
-    
+
     /** Creates a new instance of MusicPageNode
      * @param page The MusicPage represented by this node.
      */
@@ -62,10 +62,29 @@ public class MusicPageNode extends AbstractNode {
     public MusicPage getPage() {
         return page;
     }
-    
+
+    public Song getSong() {
+        SongNode sn = (SongNode)this.getParentNode();
+        if (sn != null) {
+            return sn.getSong();
+        }
+        return null;
+    }
+
+    public PlayList getPlayList() {
+        SongNode sn = (SongNode)this.getParentNode();
+        if (sn != null) {
+            PlayListNode pln = (PlayListNode)sn.getParentNode();
+            if (pln != null) {
+                return pln.getPlayList();
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean canDestroy() { return true; }
-    
+
     // <editor-fold defaultstate="collapsed" desc=" Node name ">
     @Override
     public boolean canRename()  { return true; }
@@ -86,11 +105,11 @@ public class MusicPageNode extends AbstractNode {
     @Override
     public String getHtmlDisplayName() {
         String name = getDisplayName();
-        
+
         if (page.isDirty()) {
             name = "<i>" + name + "</i>";
         }
-        
+
         return name;
     }
 
@@ -165,7 +184,7 @@ public class MusicPageNode extends AbstractNode {
     public boolean canCut()     { return true; }
     @Override
     public boolean canCopy()    { return true; }
-   
+
     // </editor-fold>
 
 }
