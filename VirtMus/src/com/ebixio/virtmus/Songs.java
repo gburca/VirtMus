@@ -30,15 +30,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
-public class Songs extends Children.Keys<Song> implements PropertyChangeListener
+public class Songs extends Children.Keys<Song> implements PropertyChangeListener, ChangeListener
 {
     private final PlayList playList;
 
@@ -54,6 +56,9 @@ public class Songs extends Children.Keys<Song> implements PropertyChangeListener
     public Songs(PlayList playList) {
         tpe.allowCoreThreadTimeOut(true);
         this.playList = playList;
+        // We want to be notified when the song order changes within a PlayList
+        // so that we can re-create the UI with nodes in the (new) proper order.
+        playList.addChangeListener(WeakListeners.change(this, playList));
     }
 
     public void init() {
@@ -83,6 +88,11 @@ public class Songs extends Children.Keys<Song> implements PropertyChangeListener
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        addNotify();
     }
 
     public Index getIndex() {

@@ -794,9 +794,10 @@ public class Song implements Comparable<Song> {
         pageListeners.remove(listener);
     }
     public void notifyListeners() {
+        ChangeEvent ev = new ChangeEvent(this);
         ChangeListener[] cls = pageListeners.toArray(new ChangeListener[0]);
         for (ChangeListener cl : cls) {
-            cl.stateChanged(new ChangeEvent(this));
+            cl.stateChanged(ev);
         }
     }
 

@@ -20,7 +20,7 @@
 
 package com.ebixio.virtmus;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Children;
@@ -33,19 +33,21 @@ import org.openide.util.WeakListeners;
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 public class MusicPages extends Children.Keys<MusicPage> implements ChangeListener {
-    private Song song;
-    
+    private final Song song;
+
     /** Creates a new instance of MusicPages
      * @param song The song to create the pages for.
      */
     public MusicPages(Song song) {
         this.song = song;
+        // We want to be notified when the MusicPage order changes within a Song
+        // so that we can re-create the UI with nodes in the (new) proper order.
         song.addChangeListener(WeakListeners.change(this, song));
     }
-    
+
     @Override
     protected void addNotify() {
-        Vector<MusicPage> pageKeys = new Vector<MusicPage>();
+        ArrayList<MusicPage> pageKeys = new ArrayList<>();
         int i = 0;
         synchronized(song.pageOrder) {
             for (MusicPage mp: song.pageOrder) {
@@ -54,7 +56,7 @@ public class MusicPages extends Children.Keys<MusicPage> implements ChangeListen
         }
         setKeys(pageKeys);
     }
-    
+
     @Override
     protected Node[] createNodes(MusicPage page) {
         return new Node[] {new MusicPageNode(page)};
@@ -64,12 +66,12 @@ public class MusicPages extends Children.Keys<MusicPage> implements ChangeListen
     public void stateChanged(ChangeEvent e) {
         addNotify();
     }
-    
+
     public Index getIndex() {
         return new MusicPageIndexer();
     }
 
-    
+
     public class MusicPageIndexer extends Index.Support {
 
         @Override

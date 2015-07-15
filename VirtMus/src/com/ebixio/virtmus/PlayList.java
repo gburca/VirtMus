@@ -604,7 +604,7 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void addChangeListener(ChangeListener listener) {
-        listeners.add(listener);
+        if (!listeners.contains(listener)) listeners.add(listener);
     }
     public void removeChangeListener(ChangeListener listener) {
         listeners.remove(listener);
@@ -613,7 +613,7 @@ public class PlayList implements Comparable<PlayList> {
         //Log.log("PlayList::notifyListeners thread: " + Thread.currentThread().getName());
         //Log.log("PlayList::notifyListeners: " + this.toString() + " " + getName());
         ChangeEvent ev = new ChangeEvent(this);
-        ChangeListener[] cls = listeners.toArray(new javax.swing.event.ChangeListener[0]);
+        ChangeListener[] cls = listeners.toArray(new ChangeListener[0]);
         for (ChangeListener cl: cls) {
             cl.stateChanged(ev);
         }
