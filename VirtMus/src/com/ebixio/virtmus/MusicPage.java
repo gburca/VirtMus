@@ -54,15 +54,15 @@ public abstract class MusicPage {
     private String name = null;
     public static int thumbW = 130, thumbH = 200;
     public volatile ImgSrc imgSrc;
-   
+
     private transient DraggableThumbnail thumbnail;
     public transient Song song;
     public transient boolean isDirty = false;
-    /** The AnnotTopComponent sets itself as a change listener so that we can 
+    /** The AnnotTopComponent sets itself as a change listener so that we can
      * tell it to repaint the annotation canvas when the SVG changes */
     protected transient ChangeListener changeListener = null;
 
-    
+
     public abstract void clearAnnotations();
     public abstract void popAnnotation();
     public abstract void addAnnotation(VmShape shape);
@@ -71,9 +71,9 @@ public abstract class MusicPage {
     public abstract MusicPage clone();
     public abstract MusicPage clone(Song song);
     public abstract void prepareToSave();
-    
 
-    /** Creates a new instance of MusicPage 
+
+    /** Creates a new instance of MusicPage
      * @param song The song that this music page belongs to.
      * @param sourceFile The file this music page came from
      * @param opt The page number (in the case of a multi-page file)
@@ -98,7 +98,7 @@ public abstract class MusicPage {
     public void deserialize(Song s) {
         song = s;
     }
-    
+
     public void setChangeListener(ChangeListener changeListener) {
         this.changeListener = changeListener;
     }
@@ -107,7 +107,7 @@ public abstract class MusicPage {
         this.thumbnail = null;
 
         if (this.isDirty == isDirty) return;
-        
+
         //song.fire("pageSetDirty", this.isDirty, isDirty);
         if (isDirty) song.setDirty(true);
 
@@ -116,18 +116,18 @@ public abstract class MusicPage {
 //        SystemAction.get(SaveAllAction.class).setEnabled(true);
 //        SystemAction.get(SongSaveAction.class).setEnabled(true);
     }
-    
+
     public boolean isDirty() {
         return this.isDirty;
     }
-    
+
 //    /** When reading old files in (that don't have a rotation value) we need to
 //     * initialize rotation */
 //    private Object readResolve() {
 //        if (rotation == null) { rotation = MainApp.Rotation.Clockwise_0; }
 //        return this;
 //    }
-    
+
     public DraggableThumbnail getThumbnail() {
         if (thumbnail == null) {
             thumbnail = new DraggableThumbnail(thumbW, thumbH, getName());
@@ -145,7 +145,7 @@ public abstract class MusicPage {
     public void setSourceFile(File file) {
         imgSrc.setSourceFile(file);
     }
-    
+
     public void setName(String name) {
         if (name.equals(this.name)) return;
         this.name = name;
@@ -160,7 +160,7 @@ public abstract class MusicPage {
         }
         return "No name";
     }
-    
+
     /**
      * The index of this page in the song's page order.
      * @return The 0-based index of this page in the song's page order.
@@ -168,17 +168,17 @@ public abstract class MusicPage {
     public int getPageNumber() {
         return song.pageOrder.indexOf(this);
     }
-    
-    
+
+
     protected BufferedImage getImage(Dimension containerSize, Options.Rotation rotation, boolean fillSize) {
         return imgSrc.getImage(containerSize, rotation, fillSize, this);
     }
-        
+
     private RenderedOp rotate(RenderedOp srcImg, Options.Rotation rotation) {
         if (rotation == Options.Rotation.Clockwise_0) return srcImg;
-        
+
         Interpolation interp = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        
+
         ParameterBlock params = new ParameterBlock();
         params.addSource(srcImg);
         params.add(srcImg.getWidth()/2.0F);
@@ -188,11 +188,11 @@ public abstract class MusicPage {
 
         return JAI.create("rotate", params);
     }
-    
+
     /**
      * Some sample code to save the page image to an external file. The image size
      * will match the current display size and orientation.
-     * 
+     *
      * @param file The file to save the image to
      * @param format The file format to use ("png", or "jpg")
      */
@@ -200,7 +200,7 @@ public abstract class MusicPage {
         Dimension displaySize = Utils.getScreenSize();
         Dimension rotatedSize = Options.findInstance().screenRot.getSize(displaySize);
         BufferedImage img = this.getImage(rotatedSize, Options.Rotation.Clockwise_0, false);
-        
+
         // Let's find out what the most efficient format is...
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice gd = ge.getDefaultScreenDevice();
@@ -208,17 +208,17 @@ public abstract class MusicPage {
         final BufferedImage imgToSave = gc.createCompatibleImage(img.getWidth(), img.getHeight(), Transparency.OPAQUE);
         //final BufferedImage imgToSave = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
         //final BufferedImage imgToSave = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        
+
         Graphics2D g2 = imgToSave.createGraphics();
         boolean done = g2.drawImage(img, 0, 0, new ImageObserver() {
-            
+
             @Override
             public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                 if ((infoflags & ImageObserver.ALLBITS) > 0) {
                     try {
                         ImageIO.write(imgToSave, format, file);
                     } catch (Exception ex) {
-                        
+
                     }
                     return false;
                 }

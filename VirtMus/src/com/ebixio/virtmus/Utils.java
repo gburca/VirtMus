@@ -267,7 +267,7 @@ public class Utils {
 
     /** Get the file extension (if present). The file extension is the portion
      * after the LAST dot.
-     * 
+     *
      * @param f A file object.
      * @return The file extension (containing no dots), or an empty string. */
     public static String getFileExtension(File f) {
@@ -281,7 +281,7 @@ public class Utils {
             return "";
         }
     }
-    
+
     /**
      * Removes the extension from a file name.
      * @param f The file name to trim
@@ -294,7 +294,7 @@ public class Utils {
         if (ext == null) ext = getFileExtension(f);
         if (ext.isEmpty()) return f;
         if (!ext.startsWith(".")) ext = "." + ext;
-        
+
         if (ext.length() >= f.length() || !f.endsWith(ext)) {
             return f;
         } else {

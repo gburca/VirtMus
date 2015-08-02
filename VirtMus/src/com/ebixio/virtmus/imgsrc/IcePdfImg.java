@@ -61,7 +61,7 @@ public class IcePdfImg extends PdfImg {
     public IcePdfImg(File sourceFile, int pageNum) {
         super(sourceFile, pageNum);
     }
-    
+
     @Override
     public ImgType getImgType() {
         return ImgType.PDF;
@@ -302,7 +302,7 @@ public class IcePdfImg extends PdfImg {
      * otherwise we defer to PdfView to render the page since ICEPdf doesn't
      * work with files produced by notation SW (it doesn't render the music font
      * properly).
-     * 
+     *
      * @param doc PDF document to use
      * @return An image (in the case of a single image per page) or null otherwise.
      */

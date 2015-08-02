@@ -30,7 +30,7 @@ public class GenericImg extends ImgSrc {
     public GenericImg(File sourceFile) {
         super(sourceFile);
     }
-    
+
     @Override
     public ImgType getImgType() {
         String name = sourceFile.getName().toLowerCase();
@@ -121,7 +121,7 @@ public class GenericImg extends ImgSrc {
 
         AffineTransform origXform = g.getTransform();
         g.setTransform(rotation.getTransform(containerSize.getSize()));
-        
+
         switch (rotation) {
             case Clockwise_90:
             case Clockwise_270:
