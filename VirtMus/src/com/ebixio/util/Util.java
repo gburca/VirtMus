@@ -108,11 +108,7 @@ public class Util {
 
             return true;    // No exceptions == valid document
 
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SAXException ex) {
+        } catch (IOException | ParserConfigurationException | SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
 

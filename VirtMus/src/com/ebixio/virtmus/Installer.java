@@ -40,6 +40,14 @@ public class Installer extends ModuleInstall {
                         Log.log("VirtMus module: restored");
                         ToolbarPool.getDefault().setConfiguration("StandardToolbar");
                         MainApp.findInstance();
+
+                        // TODO: Fix icon on Mac
+                        WindowManager wm = WindowManager.getDefault();
+                        //wm.getMainWindow().setIconImage(null);
+                        //MainWindow.getInstance().initializeComponents();
+
+                        //Object o = org.netbeans.core.windows.Constants.CUSTOM_STATUS_LINE_PATH;
+                        //String sl = System.getProperty("netbeans.winsys.status_line.path");
                     }
                 });
             }

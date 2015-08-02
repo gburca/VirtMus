@@ -384,7 +384,7 @@ public final class AnnotTopComponent extends TopComponent
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Cannot find MyWindow component. It will not be located properly in the window system.");
+                    "Cannot find AnnotTopComponent component. It will not be located properly in the window system.");
             return getDefault();
         }
         if (win instanceof AnnotTopComponent) {

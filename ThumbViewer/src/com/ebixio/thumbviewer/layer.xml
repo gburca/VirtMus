@@ -29,26 +29,26 @@
                 Thumbs
                 Annot
                 Separator3
-                
+
                 Close Window
                 Maximize Window
                 Undock Window
                 Separator4
-                
+
                 Close All Documents
                 Documents...
                 Separator5
-                
+
                 Reset Windows
             -->
-            
-            
-            
+
+
+
             <file name="ThumbsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/com-ebixio-thumbviewer-ThumbsAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            
+
             <file name="CloneDocumentAction.shadow_hidden"/>
             <file name="CloseAllButThisAction.shadow_hidden"/>
             <file name="ProgressListAction.shadow_hidden"/>
