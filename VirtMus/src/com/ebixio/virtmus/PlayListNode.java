@@ -209,8 +209,10 @@ public class PlayListNode extends AbstractNode
                         for (File f: fileList) {
                             if (! s.addPage(f)) return null;
                         }
-                        File saveToDir = fileList.get(0).getParentFile();
-                        if (s.saveAs(saveToDir)) {
+                        // Make an educated guess on the song file
+                        String saveTo = fileList.get(0).getAbsolutePath();
+                        saveTo = Utils.trimExtension(saveTo, null);
+                        if (s.saveAs(new File(saveTo))) {
                             getPlayList().addSong(s);
                         }
                     } catch (UnsupportedFlavorException ex) {

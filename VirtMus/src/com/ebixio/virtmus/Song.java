@@ -412,21 +412,27 @@ public class Song implements Comparable<Song> {
     public boolean saveAs() {
         return saveAs(null);
     }
-    public boolean saveAs(File currentDir) {
+    public boolean saveAs(File currentSel) {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
 
         // Take a guess at the directory to save the file to
-        if (currentDir == null) {
+        if (currentSel == null) {
             String songDir = NbPreferences.forModule(MainApp.class).get(Options.OptSongDir, "");
-            currentDir = new File(songDir);
-        }
-        if (currentDir.exists() && currentDir.isDirectory()) {
-            fc.setCurrentDirectory(currentDir);
+            currentSel = new File(songDir);
         }
 
+        if (currentSel.exists() && currentSel.isDirectory()) {
+            fc.setCurrentDirectory(currentSel);
+        } else {
+            fc.setSelectedFile(currentSel);
+        }
+
+        fc.setDialogTitle("Enter the file name for this song.");
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.addChoosableFileFilter(new SongFilter());
         int returnVal = fc.showSaveDialog(mainWindow);
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             if (! file.toString().endsWith(SONG_FILE_EXT)) {
