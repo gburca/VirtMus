@@ -201,8 +201,18 @@ public class PlayListNode extends AbstractNode
                 @Override
                 public Transferable paste() throws IOException {
                     try {
-                        List fileList = (List)t.getTransferData(DataFlavor.javaFileListFlavor);
-                        Log.log("Pasting file");
+                        List<File> fileList = (List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
+
+                        if (fileList.isEmpty()) return null;
+
+                        Song s = new Song();
+                        for (File f: fileList) {
+                            if (! s.addPage(f)) return null;
+                        }
+                        File saveToDir = fileList.get(0).getParentFile();
+                        if (s.saveAs(saveToDir)) {
+                            getPlayList().addSong(s);
+                        }
                     } catch (UnsupportedFlavorException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -295,10 +305,6 @@ public class PlayListNode extends AbstractNode
 
     @Override
     public String toString() {
-        if (playList.type == PlayList.Type.Normal) {
-            return playList.getName() + " [" + playList.getSourceFile().getAbsolutePath() + "]";
-        } else {
-            return playList.getName();
-        }
+        return super.toString() + " PL: " + playList.toString();
     }
 }

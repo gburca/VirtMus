@@ -84,6 +84,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.icepdf.core.exceptions.PDFException;
+import org.icepdf.core.exceptions.PDFSecurityException;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.SaveAsCapable;
@@ -271,15 +273,20 @@ public class Song implements Comparable<Song> {
                 try {
                     doc.setFile(f.getCanonicalPath());
                     pdfPages = doc.getNumberOfPages();
-                } catch (Exception e) {
+                } catch (IOException | PDFException | PDFSecurityException e) {
                     pdfPages = 0;
                     JOptionPane.showMessageDialog(null, e.toString(), "PDF Error", JOptionPane.WARNING_MESSAGE);
                 }
                 doc.dispose();
                 if (pdfPages > 0) {
-                    String pageRange = JOptionPane.showInputDialog(f.getName() + "\nPage range?",
-                            "1-" + pdfPages);
-                    NumberRange range = new NumberRange(pageRange);
+                    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                    // TODO: Use question icon in dialog
+                    Object pageRangeObj = JOptionPane.showInputDialog(mainWindow,
+                            f.getName() + "\nPage range?",
+                            "PDF pages to add to Song", JOptionPane.QUESTION_MESSAGE,
+                            null, null, "1-" + pdfPages);
+                    if (pageRangeObj == null || ! (pageRangeObj instanceof String)) return false;
+                    NumberRange range = new NumberRange((String)pageRangeObj);
                     for (int p : range) {
                         if (p > 0 && p <= pdfPages) {
                             pageOrder.add(new MusicPageSVG(this, f, p - 1));
@@ -403,13 +410,21 @@ public class Song implements Comparable<Song> {
         }
     }
     public boolean saveAs() {
+        return saveAs(null);
+    }
+    public boolean saveAs(File currentDir) {
         final Frame mainWindow = WindowManager.getDefault().getMainWindow();
         final JFileChooser fc = new JFileChooser();
-        String songDir = NbPreferences.forModule(MainApp.class).get(Options.OptSongDir, "");
-        File sD = new File(songDir);
-        if (sD.exists()) {
-            fc.setCurrentDirectory(sD);
+
+        // Take a guess at the directory to save the file to
+        if (currentDir == null) {
+            String songDir = NbPreferences.forModule(MainApp.class).get(Options.OptSongDir, "");
+            currentDir = new File(songDir);
         }
+        if (currentDir.exists() && currentDir.isDirectory()) {
+            fc.setCurrentDirectory(currentDir);
+        }
+
         fc.addChoosableFileFilter(new SongFilter());
         int returnVal = fc.showSaveDialog(mainWindow);
         if (returnVal == JFileChooser.APPROVE_OPTION) {

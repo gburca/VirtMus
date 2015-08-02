@@ -636,6 +636,16 @@ public class PlayList implements Comparable<PlayList> {
         }
     }
 
+    @Override
+    public String toString() {
+        if (type == PlayList.Type.Normal) {
+            return super.toString() + " (" + getName() + ") [" +
+                getSourceFile().getAbsolutePath() + "]";
+        } else {
+            return super.toString() + " (" + getName() + ")";
+        }
+    }
+
     private class PlayListSavable extends AbstractSavable implements Icon, SaveAsCapable {
 
         private final PlayList pl;
