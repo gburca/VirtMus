@@ -5,6 +5,7 @@
  */
 package com.ebixio.virtmus.actions;
 
+import com.ebixio.util.EDT;
 import com.ebixio.util.NotifyUtil;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
@@ -18,6 +19,7 @@ import java.awt.Frame;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -82,17 +84,7 @@ public class SongPdf2JpgAction extends CookieAction {
     protected void performAction(Node[] nodes) {
         final Song s = nodes[0].getLookup().lookup(Song.class);
 
-        File curSongF = s.getSourceFile();
-        File curDir = curSongF.getParentFile();
-
-        /* Consider what happens when the song file is named "Foo.pdf.song.xml".
-         * There's a good chance the song pages come from Foo.pdf in the same
-         * directory. We can't just use "songFile - songExt" as the destination
-         * directory. So let the user choose the directory. */
-        File destDir = chooseDestDir(curDir);
-        if (destDir == null) return;
-
-        RequestProcessor.getDefault().post(new SongSaver(s, destDir));
+        RequestProcessor.getDefault().post(new SongSaver(s));
 
 //        if (SwingUtilities.isEventDispatchThread()) {
 //            convertSong(s);
@@ -108,24 +100,22 @@ public class SongPdf2JpgAction extends CookieAction {
 
     class SongSaver implements Runnable {
         Song s;
-        File destDir;
-        public SongSaver(Song s, File destDir) {
+        public SongSaver(Song s) {
             this.s = s;
-            this.destDir = destDir;
         }
 
         @Override
         public void run() {
             boolean move = false;
             File curSongF = s.getSourceFile();
-            File curDir = curSongF.getParentFile();
+            final File curDir = curSongF.getParentFile();
 
-//            /* Consider what happens when the song file is named "Foo.pdf.song.xml".
-//             * There's a good chance the song pages come from Foo.pdf in the same
-//             * directory. We can't just use "songFile - songExt" as the destination
-//             * directory. So let the user choose the directory. */
-//            File destDir = chooseDestDir(curDir);
-//            if (destDir == null) return;
+            /* Consider what happens when the song file is named "Foo.pdf.song.xml".
+             * There's a good chance the song pages come from Foo.pdf in the same
+             * directory. We can't just use "songFile - songExt" as the destination
+             * directory. So let the user choose the directory. */
+            File destDir = chooseDestDirOnEDT(curDir);
+            if (destDir == null) return;
 
             File curPdfF = s.pageOrder.get(0).imgSrc.getSourceFile();
             String imgStem = Utils.trimExtension(curPdfF.getName(), null);
@@ -337,6 +327,25 @@ public class SongPdf2JpgAction extends CookieAction {
                 handle.finish(); // Remove task from the status bar
                 NotifyUtil.info("Finished", "Converted all pages.");
             }
+        }
+    }
+
+    /**
+     * Wrapper around {@link chooseDestDir()} that calls it on the EDT.
+     * @param origDir
+     * @return
+     */
+    private File chooseDestDirOnEDT(final File origDir) {
+        try {
+            return EDT.invokeAndWait(new Callable<File>() {
+                @Override
+                public File call() throws Exception {
+                    return chooseDestDir(origDir);
+                }
+            });
+        } catch (InterruptedException | InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
     }
 
