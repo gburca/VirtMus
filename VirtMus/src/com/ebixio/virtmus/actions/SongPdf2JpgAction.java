@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -83,37 +84,29 @@ public class SongPdf2JpgAction extends CookieAction {
     @Override
     protected void performAction(Node[] nodes) {
         final Song s = nodes[0].getLookup().lookup(Song.class);
-
-        RequestProcessor.getDefault().post(new SongSaver(s));
-
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            convertSong(s);
-//        } else {
-//            SwingUtilities.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    convertSong(s);
-//                }
-//            });
-//        }
+        RequestProcessor.getDefault().post(new SongConverter(s));
     }
 
-    class SongSaver implements Runnable {
+    class SongConverter implements Runnable {
         Song s;
-        public SongSaver(Song s) {
+        int maxProgress;
+        final AtomicInteger progressI = new AtomicInteger(1);
+        final ProgressHandle handle = ProgressHandleFactory.createHandle("PDF to JPG converter");
+
+        public SongConverter(Song s) {
             this.s = s;
+            maxProgress = s.pageOrder.size();
         }
 
         @Override
         public void run() {
-            boolean move = false;
             File curSongF = s.getSourceFile();
             final File curDir = curSongF.getParentFile();
 
             /* Consider what happens when the song file is named "Foo.pdf.song.xml".
              * There's a good chance the song pages come from Foo.pdf in the same
-             * directory. We can't just use "songFile - songExt" as the destination
-             * directory. So let the user choose the directory. */
+             * directory. We can't just use "songFile - songExt" (i.e. Foo.pdf)
+             * as the destination directory. So let the user choose the directory. */
             File destDir = chooseDestDirOnEDT(curDir);
             if (destDir == null) return;
 
@@ -123,14 +116,16 @@ public class SongPdf2JpgAction extends CookieAction {
             final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
                     "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
 
-            final ProgressHandle handle = ProgressHandleFactory.createHandle("PDF to JPG converter");
-            final int maxProgress = s.pageOrder.size();
-            handle.switchToDeterminate(maxProgress);
-            handle.start();
-            final AtomicInteger progressI = new AtomicInteger(0);
+            // The "1"s below are to show a little progress before the heavy lifting
+            // starts, otherwise no progress is shown until after the 1st batch
+            // finishes (for newWorkStealingPool() executors).
+            handle.start(maxProgress + 1);
+            handle.progress(1);
+
             ExecutorService executor = Executors.newWorkStealingPool();
+            // For more consistent progress (but slower?) use:
+            //ExecutorService executor = Executors.newSingleThreadExecutor();
             int returnVal;
-            CountDownLatch latch = new CountDownLatch(maxProgress);
 
             for (final MusicPage mp: s.pageOrder) {
                 PdfImg pdfImg = (PdfImg)mp.imgSrc;
@@ -138,10 +133,20 @@ public class SongPdf2JpgAction extends CookieAction {
                     + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
 
                 if (newMusicPageF.exists()) {
-                    returnVal = JOptionPane.showConfirmDialog(null,
-                            "" + newMusicPageF + " already exists. Overwrite?",
-                            "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE, qIcon);
+                    try {
+                        returnVal = EDT.invokeAndWait(new Callable<Integer>() {
+                            @Override
+                            public Integer call() throws Exception {
+                                return JOptionPane.showConfirmDialog(null,
+                                    "" + newMusicPageF + " already exists. Overwrite?",
+                                    "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE, qIcon);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                        returnVal = JOptionPane.CANCEL_OPTION;
+                    }
                     switch (returnVal) {
                         case JOptionPane.CANCEL_OPTION:
                             return;
@@ -152,183 +157,73 @@ public class SongPdf2JpgAction extends CookieAction {
                     }
                 }
 
-                executor.execute(new MusicPageSaver(mp, handle, progressI, maxProgress, newMusicPageF, latch));
+                executor.execute(new MusicPageSaver(mp, newMusicPageF));
             }
 
             try {
-                latch.await();
+                executor.shutdown();
+                executor.awaitTermination(30 * maxProgress, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
 
             if (!destDir.equals(curDir)) {
-                returnVal = JOptionPane.showConfirmDialog(null,
-                        "Move PDF+Song to new dir?", "Move?",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, qIcon);
-                move = (returnVal == JOptionPane.YES_OPTION);
+                try {
+                    returnVal = EDT.invokeAndWait(new Callable<Integer>() {
+                        @Override
+                        public Integer call() throws Exception {
+                            return JOptionPane.showConfirmDialog(null,
+                                "Move PDF+Song to new dir?", "Move?",
+                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, qIcon);
+                        }
+                    });
+                } catch (InterruptedException | InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                    returnVal = JOptionPane.NO_OPTION;
+                }
+
+                if (returnVal == JOptionPane.YES_OPTION) {
+                    File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
+                    int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
+                    curPdfF.renameTo(newPdfF);
+
+                    File newSongF = new File(destDir + File.separator + curSongF.getName());
+                    curSongF.renameTo(newSongF);
+                    cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
+                }
+            }
+        }
+
+        class MusicPageSaver implements Runnable {
+            MusicPage mp;
+            File newMusicPageF;
+
+            public MusicPageSaver(MusicPage m, File f) {
+                mp = m;
+                newMusicPageF = f;
             }
 
-            if (move) {
-                File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
-                int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
-                curPdfF.renameTo(newPdfF);
-
-                File newSongF = new File(destDir + File.separator + curSongF.getName());
-                curSongF.renameTo(newSongF);
-                cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
+            @Override
+            public void run() {
+                MainApp.setStatusText("Writing " + newMusicPageF);
+                mp.saveImg(newMusicPageF, "jpg");
+                /*
+                 * It's possible for progress to be called with out-of-order values
+                 * unless we synchronize
+                 * - progress(3) in threadA is pre-empted before it finishes
+                 * - progress(4) in threadB runs to completion
+                 * - threadA resumes and finds it was called with 3 (< 4)
+                 */
+                synchronized (progressI) {
+                    handle.progress(progressI.incrementAndGet());
+                }
+                if (progressI.get() >= maxProgress) {
+                    handle.finish(); // Remove task from the status bar
+                }
             }
         }
     }
 
-//    private void convertSong(Song s) {
-//        boolean move = false;
-//        File curSongF = s.getSourceFile();
-//        File curDir = curSongF.getParentFile();
-//
-//        //NotifyUtil.error("Error title", "Some error");
-//        //NotifyUtil.plain("Plain title", "A plain message");
-//        //NotifyUtil.info("Info title", "Info message");
-//        //final ProgressHandle pHandle = ProgressHandleFactory.createHandle("Test progress");
-//        //pHandle.start(10);
-//        //pHandle.progress("some progress made (3)", 3);
-//        //MainApp.setStatusText("Dummy status after error");
-//        //ArrayList<Object> al = Lookup.getDefault().lookupAll(Object.class);
-//        //Lookup.Result<Object> lr = Lookup.getDefault().lookupResult(Object.class);
-//        //if (true) return;
-//
-//        /* Consider what happens when the song file is named "Foo.pdf.song.xml".
-//         * There's a good chance the song pages come from Foo.pdf in the same
-//         * directory. We can't just use "songFile - songExt" as the destination
-//         * directory. So let the user choose the directory. */
-//        File destDir = chooseDestDir(curDir);
-//        if (destDir == null) return;
-//
-//        File curPdfF = s.pageOrder.get(0).imgSrc.getSourceFile();
-//        String imgStem = Utils.trimExtension(curPdfF.getName(), null);
-//
-//        final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
-//                "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
-//
-//        /*
-//         * The status bar is made up of a StatusDisplayer (NbStatusDisplayer) and
-//         * other components. A custom StatusDisplayer can be added to the Lookup.
-//         *
-//         * See:
-//         *  core.windows/src/org/netbeans/core/windows/view/ui/AutoHideStatusText.java
-//         *  core.windows/src/org/netbeans/core/windows/view/ui/StatusLine.java
-//         *
-//         *
-//         * The reason the progress bar doesn't show up is because having a StatusDisplayer
-//         * is not enough. It needs the StatusDisplayer parent to be shown.
-//         */
-//        final ProgressHandle handle = ProgressHandleFactory.createHandle("PDF to JPG converter");
-//        final int maxProgress = s.pageOrder.size();
-//        handle.switchToDeterminate(maxProgress);
-//        handle.start();
-//        final AtomicInteger progressI = new AtomicInteger(0);
-//        ExecutorService executor = Executors.newWorkStealingPool();
-//        int returnVal;
-//        CountDownLatch latch = new CountDownLatch(maxProgress);
-//
-////        ProgressUtils.showProgressDialogAndRun(
-////                new SongSaver(s, handle, destDir, imgStem), handle, false);
-//
-//        RequestProcessor.getDefault().post(new SongSaverOld(s, handle, destDir, imgStem));
-//
-////        for (final MusicPage mp: s.pageOrder) {
-////            PdfImg pdfImg = (PdfImg)mp.imgSrc;
-////            final File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
-////                + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
-////
-////            if (newMusicPageF.exists()) {
-////                returnVal = JOptionPane.showConfirmDialog(null,
-////                        "" + newMusicPageF + " already exists. Overwrite?",
-////                        "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
-////                        JOptionPane.QUESTION_MESSAGE, qIcon);
-////                switch (returnVal) {
-////                    case JOptionPane.CANCEL_OPTION:
-////                        return;
-////                    case JOptionPane.NO_OPTION:
-////                        continue;
-////                    case JOptionPane.YES_OPTION:
-////                    default:
-////                }
-////            }
-////
-////            executor.execute(new MusicPageSaver(mp, handle, progressI, maxProgress, newMusicPageF, latch));
-//////            executor.execute(new Runnable() {
-//////                @Override
-//////                public void run() {
-//////                    MainApp.setStatusText("Writing " + newMusicPageF);
-//////                    mp.saveImg(newMusicPageF, "jpg");
-//////                    handle.progress(progressI.incrementAndGet());
-//////                    if (progressI.get() >= maxProgress) {
-//////                        handle.finish(); // Remove task from the status bar
-//////                    }
-//////                }
-//////            });
-////        }
-////
-////        try {
-////            latch.await();
-////        } catch (InterruptedException ex) {
-////            Exceptions.printStackTrace(ex);
-////        }
-//
-//        if (!destDir.equals(curDir)) {
-//            returnVal = JOptionPane.showConfirmDialog(null,
-//                    "Move PDF+Song to new dir?", "Move?",
-//                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, qIcon);
-//            move = (returnVal == JOptionPane.YES_OPTION);
-//        }
-//
-//        if (move) {
-//            File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
-//            int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
-//            curPdfF.renameTo(newPdfF);
-//
-//            File newSongF = new File(destDir + File.separator + curSongF.getName());
-//            curSongF.renameTo(newSongF);
-//            cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
-//        }
-//    }
-
-    class MusicPageSaver implements Runnable {
-        MusicPage mp;
-        ProgressHandle handle;
-        final AtomicInteger progressI;
-        int maxProgress;
-        File newMusicPageF;
-        CountDownLatch latch;
-        public MusicPageSaver(MusicPage m, ProgressHandle h, AtomicInteger i, int max, File f, CountDownLatch latch) {
-            mp = m;
-            handle = h;
-            progressI = i;
-            maxProgress = max;
-            newMusicPageF = f;
-            this.latch = latch;
-        }
-        @Override
-        public void run() {
-            MainApp.setStatusText("Writing " + newMusicPageF);
-            mp.saveImg(newMusicPageF, "jpg");
-            /*
-             * It's possible for progress to be called with out-of-order values
-             * unless we synchronize
-             * - progress(3) in threadA is pre-empted before it finishes
-             * - progress(4) in threadB runs to completion
-             * - threadA resumes and finds it was called with 3 (< 4)
-             */
-            synchronized (progressI) {
-                handle.progress(progressI.incrementAndGet());
-                latch.countDown();
-            }
-            if (progressI.get() >= maxProgress) {
-                handle.finish(); // Remove task from the status bar
-                NotifyUtil.info("Finished", "Converted all pages.");
-            }
-        }
-    }
 
     /**
      * Wrapper around {@link chooseDestDir()} that calls it on the EDT.
@@ -385,7 +280,6 @@ public class SongPdf2JpgAction extends CookieAction {
 
         return null;
     }
-
 
     /**
      * Checks to see if the song is convertible.
@@ -451,61 +345,4 @@ public class SongPdf2JpgAction extends CookieAction {
         return false;
     }
     // </editor-fold>
-
-    class SongSaverOld implements Runnable {
-        Song s;
-        final ProgressHandle handle;
-        final AtomicInteger progressI = new AtomicInteger(0);
-        ExecutorService executor = Executors.newWorkStealingPool();
-        final int maxProgress;
-        File destDir;
-        String imgStem;
-        final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
-                "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
-
-        public SongSaverOld(Song s, ProgressHandle h, File destDir, String imgStem) {
-            this.s = s;
-            this.handle = h;
-            maxProgress = s.pageOrder.size();
-            this.destDir = destDir;
-            this.imgStem = imgStem;
-        }
-
-        @Override
-        public void run() {
-            CountDownLatch latch = new CountDownLatch(maxProgress);
-            handle.switchToDeterminate(maxProgress);
-            handle.start();
-
-            for (final MusicPage mp: s.pageOrder) {
-                PdfImg pdfImg = (PdfImg)mp.imgSrc;
-                final File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
-                    + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
-
-                if (newMusicPageF.exists()) {
-                    int returnVal = JOptionPane.showConfirmDialog(null,
-                            "" + newMusicPageF + " already exists. Overwrite?",
-                            "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE, qIcon);
-                    switch (returnVal) {
-                        case JOptionPane.CANCEL_OPTION:
-                            return;
-                        case JOptionPane.NO_OPTION:
-                            continue;
-                        case JOptionPane.YES_OPTION:
-                        default:
-                    }
-                }
-
-                executor.execute(new MusicPageSaver(mp, handle, progressI, maxProgress, newMusicPageF, latch));
-            }
-
-            try {
-                latch.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
 }
