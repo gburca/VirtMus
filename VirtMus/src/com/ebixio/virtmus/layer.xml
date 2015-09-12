@@ -110,15 +110,7 @@
 
         <folder name="Song">
             <attr name="position" intvalue="251"/>
-            <!--file name="com-ebixio-virtmus-actions-SongNewAction.instance">
-                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
-            </file>
-            <file name="com-ebixio-virtmus-actions-SongSaveAction.instance">
-                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAction.instance"/>
-            </file>
-            <file name="com-ebixio-virtmus-actions-SongSaveAsAction.instance">
-                <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
-            </file-->
+            <!-- Menu items added using annotations -->
         </folder>
 
         <folder name="MusicPage">
@@ -240,6 +232,7 @@
         <folder name="Memory">
             <attr name="displayName" bundlevalue="org.netbeans.core.ui.resources.Bundle#Toolbars/Memory"/>
             <attr name="position" intvalue="600"/>
+            <file name="org-netbeans-modules-profiler-actions-SelfSamplerAction.shadow_hidden"/>
             <file name="org-openide-actions-GarbageCollectAction.shadow_hidden"/>
             <file name="org-openide-actions-GarbageCollectAction-VirtMus.shadow">
                 <attr name="originalFile" stringvalue="Actions/VirtMusSystem/org-openide-actions-GarbageCollectAction.instance"/>
