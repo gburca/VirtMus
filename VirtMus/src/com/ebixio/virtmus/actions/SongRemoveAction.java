@@ -37,19 +37,19 @@ import org.openide.util.actions.SystemAction;
 @ActionID(id = "com.ebixio.virtmus.actions.SongRemoveAction", category = "Song")
 @ActionRegistration(displayName = "#CTL_SongRemoveAction", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Menu/Song"),
+    @ActionReference(path = "Menu/Song", position = 500),
     @ActionReference(path = "Toolbars/Song", name = "SongRemoveAction", position = 300)})
 public final class SongRemoveAction extends NodeAction {
-    
+
     @Override
     public void performAction(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             PlayList pl = (PlayList) n.getLookup().lookup(PlayList.class);
             Song s = (Song) n.getLookup().lookup(Song.class);
-            
+
             if (pl != null && s != null) {
                 pl.removeSong(s);
-                
+
                 Action a = SystemAction.get(SavePlayListAction.class);
                 if (pl.type != PlayList.Type.AllSongs) {
                     a.setEnabled(true);
@@ -60,22 +60,22 @@ public final class SongRemoveAction extends NodeAction {
             }
         }
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(SongRemoveAction.class, "CTL_SongRemoveAction");
     }
-    
+
     @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SongRemoveAction.gif";
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
@@ -95,8 +95,8 @@ public final class SongRemoveAction extends NodeAction {
             }
             if (pl == null || pl.type == PlayList.Type.AllSongs) return false;
         }
-        
+
         return result;
     }
-    
+
 }

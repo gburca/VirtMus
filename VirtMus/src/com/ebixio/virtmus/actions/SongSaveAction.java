@@ -21,6 +21,7 @@ package com.ebixio.virtmus.actions;
 import com.ebixio.virtmus.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
@@ -30,7 +31,10 @@ import org.openide.util.actions.NodeAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongSaveAction", category = "Song")
 @ActionRegistration(displayName = "#CTL_SongSaveAction", lazy = false)
-@ActionReference(path = "Toolbars/Song", name = "SongSaveAction", position = 400)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/Song", position = 300),
+    @ActionReference(path = "Toolbars/Song", name = "SongSaveAction", position = 400)
+})
 public final class SongSaveAction extends NodeAction {
 
     @Override

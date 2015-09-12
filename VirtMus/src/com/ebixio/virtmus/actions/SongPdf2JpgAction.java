@@ -6,10 +6,9 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.util.EDT;
-import com.ebixio.util.NotifyUtil;
+import com.ebixio.util.Pair;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
-import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListSet;
 import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.Utils;
@@ -18,23 +17,17 @@ import com.ebixio.virtmus.imgsrc.PdfImg;
 import java.awt.Frame;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -43,7 +36,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
@@ -77,7 +69,8 @@ import org.openide.windows.WindowManager;
 @ActionID(id = "com.ebixio.virtmus.actions.SongPdf2JpgAction", category = "Song")
 @ActionRegistration(displayName = "#CTL_SongPdf2JpgAction", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Menu/Song", position = 2000)
+    @ActionReference(path = "Menu/Song", position = 600, separatorBefore = 599),
+    @ActionReference(path = "Toolbars/Song", name = "SongPdf2Jpg", position = 700)
 })
 public class SongPdf2JpgAction extends CookieAction {
 
@@ -100,6 +93,9 @@ public class SongPdf2JpgAction extends CookieAction {
 
         @Override
         public void run() {
+            final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
+                    "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
+
             File curSongF = s.getSourceFile();
             final File curDir = curSongF.getParentFile();
 
@@ -113,8 +109,6 @@ public class SongPdf2JpgAction extends CookieAction {
             File curPdfF = s.pageOrder.get(0).imgSrc.getSourceFile();
             String imgStem = Utils.trimExtension(curPdfF.getName(), null);
 
-            final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
-                    "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
 
             // The "1"s below are to show a little progress before the heavy lifting
             // starts, otherwise no progress is shown until after the 1st batch
@@ -160,13 +154,8 @@ public class SongPdf2JpgAction extends CookieAction {
                 executor.execute(new MusicPageSaver(mp, newMusicPageF));
             }
 
-            try {
-                executor.shutdown();
-                executor.awaitTermination(30 * maxProgress, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
+            // While conversion is going on, prompt user...
+            boolean movePdf = false;
             if (!destDir.equals(curDir)) {
                 try {
                     returnVal = EDT.invokeAndWait(new Callable<Integer>() {
@@ -181,17 +170,28 @@ public class SongPdf2JpgAction extends CookieAction {
                     Exceptions.printStackTrace(ex);
                     returnVal = JOptionPane.NO_OPTION;
                 }
-
-                if (returnVal == JOptionPane.YES_OPTION) {
-                    File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
-                    int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
-                    curPdfF.renameTo(newPdfF);
-
-                    File newSongF = new File(destDir + File.separator + curSongF.getName());
-                    curSongF.renameTo(newSongF);
-                    cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
-                }
+                movePdf = returnVal == JOptionPane.YES_OPTION;
             }
+
+            // Wait for conversion to finish before we move the source PDF
+            try {
+                executor.shutdown();
+                executor.awaitTermination(30 * maxProgress, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            if (movePdf) {
+                File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
+                int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
+                curPdfF.renameTo(newPdfF);
+
+                File newSongF = new File(destDir + File.separator + curSongF.getName());
+                curSongF.renameTo(newSongF);
+                cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
+            }
+
+            MainApp.setStatusText("Finished PDF to JPG conversion.");
         }
 
         class MusicPageSaver implements Runnable {
@@ -314,10 +314,10 @@ public class SongPdf2JpgAction extends CookieAction {
         return false;
     }
 
-//    @Override
-//    protected String iconResource() {
-//        return "com/ebixio/virtmus/resources/Pdf.gif";
-//    }
+    @Override
+    protected String iconResource() {
+        return "com/ebixio/virtmus/resources/Pdf2Jpg.png";
+    }
 
     @Override
     public String getName() {

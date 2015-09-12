@@ -36,19 +36,19 @@ import org.openide.util.actions.SystemAction;
 @ActionID(id = "com.ebixio.virtmus.actions.SongOpenAction", category = "Song")
 @ActionRegistration(displayName = "#CTL_SongOpenAction", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Menu/Song"),
+    @ActionReference(path = "Menu/Song", position = 200),
     @ActionReference(path = "Shortcuts", name = "D-O"),
     @ActionReference(path = "Toolbars/Song", name = "SongOpenAction", position = 200)})
 public final class SongOpenAction extends CallableSystemAction {
-    
+
     @Override
     public void performAction() {
         Song s = Song.open();
-        
+
         if (s != null) {
             PlayList pl = Utilities.actionsGlobalContext().lookup(PlayList.class);
             PlayListNode pln = Utilities.actionsGlobalContext().lookup(PlayListNode.class);
-            
+
             if (pl != null) {
                 pl.addSong(s);
             } else {
@@ -56,7 +56,7 @@ public final class SongOpenAction extends CallableSystemAction {
                 PlayListSet.findInstance().playLists.get(0).addSong(s);
                 // No need to allow saving this playlist
             }
-            
+
             // Needed to enable SavePlayListAction without changing the selected node
             Action a = SystemAction.get(SavePlayListAction.class);
             if ((pl != null) && (pl.type == PlayList.Type.Normal)) {
@@ -76,28 +76,28 @@ public final class SongOpenAction extends CallableSystemAction {
 //                        }
 //                    }
 //                }
-            
+
         }
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(SongOpenAction.class, "CTL_SongOpenAction");
     }
-    
+
     @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/SongOpenAction.png";
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
 }

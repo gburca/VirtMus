@@ -110,7 +110,7 @@
 
         <folder name="Song">
             <attr name="position" intvalue="251"/>
-            <file name="com-ebixio-virtmus-actions-SongNewAction.instance">
+            <!--file name="com-ebixio-virtmus-actions-SongNewAction.instance">
                 <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongNewAction.instance"/>
             </file>
             <file name="com-ebixio-virtmus-actions-SongSaveAction.instance">
@@ -118,7 +118,7 @@
             </file>
             <file name="com-ebixio-virtmus-actions-SongSaveAsAction.instance">
                 <attr name="originalFile" stringvalue="Actions/Song/com-ebixio-virtmus-actions-SongSaveAsAction.instance"/>
-            </file>
+            </file-->
         </folder>
 
         <folder name="MusicPage">

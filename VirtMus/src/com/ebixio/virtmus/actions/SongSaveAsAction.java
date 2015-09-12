@@ -23,6 +23,7 @@ import com.ebixio.virtmus.Song;
 import java.util.Collection;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
@@ -34,41 +35,44 @@ import org.openide.util.actions.CookieAction;
 
 @ActionID(id = "com.ebixio.virtmus.actions.SongSaveAsAction", category = "Song")
 @ActionRegistration(displayName = "#CTL_SongSaveAsAction", lazy = false)
-@ActionReference(path = "Toolbars/Song", name = "SaveAsAction", position = 500)
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/Song", position = 400),
+    @ActionReference(path = "Toolbars/Song", name = "SaveAsAction", position = 500)
+})
 public final class SongSaveAsAction extends CookieAction {
-    
+
     @Override
     protected void performAction(Node[] node) {
         Lookup.Result<Song> lr = Utilities.actionsGlobalContext().lookupResult(Song.class);
         Collection c = lr.allInstances();
-        
+
         if (c.size() == 1) {
             Song s = (Song) c.iterator().next();
             if (s.saveAs()) {
                 StatusDisplayer.getDefault().setStatusText("Saved song as " + s.getSourceFile().toString());
             } else {
-                StatusDisplayer.getDefault().setStatusText("Song was NOT saved!");                
+                StatusDisplayer.getDefault().setStatusText("Song was NOT saved!");
             }
         } else {
             Log.log("Multiple songs selected?");
         }
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(SongSaveAsAction.class, "CTL_SongSaveAsAction");
     }
-    
+
     @Override
     protected String iconResource() {
         return "com/ebixio/virtmus/resources/document-save-as.png";
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
