@@ -37,4 +37,37 @@ public class Pair<T1, T2> {
         return super.toString() +
                 " [" + first.toString() + "," + second.toString() + "]";
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof Pair)) {
+            return false;
+        }
+        final Pair<?,?> otherPair = (Pair<?,?>) other;
+        return (first == null ? otherPair.first == null : first.equals(otherPair.first)) &&
+            (second == null ? otherPair.second == null : second.equals(otherPair.second));
+    }
+
+    @Override
+    public int hashCode() {
+        int res = 17;
+        res = res * 31 + (first == null ? 0 : first.hashCode());
+        res = res * 31 + (second == null ? 0 : second.hashCode());
+        return res;
+    }
+
+    /**
+     * Creates a new Pair.
+     * @param <First>   the type of the first element
+     * @param <Second>  the type of the second element
+     * @param first     the first element
+     * @param second    the second element
+     * @return  the new {@link Pair} of the first and second elements.
+     */
+    public static <First,Second> Pair<First,Second> of (final First first, final Second second) {
+        return new Pair<>(first, second);
+    }
 }
