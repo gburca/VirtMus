@@ -34,13 +34,17 @@ import org.openide.util.lookup.ServiceProvider;
  * Uncomment the annotation to activate. May not want to supersede both
  * notifications and progress.
  *
- * @author gburca1
+ * From a blog by Peter Stomenhoff
+ *
+ * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 //@ServiceProvider(
 //    service = StatusLineElementProvider.class,
 //    supersedes = {
 //        "org.netbeans.progress.module.ProgressVisualizerProvider",
 //        "org.netbeans.core.ui.notifications.StatusLineElement"
+//        "org.netbeans.modules.editor.impl.StatusLineFactories$LineColumn",
+//        "org.netbeans.modules.editor.impl.StatusLineFactories$TypingMode"
 //    }
 //)
 public class DemoStatusLineElementProvider implements StatusLineElementProvider {
