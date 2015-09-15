@@ -27,6 +27,7 @@
 
         <folder name="View">
             <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
+            <file name="org-netbeans-core-actions-LogAction.instance_hidden"/>
         </folder>
         <folder name="VirtMus"/>
         <folder name="Window">
@@ -42,6 +43,7 @@
             <file name="org-netbeans-core-windows-actions-RecentDocumentListAction.instance_hidden"/>
             <file name="org-netbeans-core-windows-actions-RecentViewListAction.instance_hidden"/>
             <file name="org-netbeans-core-windows-actions-ShowEditorOnlyAction.instance_hidden"/>
+            <file name="org-netbeans-modules-progress-ui-ProgressListAction.instance_hidden"/>
         </folder>
         <folder name="Edit">
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance_hidden"/>
@@ -90,6 +92,7 @@
             <attr name="position" intvalue="225"/>
             <file name="ShowEditorOnlyAction.shadow_hidden"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance_hidden"/>
+            <file name="org-netbeans-core-actions-LogAction.shadow_hidden"/>
         </folder>
 
         <folder name="PlayList">
