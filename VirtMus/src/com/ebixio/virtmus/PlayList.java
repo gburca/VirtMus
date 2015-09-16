@@ -447,7 +447,11 @@ public class PlayList implements Comparable<PlayList> {
     }
 
     public void addSong(Song song) {
-        songs.add(song);
+        addSong(song, -1);
+    }
+    public void addSong(Song song, int idx) {
+        if (idx < 0 || idx > songs.size()) idx = songs.size();
+        songs.add(idx, song);
         setDirty(true);
         if (this.type != Type.Normal) sortSongsByName();
         fire(PROP_SONG_ADDED, null, song);

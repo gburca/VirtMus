@@ -9,6 +9,7 @@ import com.ebixio.util.EDT;
 import com.ebixio.util.Pair;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
+import com.ebixio.virtmus.PlayList;
 import com.ebixio.virtmus.PlayListSet;
 import com.ebixio.virtmus.Song;
 import com.ebixio.virtmus.Utils;
@@ -17,6 +18,8 @@ import com.ebixio.virtmus.imgsrc.PdfImg;
 import java.awt.Frame;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -73,29 +77,42 @@ import org.openide.windows.WindowManager;
     @ActionReference(path = "Toolbars/Song", name = "SongPdf2Jpg", position = 700)
 })
 public class SongPdf2JpgAction extends CookieAction {
+    final ImageIcon virtmusIcon = new ImageIcon(ImageUtilities.loadImage(
+            "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
 
     @Override
     protected void performAction(Node[] nodes) {
-        final Song s = nodes[0].getLookup().lookup(Song.class);
-        RequestProcessor.getDefault().post(new SongConverter(s));
+        if (PlayListSet.findInstance().isDirty()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JOptionPane.showMessageDialog(null,
+                        "Unsaved changes exist. Please save all changes first.",
+                        "Unsaved changes", JOptionPane.INFORMATION_MESSAGE, virtmusIcon);
+                }
+            });
+        } else {
+            final Song s = nodes[0].getLookup().lookup(Song.class);
+            final PlayList pl = nodes[0].getLookup().lookup(PlayList.class);
+            RequestProcessor.getDefault().post(new SongConverter(s, pl));
+        }
     }
 
     class SongConverter implements Runnable {
         Song s;
+        PlayList pl;
         int maxProgress;
         final AtomicInteger progressI = new AtomicInteger(1);
         final ProgressHandle handle = ProgressHandleFactory.createHandle("PDF to JPG converter");
 
-        public SongConverter(Song s) {
+        public SongConverter(Song s, PlayList pl) {
             this.s = s;
+            this.pl = pl;
             maxProgress = s.pageOrder.size();
         }
 
         @Override
         public void run() {
-            final ImageIcon qIcon = new ImageIcon(ImageUtilities.loadImage(
-                    "com/ebixio/virtmus/resources/VirtMus32x32.png", true));
-
             File curSongF = s.getSourceFile();
             final File curDir = curSongF.getParentFile();
 
@@ -108,6 +125,7 @@ public class SongPdf2JpgAction extends CookieAction {
 
             File curPdfF = s.pageOrder.get(0).imgSrc.getSourceFile();
             String imgStem = Utils.trimExtension(curPdfF.getName(), null);
+            List<File> jpgMusicPages = new ArrayList<>();
 
 
             // The "1"s below are to show a little progress before the heavy lifting
@@ -126,6 +144,11 @@ public class SongPdf2JpgAction extends CookieAction {
                 final File newMusicPageF = new File(destDir.getAbsolutePath() + File.separator
                     + String.format("%s-%03d.jpg", imgStem, pdfImg.pageNum));
 
+                boolean duplicated = jpgMusicPages.contains(newMusicPageF);
+                jpgMusicPages.add(newMusicPageF);
+
+                if (duplicated) continue;
+
                 if (newMusicPageF.exists()) {
                     try {
                         returnVal = EDT.invokeAndWait(new Callable<Integer>() {
@@ -134,7 +157,7 @@ public class SongPdf2JpgAction extends CookieAction {
                                 return JOptionPane.showConfirmDialog(null,
                                     "" + newMusicPageF + " already exists. Overwrite?",
                                     "Overwrite file?", JOptionPane.YES_NO_CANCEL_OPTION,
-                                    JOptionPane.QUESTION_MESSAGE, qIcon);
+                                    JOptionPane.QUESTION_MESSAGE, virtmusIcon);
                             }
                         });
                     } catch (InterruptedException | InvocationTargetException ex) {
@@ -163,7 +186,7 @@ public class SongPdf2JpgAction extends CookieAction {
                         public Integer call() throws Exception {
                             return JOptionPane.showConfirmDialog(null,
                                 "Move PDF+Song to new dir?", "Move?",
-                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, qIcon);
+                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, virtmusIcon);
                         }
                     });
                 } catch (InterruptedException | InvocationTargetException ex) {
@@ -181,17 +204,40 @@ public class SongPdf2JpgAction extends CookieAction {
                 Exceptions.printStackTrace(ex);
             }
 
+            // Create the new JPG-based song.
+            Song jpgSong = new Song();
+            jpgSong.setName("" + s.getName() + " JPG");
+            jpgSong.setNotes(s.getNotes());
+            jpgSong.setTags(s.getTags());
+            for (File jpg: jpgMusicPages) {
+                jpgSong.addPage(jpg);
+            }
+
+            File newJpgSongF = new File(destDir + File.separator +
+                    Utils.trimExtension(curSongF.getName(), Song.SONG_FILE_EXT)
+                    + "-jpg" + Song.SONG_FILE_EXT);
+            jpgSong.setSourceFile(newJpgSongF);
+            jpgSong.serialize();
+
+            // Add it right after the PDF-based song to the current PlayList
+            if (pl != null) {
+                int oldIdx = pl.songs.indexOf(s);
+                pl.addSong(jpgSong, oldIdx + 1);
+            }
+
             if (movePdf) {
                 File newPdfF = new File(destDir.getPath() + File.separator + curPdfF.getName());
                 int cnt = PlayListSet.findInstance().movedPdf(curPdfF, newPdfF);
                 curPdfF.renameTo(newPdfF);
 
-                File newSongF = new File(destDir + File.separator + curSongF.getName());
-                curSongF.renameTo(newSongF);
-                cnt = PlayListSet.findInstance().movedSong(curSongF, newSongF);
+                File newPdfSongF = new File(destDir + File.separator + curSongF.getName());
+                curSongF.renameTo(newPdfSongF);
+                cnt = PlayListSet.findInstance().movedSong(curSongF, newPdfSongF);
             }
 
-            MainApp.setStatusText("Finished PDF to JPG conversion.");
+            PlayListSet.findInstance().saveAll();
+
+            MainApp.setStatusText("Finished the PDF to JPG conversion for: " + s.getName());
         }
 
         class MusicPageSaver implements Runnable {
