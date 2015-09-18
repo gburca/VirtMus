@@ -108,6 +108,8 @@ public class SongPdf2JpgAction extends CookieAction {
         public SongConverter(Song s, PlayList pl) {
             this.s = s;
             this.pl = pl;
+
+            // Not all pages are unique. Need to account for that below.
             maxProgress = s.pageOrder.size();
         }
 
@@ -147,7 +149,12 @@ public class SongPdf2JpgAction extends CookieAction {
                 boolean duplicated = jpgMusicPages.contains(newMusicPageF);
                 jpgMusicPages.add(newMusicPageF);
 
-                if (duplicated) continue;
+                if (duplicated) {
+                    synchronized (progressI) {
+                        handle.progress(progressI.incrementAndGet());
+                    }
+                    continue;
+                }
 
                 if (newMusicPageF.exists()) {
                     try {
@@ -166,8 +173,12 @@ public class SongPdf2JpgAction extends CookieAction {
                     }
                     switch (returnVal) {
                         case JOptionPane.CANCEL_OPTION:
+                            handle.finish();
                             return;
                         case JOptionPane.NO_OPTION:
+                            synchronized (progressI) {
+                                handle.progress(progressI.incrementAndGet());
+                            }
                             continue;
                         case JOptionPane.YES_OPTION:
                         default:
@@ -205,24 +216,45 @@ public class SongPdf2JpgAction extends CookieAction {
             }
 
             // Create the new JPG-based song.
-            Song jpgSong = new Song();
-            jpgSong.setName("" + s.getName() + " JPG");
-            jpgSong.setNotes(s.getNotes());
-            jpgSong.setTags(s.getTags());
-            for (File jpg: jpgMusicPages) {
-                jpgSong.addPage(jpg);
-            }
-
             File newJpgSongF = new File(destDir + File.separator +
                     Utils.trimExtension(curSongF.getName(), Song.SONG_FILE_EXT)
                     + "-jpg" + Song.SONG_FILE_EXT);
-            jpgSong.setSourceFile(newJpgSongF);
-            jpgSong.serialize();
 
-            // Add it right after the PDF-based song to the current PlayList
-            if (pl != null) {
-                int oldIdx = pl.songs.indexOf(s);
-                pl.addSong(jpgSong, oldIdx + 1);
+            boolean saveNewSong = true;
+            if (newJpgSongF.exists()) {
+                try {
+                    returnVal = EDT.invokeAndWait(new Callable<Integer>() {
+                        @Override
+                        public Integer call() throws Exception {
+                            return JOptionPane.showConfirmDialog(null,
+                                "Overwrite existing song file?", "Overwrite?",
+                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, virtmusIcon);
+                        }
+                    });
+                } catch (InterruptedException | InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                    returnVal = JOptionPane.NO_OPTION;
+                }
+                saveNewSong = returnVal == JOptionPane.YES_OPTION;
+            }
+
+            if (saveNewSong) {
+                Song jpgSong = new Song();
+                jpgSong.setName("" + s.getName() + " JPG");
+                jpgSong.setNotes(s.getNotes());
+                jpgSong.setTags(s.getTags());
+                for (File jpg: jpgMusicPages) {
+                    jpgSong.addPage(jpg);
+                }
+
+                jpgSong.setSourceFile(newJpgSongF);
+                jpgSong.serialize();
+
+                // Add it right after the PDF-based song to the current PlayList
+                if (pl != null) {
+                    int oldIdx = pl.songs.indexOf(s);
+                    pl.addSong(jpgSong, oldIdx + 1);
+                }
             }
 
             if (movePdf) {
