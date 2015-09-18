@@ -195,8 +195,8 @@ public class PlayListNode extends AbstractNode
                 }
             };
         } else if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-            // TODO: Handle file drops. Convert PDFs into songs, and sets of
-            // images into a single song?
+            // Handle file drops. Convert PDFs into songs, and sets of
+            // images into a single song.
             return new PasteType() {
                 @Override
                 public Transferable paste() throws IOException {
