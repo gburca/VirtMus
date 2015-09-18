@@ -450,10 +450,19 @@ public class PlayList implements Comparable<PlayList> {
         addSong(song, -1);
     }
     public void addSong(Song song, int idx) {
-        if (idx < 0 || idx > songs.size()) idx = songs.size();
-        songs.add(idx, song);
-        setDirty(true);
-        if (this.type != Type.Normal) sortSongsByName();
+        if (this.type == Type.AllSongs) {
+            if (songs.contains(song)) return; // No firing of property change
+            songs.add(song);
+            sortSongsByName();
+        } else {
+            if (idx < 0 || idx > songs.size()) idx = songs.size();
+            songs.add(idx, song);
+            setDirty(true);
+
+            PlayList all = PlayListSet.findInstance().getPlayList(PlayList.Type.AllSongs);
+            if (all != null) all.addSong(song);
+        }
+
         fire(PROP_SONG_ADDED, null, song);
     }
 

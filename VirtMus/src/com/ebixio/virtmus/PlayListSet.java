@@ -153,6 +153,16 @@ public class PlayListSet implements PreferenceChangeListener, PropertyChangeList
         return false;
     }
 
+    public PlayList getPlayList(PlayList.Type type) {
+        if (type == PlayList.Type.Default) {
+            return playLists.get(0);
+        } else if (type == PlayList.Type.AllSongs) {
+            return playLists.get(1);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Finds all the PlayLists on disk and loads them.
      * @param clearSongs If true, discards all songs so they get re-loaded when

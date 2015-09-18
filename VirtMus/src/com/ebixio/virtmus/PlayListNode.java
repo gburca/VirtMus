@@ -170,12 +170,12 @@ public class PlayListNode extends AbstractNode
     public PasteType getDropType(final Transferable t, final int action, int index) {
         //Log.log("PlayListNode::getDropType p:" + playList.getName() + " i:" + Integer.toString(index));
 
-        // Can't paste into the AllSongs PlayList
-        if (playList.type == PlayList.Type.AllSongs) return null;
-
-        DataFlavor[] flavors = t.getTransferDataFlavors();
+        //DataFlavor[] flavors = t.getTransferDataFlavors();
 
         if (t.isDataFlavorSupported(SongFlavor.SONG_FLAVOR)) {
+            // Can't paste existing into the AllSongs PlayList
+            if (playList.type == PlayList.Type.AllSongs) return null;
+
             return new PasteType() {
                 @Override
                 public Transferable paste() throws IOException {

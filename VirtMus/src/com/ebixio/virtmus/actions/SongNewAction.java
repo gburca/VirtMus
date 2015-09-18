@@ -59,13 +59,8 @@ public final class SongNewAction extends CallableSystemAction {
             if (pl != null) {
                 pl.addSong(s);
             } else {
-                PlayListSet.findInstance().playLists.get(0).addSong(s);
-            }
-
-            // Add the song to the All Songs playlist
-            PlayList allSongs = PlayListSet.findInstance().playLists.get(1);
-            if (pl != allSongs) {
-                allSongs.addSong(s);
+                PlayList defPl = PlayListSet.findInstance().getPlayList(PlayList.Type.Default);
+                if (defPl != null) defPl.addSong(s);
             }
         }
     }
