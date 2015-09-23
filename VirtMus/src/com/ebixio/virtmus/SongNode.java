@@ -111,7 +111,7 @@ public class SongNode extends AbstractNode
      * the song from it (which should update the nodes).
      *
      * @see PlayListNode#getDropType(java.awt.datatransfer.Transferable, int, int)
-     * @throws IOException
+     * @throws IOException Just because it can
      */
     @Override
     public void destroy() throws IOException {

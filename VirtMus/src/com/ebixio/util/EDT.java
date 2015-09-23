@@ -30,21 +30,23 @@ import javax.swing.SwingUtilities;
 public class EDT {
 
     /**
-     * Wrapper around {@link SwingUtilities.invokeLater()} that allows us to
+     * Wrapper around {@link javax.swing.SwingUtilities#invokeLater(java.lang.Runnable)} that allows us to
      * return a result {@link FutureTask} to the caller.
      *
      * Example:
      * <pre>
+     * {@code
      * FutureTask<String> task = invokeLater(new Callable<String>() {
      *      public String call() throws Exception {
      *          return new String("hello");
      *      }});
      * String result = task.get();
+     * }
      * </pre>
      *
-     * @param <T>
-     * @param callable
-     * @return
+     * @param <T> Result type
+     * @param callable A task to execute on the EDT.
+     * @return The task future result.
      */
     public static <T> FutureTask<T> invokeLater(Callable<T> callable) {
         FutureTask<T> task = new FutureTask<>(callable);
@@ -53,14 +55,14 @@ public class EDT {
     }
 
     /**
-     * Wrapper around {@link SwingUtilities.invokeAndWait()} that allows us to
+     * Wrapper around {@link javax.swing.SwingUtilities#invokeAndWait(java.lang.Runnable)} that allows us to
      * return a result to the caller.
      *
-     * @param <T>
-     * @param callable
-     * @return
-     * @throws InterruptedException
-     * @throws InvocationTargetException
+     * @param <T> Result type
+     * @param callable A task to execute on the EDT
+     * @return The task return value.
+     * @throws InterruptedException Pass through from the invokeLater call.
+     * @throws InvocationTargetException Pass through from the invokeLater call.
      */
     public static <T> T invokeAndWait(Callable<T> callable)
             throws InterruptedException, InvocationTargetException {
