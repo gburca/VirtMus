@@ -201,9 +201,13 @@ public class PlayListNode extends AbstractNode
                 @Override
                 public Transferable paste() throws IOException {
                     try {
-                        List<File> fileList = (List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
+                        Object o = t.getTransferData(DataFlavor.javaFileListFlavor);
+                        List<File> fileList = null;
+                        if (o instanceof List) {
+                            fileList = (List<File>)o;
+                        }
 
-                        if (fileList.isEmpty()) return null;
+                        if (fileList == null || fileList.isEmpty()) return null;
 
                         Song s = new Song();
                         for (File f: fileList) {
