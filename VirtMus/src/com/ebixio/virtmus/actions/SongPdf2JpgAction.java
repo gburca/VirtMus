@@ -6,7 +6,6 @@
 package com.ebixio.virtmus.actions;
 
 import com.ebixio.util.EDT;
-import com.ebixio.util.Pair;
 import com.ebixio.virtmus.MainApp;
 import com.ebixio.virtmus.MusicPage;
 import com.ebixio.virtmus.PlayList;
@@ -134,9 +133,11 @@ public class SongPdf2JpgAction extends CookieAction {
             handle.start(maxProgress + 1);
             handle.progress(1);
 
-            ExecutorService executor = Executors.newWorkStealingPool();
+            // This executor may exhaust the java heap, causing exceptions, etc...
+            // especially on devices with lots of cores.
+            //ExecutorService executor = Executors.newWorkStealingPool();
             // For more consistent progress (but slower?) use:
-            //ExecutorService executor = Executors.newSingleThreadExecutor();
+            ExecutorService executor = Executors.newSingleThreadExecutor();
             int returnVal;
 
             for (final MusicPage mp: s.pageOrder) {
@@ -212,6 +213,7 @@ public class SongPdf2JpgAction extends CookieAction {
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            handle.finish();
 
             // Create the new JPG-based song.
             File newJpgSongF = new File(destDir + File.separator +
@@ -281,20 +283,23 @@ public class SongPdf2JpgAction extends CookieAction {
 
             @Override
             public void run() {
-                MainApp.setStatusText("Writing " + newMusicPageF);
-                mp.saveImg(newMusicPageF, "jpg");
-                /*
-                 * It's possible for progress to be called with out-of-order values
-                 * unless we synchronize
-                 * - progress(3) in threadA is pre-empted before it finishes
-                 * - progress(4) in threadB runs to completion
-                 * - threadA resumes and finds it was called with 3 (< 4)
-                 */
-                synchronized (progressI) {
-                    handle.progress(progressI.incrementAndGet());
-                }
-                if (progressI.get() >= maxProgress) {
-                    handle.finish(); // Remove task from the status bar
+                try {
+                    MainApp.setStatusText("Writing " + newMusicPageF);
+                    mp.saveImg(newMusicPageF, "jpg");
+                } catch (Throwable ex) {
+                    // Possibly out of heap space, etc...
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    /*
+                     * It's possible for progress to be called with out-of-order values
+                     * unless we synchronize
+                     * - progress(3) in threadA is pre-empted before it finishes
+                     * - progress(4) in threadB runs to completion
+                     * - threadA resumes and finds it was called with 3 (< 4)
+                     */
+                    synchronized (progressI) {
+                        handle.progress(progressI.incrementAndGet());
+                    }
                 }
             }
         }
