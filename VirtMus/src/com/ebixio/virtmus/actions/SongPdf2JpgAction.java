@@ -66,8 +66,6 @@ import org.openide.windows.WindowManager;
  * If different from the current PDF directory, ask the user if we should move
  * the song+pdf to the new directory.
  *
- * Leave it up to the user to create a new JPG song with the generated JPGs.
- *
  * @author Gabriel Burca &lt;gburca dash virtmus at ebixio dot com&gt;
  */
 @ActionID(id = "com.ebixio.virtmus.actions.SongPdf2JpgAction", category = "Song")
